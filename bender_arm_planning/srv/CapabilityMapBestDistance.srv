@@ -1,0 +1,9 @@
+# Descripcion geometrica del objeto
+moveit_msgs/CollisionObject target
+
+# Rango en x
+float64 range
+
+---
+# Mejor distancia de base
+float64 distance

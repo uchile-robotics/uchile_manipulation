@@ -1,0 +1,8 @@
+# Descripcion geometrica del objeto
+moveit_msgs/CollisionObject target
+
+# Links que pueden tocar el objeto
+string[] touch_links
+
+---
+# Dummy

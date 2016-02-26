@@ -1,0 +1,16 @@
+
+<launch>
+  <!-- MoveIt move_group --> 
+  <include file="$(find bender_moveit_config)/launch/demo.launch"/>
+
+  <!-- l_arm -->
+  <node name="l_arm_map_gen" pkg="bender_arm_planning" type="capability_map_gen" output="screen">
+    <rosparam command="load" file="$(find bender_arm_control)/config/grasp_data.yaml"/>
+    <rosparam param="init_pos">[0.3, 0.0, 0.45]</rosparam>
+    <rosparam param="final_pos">[0.85, 0.6, 1.5]</rosparam>
+    <rosparam param="resolution">[55, 60, 105]</rosparam>
+    <param name="ref_frame" type="string" value="bender/base_link" />
+    <param name="file_name" type="string" value="cap_map_$(anon capability).dat" />
+  </node>
+
+</launch>

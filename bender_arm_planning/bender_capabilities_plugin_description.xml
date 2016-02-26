@@ -1,0 +1,15 @@
+<library path="libbender_move_group_capabilities">
+
+  <class name="move_group/ManageOctomapService" type="move_group::ManageOctomapService" base_class_type="move_group::MoveGroupCapability">
+    <description>
+      Permite limpiar, parar e iniciar Octomap usado para representar objetos de colision en PlanningScene.
+    </description>
+  </class>
+
+   <class name="move_group/CapabilityMapService" type="move_group::CapabilityMapService" base_class_type="move_group::MoveGroupCapability">
+    <description>
+      Permite obtener grasps precalculados.
+    </description>
+  </class>
+
+</library>

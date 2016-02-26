@@ -1,0 +1,12 @@
+# Descripcion geometrica del objeto
+moveit_msgs/CollisionObject target
+
+# Usar Capability Map
+bool use_capmap
+
+# Grupo
+string group_name
+
+---
+# Conjunto de grasps ordenados por calidad
+GraspPosition[] grasps
