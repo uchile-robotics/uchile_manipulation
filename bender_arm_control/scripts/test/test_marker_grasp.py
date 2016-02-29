@@ -13,7 +13,7 @@ from tf import transformations
 # Msgs
 from geometry_msgs.msg import Point, Pose
 from std_msgs.msg import Float64
-from bender_srvs.srv import Dummy
+from std_srvs.srv import Empty
 
 # Markers
 from visualization_msgs.msg import InteractiveMarkerControl, Marker
@@ -82,7 +82,7 @@ class SimpleGrasp(object):
 
         # Servicio dummy para limpiar objetos
         rospy.wait_for_service('/l_arm_planning/clear_collision')
-        self.clear_objects = rospy.ServiceProxy('/l_arm_planning/clear_collision', Dummy)
+        self.clear_objects = rospy.ServiceProxy('/l_arm_planning/clear_collision', Empty)
         rospy.logwarn('SimpleGrasp [OK]')
 
     def clear_collision(self):

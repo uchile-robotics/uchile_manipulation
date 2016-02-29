@@ -78,11 +78,12 @@
     <!-- export dependencies -->
     <build_export_depend>message_runtime</build_export_depend>
     <build_export_depend>moveit_fake_controller_manager</build_export_depend>
+    <build_export_depend>bender_arm_planning</build_export_depend>
 
     <!-- excution dependencies -->
     <exec_depend>message_runtime</exec_depend>
     <exec_depend>moveit_fake_controller_manager</exec_depend>
-
+    <exec_depend>bender_arm_planning</exec_depend>
 
     <!-- test dependencies -->
 

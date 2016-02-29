@@ -33,6 +33,7 @@
 
 #include <geometry_msgs/PoseStamped.h>
 // Servicios
+#include <std_srvs/Empty.h>
 #include <bender_arm_control/Position.h>
 #include <bender_arm_control/PositionNamed.h>
 #include <bender_arm_control/PositionServoing.h>
@@ -43,7 +44,6 @@
 #include <bender_arm_control/AttachObject.h>
 #include <bender_arm_control/JointTarget.h>
 
-#include <bender_srvs/Dummy.h>
 
 // Action Server
 #include <bender_arm_control/GraspGeneratorAction.h>
@@ -788,7 +788,7 @@ class BenderPlanningServer
     }
 
 
-    bool removeCollisionObjects(bender_srvs::Dummy::Request &req, bender_srvs::Dummy::Response &res)
+    bool removeCollisionObjects(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
     {
       return visual_tools_->removeAllCollisionObjects();
     }
