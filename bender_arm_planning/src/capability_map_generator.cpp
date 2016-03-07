@@ -53,9 +53,7 @@ class CapabilityMapGenerator {
     // Datos del gripper
     moveit_simple_grasps::GraspData grasp_data_;
     // Robot model
-    robot_model::RobotModelPtr robot_model_;
-    // Robot state, estado cinematico del robot
-    robot_state::RobotStatePtr robot_state_;
+    moveit::core::RobotModelConstPtr robot_model_;
 
     // Logger
     const std::string name_;
@@ -95,10 +93,10 @@ class CapabilityMapGenerator {
       ROS_INFO("Visual tools on topic /markers");
       visual_tools_.reset(new moveit_visual_tools::MoveItVisualTools("bender/base_link","/markers", planning_scene_monitor_));
       
-      // ERROR EN LA API!, se modifica mientras, pero debe ser revisado
-      visual_tools_->loadEEMarker(grasp_data_.ee_group_);
-      //visual_tools_->loadEEMarker(grasp_data_.ee_group_, arm_name_);
-    
+      // Load robot model and gripper marker
+      robot_model_ = visual_tools_->getRobotModel();
+      visual_tools_->loadEEMarker(robot_model_->getJointModelGroup(grasp_data_.ee_group_));
+      
       // Generador de grasp
       simple_grasps_.reset( new moveit_simple_grasps::SimpleGrasps(visual_tools_) );
       robot_state::RobotState robot_state = planning_scene_monitor_->getPlanningScene()->getCurrentState();
