@@ -262,9 +262,8 @@ class BenderMoveGroupInterface {
       //visual_tools_->setMuted(false);
       ROS_INFO_STREAM("EE "<< grasp_data_.ee_group_ << " ARM NAME " << arm_name_);
 
-      // Load robot model and gripper marker
       visual_tools_->loadEEMarker(robot_model_->getJointModelGroup(grasp_data_.ee_group_));
-      
+
       // Generador de grasp
       simple_grasps_.reset( new moveit_simple_grasps::SimpleGrasps(visual_tools_) );
       robot_state::RobotState robot_state = planning_scene_monitor_->getPlanningScene()->getCurrentState();

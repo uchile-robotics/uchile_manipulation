@@ -4,7 +4,8 @@
 *
 * Autor: Rodrigo Munoz
 */
-
+// C++ exceptions
+#include <stdexcept>
 // ROS
 #include <ros/ros.h>
 #include <trajectory_msgs/JointTrajectoryPoint.h>
@@ -53,7 +54,9 @@ class CapabilityMapGenerator {
     // Datos del gripper
     moveit_simple_grasps::GraspData grasp_data_;
     // Robot model
-    moveit::core::RobotModelConstPtr robot_model_;
+    robot_model::RobotModelConstPtr robot_model_;
+    // Robot state, estado cinematico del robot
+    robot_state::RobotStatePtr robot_state_;
 
     // Logger
     const std::string name_;
@@ -93,10 +96,19 @@ class CapabilityMapGenerator {
       ROS_INFO("Visual tools on topic /markers");
       visual_tools_.reset(new moveit_visual_tools::MoveItVisualTools("bender/base_link","/markers", planning_scene_monitor_));
       
-      // Load robot model and gripper marker
-      robot_model_ = visual_tools_->getRobotModel();
+      // Load grasp data
+      ros::NodeHandle nh_p("~");
+      ROS_INFO_NAMED(name_, "Loading grasp data for %s in namespace %s", gripper_name_.c_str(), nh_p.getNamespace().c_str());
+      if (!grasp_data_.loadRobotGraspData(nh_p, gripper_name_))
+      {
+        // Throw exception
+        throw ros::Exception("Error loading grasp data");
+      }
+
+      // Load robot model and end effector marker
+      robot_model_ = planning_scene_monitor_->getRobotModel();
       visual_tools_->loadEEMarker(robot_model_->getJointModelGroup(grasp_data_.ee_group_));
-      
+    
       // Generador de grasp
       simple_grasps_.reset( new moveit_simple_grasps::SimpleGrasps(visual_tools_) );
       robot_state::RobotState robot_state = planning_scene_monitor_->getPlanningScene()->getCurrentState();
@@ -177,15 +189,6 @@ class CapabilityMapGenerator {
     capability_map::CapabilityMapPtr getCapabilityMap()
     {
       return capability_map_;
-    }
-
-    bool loadData()
-    {
-      // Cargar grasp data
-      ros::NodeHandle nh_p("~");
-      ROS_INFO_NAMED(name_, "Loading grasp data for %s in namespace %s", gripper_name_.c_str(), nh_p.getNamespace().c_str());
-      
-      return grasp_data_.loadRobotGraspData(nh_p, gripper_name_);
     }
 
     bool generateMap()
@@ -341,10 +344,14 @@ int main(int argc, char **argv)
 
   ros::Duration(5.0).sleep();
   using namespace bender_arm_planning;
-  CapabilityMapGeneratorPtr cmg(new CapabilityMapGenerator("l_arm", "l_gripper"));
-  if(!cmg->loadData())
+  CapabilityMapGeneratorPtr cmg;
+  try
   {
-    ROS_ERROR("Error loading grasp data");
+    cmg.reset(new CapabilityMapGenerator("l_arm", "l_gripper"));
+  }
+  catch (const ros::Exception& e)
+  {
+    ROS_FATAL_STREAM(e.what());
     ros::shutdown();
     exit(EXIT_FAILURE);
   }
