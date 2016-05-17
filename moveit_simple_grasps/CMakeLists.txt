@@ -79,23 +79,23 @@ target_link_libraries(${PROJECT_NAME}_filter
 )
 
 # Action Server executable
-add_executable(${PROJECT_NAME}_server src/simple_grasps_server.cpp)
-add_dependencies(${PROJECT_NAME}_server ${catkin_EXPORTED_TARGETS}) # don't build until necessary msgs are finish
-target_link_libraries(${PROJECT_NAME}_server
-  ${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES}
-)
+# add_executable(${PROJECT_NAME}_server src/simple_grasps_server.cpp)
+# add_dependencies(${PROJECT_NAME}_server ${catkin_EXPORTED_TARGETS}) # don't build until necessary msgs are finish
+# target_link_libraries(${PROJECT_NAME}_server
+#   ${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES}
+# )
 
 # Test filter executable
-add_executable(${PROJECT_NAME}_filter_test src/grasp_filter_test.cpp)
-target_link_libraries(${PROJECT_NAME}_filter_test
-  ${PROJECT_NAME} ${PROJECT_NAME}_filter ${catkin_LIBRARIES} ${Boost_LIBRARIES}
-)
+# add_executable(${PROJECT_NAME}_filter_test src/grasp_filter_test.cpp)
+# target_link_libraries(${PROJECT_NAME}_filter_test
+#   ${PROJECT_NAME} ${PROJECT_NAME}_filter ${catkin_LIBRARIES} ${Boost_LIBRARIES}
+# )
 
 # Test grasp executable
-add_executable(${PROJECT_NAME}_test src/simple_grasps_test.cpp)
-target_link_libraries(${PROJECT_NAME}_test 
-  ${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES}
-)
+# add_executable(${PROJECT_NAME}_test src/simple_grasps_test.cpp)
+# target_link_libraries(${PROJECT_NAME}_test 
+#   ${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES}
+# )
 
 ## Install
 
@@ -114,8 +114,8 @@ install(DIRECTORY resources DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 # Install executables
 install(TARGETS 
-  ${PROJECT_NAME}_server
-  ${PROJECT_NAME}_test
-  ${PROJECT_NAME}_filter_test
+  # ${PROJECT_NAME}_server
+  # ${PROJECT_NAME}_test
+  # ${PROJECT_NAME}_filter_test
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
