@@ -61,6 +61,10 @@ class SimpleArmTeleop(object):
         
     def process_joy(self, msg):
         #print msg
+        if not self.selected_arm_side in self.arms:
+            rospy.logwarn('Selected arm: ' + self.selected_arm_side + ' not available')
+            return
+        
         selected_arm = self.arms[self.selected_arm_side]
         
         # Home
@@ -75,10 +79,11 @@ class SimpleArmTeleop(object):
           
         # Cambiar brazo
         elif msg.buttons[SimpleArmTeleop.BUTTONS['change_arm']] == 1:
-            if self.selected_arm_side == 'l':
+            if self.selected_arm_side == 'l' and 'r' in self.arms:
                 self.selected_arm_side = 'r'
-            elif self.selected_arm_side == 'r':
+            elif self.selected_arm_side == 'r' and 'l' in self.arms:
                 self.selected_arm_side = 'l'
+    
             rospy.logwarn('Selected arm: ' + self.selected_arm_side)
 
         elif msg.buttons[SimpleArmTeleop.BUTTONS['wave']] == 1:
