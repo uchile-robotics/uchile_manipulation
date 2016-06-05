@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_core
   moveit_ros_move_group
   moveit_ros_planning
+  moveit_ros_planning_interface
   moveit_simple_grasps
   moveit_visual_tools
   pluginlib
@@ -101,6 +102,7 @@ catkin_package(
   CATKIN_DEPENDS
     moveit_core
     moveit_ros_planning
+    moveit_ros_planning_interface
     moveit_ros_move_group
     message_runtime
 #  DEPENDS system_lib
