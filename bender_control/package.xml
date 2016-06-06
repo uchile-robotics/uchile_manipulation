@@ -8,22 +8,27 @@
     <version>2.0.0</version>
 
     <description>The bender_control metapackage</description>
+
+
+    <!-- team -->
     <maintainer email="bender.devel@gmail.com">
       Bender Team - UChile Homebreakers</maintainer>
     <author     email="bender.devel@gmail.com">
       Bender Team - UChile Homebreakers</author>
-    <license>TODO</license>
 
-    <author email="rorro.mr@gmail.com"></author>
-
+    <!-- specific developers -->
+    <maintainer email="rorro.mr@gmail.com">Rodrigo Muñoz</maintainer>
+    <author>Rodrigo Muñoz</author>
 
     <!-- about bender and related repository -->
     <url type="website">bender.li2.uchile.cl</url>
     <url type="bugtracker">
-      https://bitbucket.org/uchile-robotics-die/bender_base_layer/issues</url>
+      https://bitbucket.org/uchile-robotics-die/bender_manipulation/issues</url>
     <url type="repository">
-      https://bitbucket.org/uchile-robotics-die/bender_base_layer</url>
+      https://bitbucket.org/uchile-robotics-die/bender_manipulation</url>
 
+    <license>TODO</license>
+    
 
     <buildtool_depend>catkin</buildtool_depend>
     

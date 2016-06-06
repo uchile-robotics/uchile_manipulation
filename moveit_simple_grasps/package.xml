@@ -5,15 +5,30 @@
     A basic grasp generator for simple objects such as blocks or cylinders for use with the MoveIt! pick and place pipeline. 
     Does not consider friction cones or other dynamics.
   </description>
+
+  <!-- original -->
   <maintainer email="davetcoleman@gmail.com">Dave Coleman</maintainer>
-
-  <license>BSD</license>
-
-  <url type="website">https://github.com/davetcoleman/moveit_simple_grasps/</url>
-  <url type="bugtracker">https://github.com/davetcoleman/moveit_simple_grasps/issues</url>
-  <url type="repository">https://github.com/davetcoleman/moveit_simple_grasps</url>
-
   <author email="davetcoleman@gmail.com">Dave Coleman</author>
+
+  <!-- team -->
+  <maintainer email="bender.devel@gmail.com">
+    Bender Team - UChile Homebreakers</maintainer>
+  <author     email="bender.devel@gmail.com">
+    Bender Team - UChile Homebreakers</author>
+
+  <!-- specific developers -->
+  <maintainer email="rorro.mr@gmail.com">Rodrigo Muñoz</maintainer>
+  <author>Rodrigo Muñoz</author>
+
+  <!-- about bender and related repository -->
+  <url type="website">bender.li2.uchile.cl</url>
+  <url type="bugtracker">
+    https://bitbucket.org/uchile-robotics-die/bender_manipulation/issues</url>
+  <url type="repository">
+    https://bitbucket.org/uchile-robotics-die/bender_manipulation</url>
+
+  <license>TODO</license>
+
 
   <buildtool_depend>catkin</buildtool_depend>
 
