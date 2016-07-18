@@ -26,6 +26,10 @@
       An automatically generated package with all the configuration and launch files for using bender with the MoveIt Motion Planning Framework
     </description>
 
+    <!-- original -->
+    <author email="assistant@moveit.ros.org">MoveIt Setup Assistant</author>
+    <maintainer email="assistant@moveit.ros.org">MoveIt Setup Assistant</maintainer>
+    
 
     <!-- team -->
     <maintainer email="bender.devel@gmail.com">
@@ -34,24 +38,18 @@
       Bender Team - UChile Homebreakers</author>
 
     <!-- specific developers -->
-    <!-- rooroo-->
-    <author email="assistant@moveit.ros.org">MoveIt Setup Assistant</author>
-    <maintainer email="assistant@moveit.ros.org">MoveIt Setup Assistant</maintainer>
-    
+    <maintainer email="rorro.mr@gmail.com">Rodrigo Muñoz</maintainer>
+    <author>Rodrigo Muñoz</author>
 
     <!-- about bender and related repository -->
     <url type="website">bender.li2.uchile.cl</url>
     <url type="bugtracker">
-      https://bitbucket.org/uchile-robotics-die/bender_hri/issues</url>
+      https://bitbucket.org/uchile-robotics-die/bender_manipulation/issues</url>
     <url type="repository">
-      https://bitbucket.org/uchile-robotics-die/bender_hri</url>
+      https://bitbucket.org/uchile-robotics-die/bender_manipulation</url>
 
-    <url type="website">http://moveit.ros.org/</url>
-    <url type="bugtracker">https://github.com/ros-planning/moveit_setup_assistant/issues</url>
-    <url type="repository">https://github.com/ros-planning/moveit_setup_assistant</url>
+    <license>TODO</license>
 
-
-    <license>BSD</license>
 
 
     <!-- SYSTEM DEPENDENCIES -->
@@ -76,10 +74,12 @@
     <build_export_depend>xacro</build_export_depend>
 
     <!-- excution dependencies -->
-    <exec_depend>moveit_ros_move_group</exec_depend>
-    <exec_depend>moveit_planners_ompl</exec_depend>
-    <exec_depend>moveit_ros_visualization</exec_depend>
     <exec_depend>joint_state_publisher</exec_depend>
+    <exec_depend>moveit_fake_controller_manager</exec_depend>
+    <exec_depend>moveit_planners_ompl</exec_depend>
+    <exec_depend>moveit_ros_move_group</exec_depend>
+    <exec_depend>moveit_ros_visualization</exec_depend>
+    <exec_depend>moveit_simple_controller_manager</exec_depend>
     <exec_depend>robot_state_publisher</exec_depend>
     <exec_depend>xacro</exec_depend>
 

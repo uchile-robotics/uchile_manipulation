@@ -1,5 +1,7 @@
 <launch>
 
+  <arg name="use_arm" default="both" />
+  
   <!-- Joy node -->
   <node respawn="true" pkg="joy" type="joy_node" name="arm_teleop_joy" >
     <param name="dev" type="string" value="/dev/input/js1" />
@@ -17,7 +19,6 @@
   <include file="$(find bender_tf)/launch/tf_model.launch"/>
 
   <!-- Launch selected arm -->
-  <arg name="use_arm" default="both" />
   <include file="$(find bender_arm_control)/launch/$(arg use_arm).launch"/>
     
   <!-- MoveIt -->

@@ -1,13 +1,9 @@
+<?xml version="1.0"?>
 <package>
-  <name>dynamixel_msgs</name>
-  <version>0.4.0</version>
-  <description>
-    Common messages used throughout dynamixel_motor stack.
-  </description>
+  <name>bender_manipulation</name>
+  <version>0.0.0</version>
+  <description>The bender_manipulation package</description>  
 
-  <!-- original -->
-  <maintainer email="arebgun@gmail.com">Antons Rebguns</maintainer>
-  <author>Antons Rebguns</author>
 
   <!-- team -->
   <maintainer email="bender.devel@gmail.com">
@@ -28,12 +24,11 @@
 
   <license>TODO</license>
 
-
+  
   <buildtool_depend>catkin</buildtool_depend>
-
-  <build_depend>message_generation</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <run_depend>message_runtime</run_depend>
-  <run_depend>std_msgs</run_depend>
+  <!--   <run_depend>message_runtime</run_depend> -->
+  <export>
+    <metapackage/>
+  </export>
 
 </package>
