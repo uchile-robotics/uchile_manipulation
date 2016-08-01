@@ -5,7 +5,7 @@
 # The directory of the script
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # the temp directory used, within $DIR
-WORK_DIR=`mktemp -d -p "$DIR"`
+WORK_DIR="$(mktemp -d -p "$DIR")"
 # deletes the temp directory
 function cleanup {
   rm -rf "$WORK_DIR"
@@ -13,7 +13,7 @@ function cleanup {
 }
 # Register the cleanup function to be called on the EXIT signal
 trap cleanup EXIT
-cd $WORK_DIR
+cd "$WORK_DIR"
 
 
 # Download bender_arm_planning capability map
