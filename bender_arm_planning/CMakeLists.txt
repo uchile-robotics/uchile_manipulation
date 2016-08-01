@@ -65,10 +65,10 @@ add_message_files(
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
-  ManageOctomap.srv
-  CapabilityMapGrasp.srv
-  CapabilityMapBestDistance.srv
   AddObjectACM.srv
+  CapabilityMapBestDistance.srv
+  CapabilityMapGrasp.srv
+  ManageOctomap.srv
 )
 
 ## Generate actions in the 'action' folder

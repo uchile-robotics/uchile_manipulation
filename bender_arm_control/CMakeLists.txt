@@ -101,11 +101,8 @@ generate_messages(
   trajectory_msgs
 )
 
-generate_dynamic_reconfigure_options(
-  cfg/GripperParams.cfg
-  cfg/MotorParams.cfg
-  cfg/MotorMXParams.cfg
-)
+#generate_dynamic_reconfigure_options(
+#)
 #add_dependencies(example_node ${PROJECT_NAME}_gencfg)
 
 ###################################
