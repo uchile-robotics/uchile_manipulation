@@ -36,7 +36,8 @@ class SimpleArmTeleop(object):
     def __init__(self):
 
         rospy.logwarn('Init arm interface')
-        rospy.sleep(10)
+        rospy.sleep(40)
+        rospy.logwarn('Init arm interface')
 
         arm_opc = rospy.get_param('/use_arm', 'l_arm')
 
