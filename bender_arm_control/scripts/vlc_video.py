@@ -30,7 +30,7 @@ def get_video_files(folder, extensions=['mp4','m4v']):
     file_list=list()
     for video_file in os.listdir(folder):
         for ext in extensions:
-            if video_file.endswith(ext):
+            if video_file.endswith(ext) and not video_file.startswith('.'):
                 file_list.append(os.path.join(folder, video_file))
     return file_list
 
