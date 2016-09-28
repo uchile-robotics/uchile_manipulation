@@ -9,6 +9,7 @@ class VLCPlayBackground(object):
     def __init__(self):
         super(VLCPlayBackground, self).__init__()
         self.current_process = None
+        self._check_vlc()
 
     def play(self, filename):
         self.kill()
@@ -25,19 +26,36 @@ class VLCPlayBackground(object):
             self.current_process.kill()
         self.current_process = None
 
+    def _check_vlc(self):
+        try:
+            devnull = open(os.devnull)
+            subprocess.Popen(['vlc', '--version'], stdout=devnull, stderr=devnull).communicate()
+        except OSError as e:
+            if e.errno == os.errno.ENOENT:
+                raise RuntimeError('VLC is not installed')
+            else:
+                raise RuntimeError('Something wrong with VLC')
+        except Exception:
+            raise RuntimeError('Something wrong with VLC')
+
 
 def get_video_files(folder, extensions=['mp4','m4v']):
     file_list=list()
-    for video_file in os.listdir(folder):
+    try:
+        raw_list = os.listdir(folder)
+    except OSError:
+        raise RuntimeError('Folder \'{}\' not found'.format(folder))
+    for video_file in raw_list:
         for ext in extensions:
             if video_file.endswith(ext):
                 file_list.append(os.path.join(folder, video_file))
+    file_list.sort()
     return file_list
 
 
 if __name__ == '__main__':
     vlc = VLCPlayBackground()
-    videos = get_video_files('~/video')
+    videos = get_video_files('/home/robotica/video', extensions=['mp4','avi'])
     for video in videos:
         vlc.play(video)
         time.sleep(5)
