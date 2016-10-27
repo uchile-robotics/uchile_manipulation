@@ -49,26 +49,29 @@ class SimpleArmTeleop(object):
         rospy.logwarn('Init arm interface')
 
         arm_opc = rospy.get_param('~use_arm', 'r_arm')
-        rospy.logerr(arm_opc)
 
         # Default selected arm
-        self.selected_arm_side = 'r'
+        self.selected_arm_side = ''
         self.arms = dict()
+        
         if arm_opc == "both":
-            rospy.loginfo('using both')
             self.arms = {
                 'l':Limb('l', enable_planning=False),
                 'r':Limb('r', enable_planning=False)
             }
+            self.selected_arm_side = 'l'
+            rospy.loginfo("Using both arms")
         
         elif arm_opc == "l_arm":
-            rospy.loginfo('using l arm')
             self.arms = { 'l':Limb('l', enable_planning=False)}
+            self.selected_arm_side = 'l'
+            rospy.loginfo("Using l_arm only")
           
         elif arm_opc == "r_arm":
-            rospy.loginfo('using r arm')
             self.arms = { 'r':Limb('r', enable_planning=False)}
             self.selected_arm_side = 'r'
+            rospy.loginfo("Using r_arm only")
+
         self.arm_lock = Lock()
 
         # Topico joystick
