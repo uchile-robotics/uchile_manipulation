@@ -41,7 +41,7 @@ fi
 #  - - - - - - - - - Extract files - - - - - - - - - - -
 # Extract files
 echo "$installer Extracting Capability map files"
-unzip -q -o bender_arm_planning.zip -d "$BENDER_WS"/soft_ws/src/beder_manipulation/
+unzip -q -o bender_arm_planning.zip -d "$BENDER_WS"/soft_ws/src/bender_manipulation/
 if [ $? -ne 0 ]; then
     echo "$installer ${red}Error extracting Capability map file.${reset}"
     exit 1 # Terminate and indicate error
