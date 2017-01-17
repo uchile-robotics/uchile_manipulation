@@ -30,7 +30,7 @@ cd "$WORK_DIR"
 #  - - - - - - - - - Download files - - - - - - - - - - - 
 # Download bender_arm_planning capability map
 echo "$installer Downloading capability map file"
-"$BENDER_SYSTEM"/bash/megadown/megadown 'https://mega.nz/#!e9NmnD6D!kXfuEhqlOtme87Cb1ZyiIDLI7XBzRdBWikLq0Pbu4KA'
+"$BENDER_SYSTEM"/shell/megadown/megadown 'https://mega.nz/#!e9NmnD6D!kXfuEhqlOtme87Cb1ZyiIDLI7XBzRdBWikLq0Pbu4KA'
 if [ $? -ne 0 ]; then
     echo "$installer ${red}Error downloading capability map file.${reset}"
     exit 1 # Terminate and indicate error
