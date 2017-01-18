@@ -7,6 +7,7 @@ project(bender_arm_planning)
 find_package(catkin REQUIRED COMPONENTS
   actionlib
   cmake_modules
+  kdl_parser
   message_generation
   moveit_core
   moveit_ros_move_group
@@ -19,6 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   std_srvs
   tf
+  urdf
 )
 
 ## System dependencies are found with CMake's conventions
@@ -150,6 +152,12 @@ target_link_libraries(capability_map_gen capability_map ${catkin_LIBRARIES} ${Bo
 
 add_executable(cm_load_test src/cm_load_test.cpp)
 target_link_libraries(cm_load_test capability_map ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(torque_online
+  src/trajectory_evaluation/gravitational_torque_estimation.cpp
+  src/trajectory_evaluation/online_torque_estimation.cpp
+)
+target_link_libraries(torque_online ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 ## Declare a cpp library
 # add_library(bender_arm_planning
