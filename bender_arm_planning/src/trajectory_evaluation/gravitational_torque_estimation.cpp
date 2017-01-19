@@ -73,7 +73,7 @@ std::vector<std::string> GravitationalTorqueEstimation::getJointNames()
   std::vector<std::string> names;
   for (std::size_t i = 0; i < chain_dof_; ++i)
     if (kdl_chain_.getSegment(i).getJoint().getType() != KDL::Joint::None)
-      names.push_back(kdl_chain_.getSegment(i).getJoint().getName());
+      names.push_back(std::string(kdl_chain_.getSegment(i).getJoint().getName()));
   return names;
 }
 

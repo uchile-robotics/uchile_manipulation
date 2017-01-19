@@ -2,7 +2,8 @@
 #include "std_msgs/String.h"
 #include "sensor_msgs/JointState.h"
 
-#include <sstream>
+#include <string>
+#include <vector>
 #include "gravitational_torque_estimation.h"
 
 
@@ -39,7 +40,8 @@ void jointStatesCb(const sensor_msgs::JointState::ConstPtr& msg)
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "online_torque_estimation");
-  ros::NodeHandle n;
+  ros::NodeHandle nh;
+  ros::NodeHandle nhpriv("~");
 
   urdf::Model model;
   if (!model.initParam("robot_description"))
@@ -48,8 +50,14 @@ int main(int argc, char **argv)
     return -1;
   }
 
-  std::string root_link = "bender/l_arm_base";
-  std::string tip_link = "bender/l_wrist_pitch_link";
+  /* Link parameters */
+  std::string root_link = "base_link";
+  std::string tip_link = "tip_link";
+  nhpriv.param<std::string>("root_link", root_link, "base_link");
+  nhpriv.param<std::string>("tip_link", tip_link, "tip_link");
+  ROS_INFO_STREAM("Root link: " << root_link);
+  ROS_INFO_STREAM("Tip link: " << tip_link);  
+  
   torque_estimation.reset(new trajectory_evaluation::GravitationalTorqueEstimation(model, root_link, tip_link));
   unsigned int dof = torque_estimation->getDOF();
   ROS_INFO_STREAM("DOF: " << dof);
@@ -62,7 +70,7 @@ int main(int argc, char **argv)
   {
     ROS_INFO_STREAM("\t" << *i);
   }
-  ros::Subscriber sub = n.subscribe("/bender/joint_states", 10, jointStatesCb);
+  ros::Subscriber sub = nh.subscribe("/bender/joint_states", 10, jointStatesCb);
   ros::spin();
 
 
