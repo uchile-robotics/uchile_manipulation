@@ -159,6 +159,13 @@ add_executable(torque_online
 )
 target_link_libraries(torque_online ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
+add_executable(torque_penalty_simple
+  src/trajectory_evaluation/gravitational_torque_estimation.cpp
+  src/trajectory_evaluation/torque_penalty.cpp
+)
+target_link_libraries(torque_penalty_simple ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+
 ## Declare a cpp library
 # add_library(bender_arm_planning
 #   src/${PROJECT_NAME}/bender_arm_planning.cpp
