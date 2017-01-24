@@ -165,6 +165,12 @@ add_executable(torque_penalty_simple
 )
 target_link_libraries(torque_penalty_simple ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
+add_executable(trajectory_test
+  src/trajectory_evaluation/gravitational_trajectory.cpp
+  src/trajectory_evaluation/trajectory_test.cpp
+)
+target_link_libraries(trajectory_test ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
 
 ## Declare a cpp library
 # add_library(bender_arm_planning
