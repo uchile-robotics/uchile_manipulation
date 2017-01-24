@@ -30,13 +30,33 @@ void jointStatesCb(const sensor_msgs::JointState::ConstPtr& msg)
       ROS_WARN_STREAM("JointState message doesnt contain: " << *joint_name);
       return;
     }
+
     joint_pos[joint_idx++] = msg->position[msg_idx];
+
+    //ROS_INFO_STREAM("Obteniendo limites...");
+//    torque_max_limits= msg->effort;
+//    torque_min_limits= msg->effort;//msg->effort[msg_idx];//
+
+//    ROS_INFO_STREAM("se cargaron los limites");//
+
+//    for(int i=0; i<6;i++){//
+
+//    	ROS_INFO_STREAM("limites: "<< torque_max_limits[i]);
+//    	ROS_INFO_STREAM("limites: "<< msg->effort[i]);
+//    		
+//    }//
+
+//    //
+
+//    ROS_INFO_STREAM("se cargaron los posiciones");
+
   }
   // Torque estimation & penalty
   double penalty_multiplier_ = 1.0;
   double joint_limits_multiplier(1.0);
   double lower_bound_distance;
   double upper_bound_distance;
+  range.resize(6);
 
   torque_estimation->estimate(joint_pos, joint_torque);
   for (std::size_t i = 0; i < joint_names.size(); ++i)
@@ -44,11 +64,25 @@ void jointStatesCb(const sensor_msgs::JointState::ConstPtr& msg)
     ROS_INFO_STREAM("\t" << joint_names[i] << "\t" << joint_torque[i]);
     upper_bound_distance = torque_max_limits[i] - joint_torque[i];
     lower_bound_distance = joint_torque[i] - torque_min_limits[i];
+
+    //Saturación
+    if(upper_bound_distance<0){upper_bound_distance = 0;}
+	if(lower_bound_distance<0){ lower_bound_distance = 0;}
+
+
     range[i] = torque_max_limits[i] - torque_min_limits[i];
     joint_limits_multiplier *= (lower_bound_distance * upper_bound_distance / (range[i] * range[i]));
+ 	ROS_INFO_STREAM("limits multiplier: " << joint_limits_multiplier);
+
+ 	if(joint_names[i]=="l_shoulder_roll_joint")
+ 	{
+ 		//ROS_INFO_STREAM("---------------------------------------------------------------");
+ 	}
+ 	
   }
-    double torque_penalty_index;
+    double torque_penalty_index = 1;
     torque_penalty_index =  (1.0 - exp(-penalty_multiplier_ * joint_limits_multiplier));
+    ROS_INFO_STREAM("---------------------------------------------------------------");
     ROS_INFO_STREAM("torque penalty index: " << torque_penalty_index);
 
 
@@ -56,19 +90,6 @@ void jointStatesCb(const sensor_msgs::JointState::ConstPtr& msg)
 
 int main(int argc, char **argv)
 {
-
-  // Torques limites
-  torque_max_limits[0] = 10; torque_min_limits[0] = 10;
-  torque_max_limits[1] = 10; torque_min_limits[1] = 10;
-  torque_max_limits[2] = 10; torque_min_limits[2] = 10;
-  torque_max_limits[3] = 10; torque_min_limits[3] = 10;
-  torque_max_limits[4] = 10; torque_min_limits[4] = 10;
-  torque_max_limits[5] = 10; torque_min_limits[5] = 10;
-  torque_max_limits[6] = 10; torque_min_limits[6] = 10;
-  torque_max_limits[7] = 10; torque_min_limits[7] = 10;
-  torque_max_limits[8] = 10; torque_min_limits[8] = 10;
-  torque_max_limits[9] = 10; torque_min_limits[9] = 10;
-
 
   ros::init(argc, argv, "online_torque_estimation");
   ros::NodeHandle nh;
@@ -94,12 +115,18 @@ int main(int argc, char **argv)
   ROS_INFO_STREAM("DOF: " << dof);
   joint_pos.resize(dof, 0.0);
   joint_torque.resize(dof, 0.0);
+  torque_max_limits.resize(dof, 0.0);
+  torque_min_limits.resize(dof, 0.0);
   // Print chain names
   joint_names = torque_estimation->getJointNames();
   ROS_INFO("Joint names: ");
+  int j=0;
   for (std::vector<std::string>::iterator i = joint_names.begin(); i != joint_names.end(); ++i)
   {
     ROS_INFO_STREAM("\t" << *i);
+    torque_max_limits[j] = (model.getJoint(*i)->limits->effort)*0.5;
+    torque_min_limits[j++] = - (model.getJoint(*i)->limits->effort)*0.5;
+    
   }
   ros::Subscriber sub = nh.subscribe("/bender/joint_states", 10, jointStatesCb);
   ros::spin();

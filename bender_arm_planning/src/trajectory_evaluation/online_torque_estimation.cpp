@@ -44,7 +44,7 @@ int main(int argc, char **argv)
   ros::NodeHandle nhpriv("~");
 
   urdf::Model model;
-  if (!model.initParam("bender_description"))
+  if (!model.initParam("robot_description"))
   {
     ROS_ERROR("Failed to parse URDF");
     return -1;
@@ -64,10 +64,12 @@ int main(int argc, char **argv)
   joint_torque.resize(dof, 0.0);
   // Print chain names
   joint_names = torque_estimation->getJointNames();
+
   ROS_INFO("Joint names: ");
   for (std::vector<std::string>::iterator i = joint_names.begin(); i != joint_names.end(); ++i)
   {
-    ROS_INFO_STREAM("\t" << *i);
+    ROS_INFO_STREAM("\t" << *i << " max effort: " << model.getJoint(*i)->limits->effort);
+
   }
   ros::Subscriber sub = nh.subscribe("/bender/joint_states", 10, jointStatesCb);
   ros::spin();
