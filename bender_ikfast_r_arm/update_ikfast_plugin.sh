@@ -1,0 +1,1 @@
+rosrun moveit_ikfast create_ikfast_moveit_plugin.py bender r_arm bender_ikfast_r_arm /home/rodrigo/bender_ws/soft_ws/src/bender_manipulation/bender_ikfast_r_arm/src/bender_r_arm_ikfast_solver.cpp

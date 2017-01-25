@@ -14,10 +14,10 @@
   <!-- Load the robot specific controller manager; this sets the moveit_controller_manager ROS parameter -->
   <arg name="moveit_controller_manager" default="bender" />
 
-  <arg name="use_arm" default="both" />
+<!--   <arg name="use_arm" default="both" /> -->
   
   <include file="$(find bender_moveit_config)/launch/$(arg moveit_controller_manager)_moveit_controller_manager.launch.xml">
-    <arg name="use_arm" value="$(arg use_arm)" />
+<!--     <arg name="use_arm" value="$(arg use_arm)" /> -->
   </include>
   
 </launch>
