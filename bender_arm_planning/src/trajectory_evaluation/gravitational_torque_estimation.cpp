@@ -34,9 +34,10 @@ GravitationalTorqueEstimation::GravitationalTorqueEstimation(
   KDL::SetToZero(torques_);
 }
 
-//bool GravitationalTorqueEstimation::estimate(const trajectory_msgs::TrajectoryPoint& point)
+//bool GravitationalTorqueEstimation::estimate(const trajectory_msgs::TrajectoryPoint& points,std::vector<double>& torque_score)
 //{
 //  this->estimate(point->positions);
+//  return true
 //}
 
 bool GravitationalTorqueEstimation::estimate(const std::vector<double>& current_pos, std::vector<double>& torque_estimation)

@@ -19,8 +19,7 @@ std::vector<double> range;
 trajectory_evaluation::GravitationalTorqueEstimationPtr torque_estimation;
 std::string datos = "";
 
-
-void jointStatesCb(const sensor_msgs::JointState::ConstPtr& msg)
+void score(const sensor_msgs::JointState::ConstPtr& msg)
 {
   std::size_t joint_idx = 0;
   for (std::vector<std::string>::iterator joint_name = joint_names.begin(); joint_name != joint_names.end(); ++joint_name)
@@ -37,22 +36,6 @@ void jointStatesCb(const sensor_msgs::JointState::ConstPtr& msg)
 
     joint_pos[joint_idx++] = msg->position[msg_idx];
 
-    //ROS_INFO_STREAM("Obteniendo limites...");
-//    torque_max_limits= msg->effort;
-//    torque_min_limits= msg->effort;//msg->effort[msg_idx];//
-
-//    ROS_INFO_STREAM("se cargaron los limites");//
-
-//    for(int i=0; i<6;i++){//
-
-//    	ROS_INFO_STREAM("limites: "<< torque_max_limits[i]);
-//    	ROS_INFO_STREAM("limites: "<< msg->effort[i]);
-//    		
-//    }//
-
-//    //
-
-//    ROS_INFO_STREAM("se cargaron los posiciones");
 
   }
   // Torque estimation & penalty
@@ -71,23 +54,31 @@ void jointStatesCb(const sensor_msgs::JointState::ConstPtr& msg)
 
     //Saturación
     if(upper_bound_distance<0){upper_bound_distance = 0;}
-	if(lower_bound_distance<0){ lower_bound_distance = 0;}
+  if(lower_bound_distance<0){ lower_bound_distance = 0;}
 
 
     range[i] = torque_max_limits[i] - torque_min_limits[i];
     joint_limits_multiplier *= (lower_bound_distance * upper_bound_distance / (range[i] * range[i]));
- 	ROS_INFO_STREAM("limits multiplier: " << joint_limits_multiplier);
+  ROS_INFO_STREAM("limits multiplier: " << joint_limits_multiplier);
 
- 	if(joint_names[i]=="l_shoulder_roll_joint")
- 	{
- 		//ROS_INFO_STREAM("---------------------------------------------------------------");
- 	}
- 	
+  //if(joint_names[i]=="l_shoulder_roll_joint")
+  //{
+    //ROS_INFO_STREAM("---------------------------------------------------------------");
+  //}
+  
   }
     double torque_penalty_index = 1;
     torque_penalty_index =  (1.0 - exp(-penalty_multiplier_ * joint_limits_multiplier));
     ROS_INFO_STREAM("---------------------------------------------------------------");
     ROS_INFO_STREAM("torque penalty index: " << torque_penalty_index);
+    ROS_INFO_STREAM("torque score index: " << ((torque_penalty_index*1000000)/2.45));
+}
+
+
+
+void jointStatesCb(const sensor_msgs::JointState::ConstPtr& msg)
+{
+  score(msg);
 
 
     // Extracción de datos
