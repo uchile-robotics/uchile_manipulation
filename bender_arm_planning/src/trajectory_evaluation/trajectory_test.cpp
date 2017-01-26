@@ -3,6 +3,8 @@
 #include "sensor_msgs/JointState.h"
 #include "trajectory_msgs/JointTrajectory.h"
 #include "trajectory_msgs/JointTrajectoryPoint.h"
+#include "control_msgs/FollowJointTrajectoryActionGoal.h"
+#include "control_msgs/FollowJointTrajectoryGoal.h"
 
 #include <string>
 #include <vector>
@@ -19,9 +21,15 @@ std::vector<double> torque_max_limits;
 std::vector<double> torque_min_limits;
 std::vector<double> range;
 trajectory_evaluation::GravitationalTorqueEstimationPtr torque_estimation; 
-std::string datos = "";
 
-void score(const trajectory_msgs::JointTrajectory::ConstPtr& msg, int index_point )
+int i;
+double torque_penalty_index = 1;
+
+
+
+//std::string datos = "";
+
+void score(const control_msgs::FollowJointTrajectoryActionGoal::ConstPtr& msg, int index_point )
 {
   
 
@@ -30,15 +38,15 @@ void score(const trajectory_msgs::JointTrajectory::ConstPtr& msg, int index_poin
   {
 
     // Find chain element on the message
-    std::size_t msg_idx = std::find(msg->joint_names.begin(), msg->joint_names.end(), *joint_name) - msg->joint_names.begin();
-    if (msg_idx >= msg->joint_names.size())
+    std::size_t msg_idx = std::find(msg->goal.trajectory.joint_names.begin(), msg->goal.trajectory.joint_names.end(), *joint_name) - msg->goal.trajectory.joint_names.begin();
+    if (msg_idx >= msg->goal.trajectory.joint_names.size())
     {
       // Drop message
       ROS_WARN_STREAM("JointState message doesnt contain: " << *joint_name);
       return;
     }
 
-    joint_pos[joint_idx++] = msg->points[index_point].positions[msg_idx];
+    joint_pos[joint_idx++] = msg->goal.trajectory.points[index_point].positions[msg_idx];
 
   }
 
@@ -54,7 +62,7 @@ void score(const trajectory_msgs::JointTrajectory::ConstPtr& msg, int index_poin
   torque_estimation->estimate(joint_pos, joint_torque);
   for (std::size_t i = 0; i < joint_names.size(); ++i)
   {
-    ROS_INFO_STREAM("\t" << joint_names[i] << "\t" << joint_torque[i]);
+    ROS_INFO_STREAM("" << joint_names[i] << "\t " << joint_torque[i]);
     upper_bound_distance = torque_max_limits[i] - joint_torque[i];
     lower_bound_distance = joint_torque[i] - torque_min_limits[i];
 
@@ -65,7 +73,7 @@ void score(const trajectory_msgs::JointTrajectory::ConstPtr& msg, int index_poin
 
     range[i] = torque_max_limits[i] - torque_min_limits[i];
     joint_limits_multiplier *= (lower_bound_distance * upper_bound_distance / (range[i] * range[i]));
-  ROS_INFO_STREAM("limits multiplier: " << joint_limits_multiplier);
+  //ROS_INFO_STREAM("limits multiplier: " << joint_limits_multiplier);
 
   //if(joint_names[i]=="l_shoulder_roll_joint")
   //{
@@ -73,24 +81,34 @@ void score(const trajectory_msgs::JointTrajectory::ConstPtr& msg, int index_poin
   //}
   
   }
-    double torque_penalty_index = 1;
+    torque_penalty_index = 1;
     torque_penalty_index =  (1.0 - exp(-penalty_multiplier_ * joint_limits_multiplier));
-    ROS_INFO_STREAM("---------------------------------------------------------------");
-    ROS_INFO_STREAM("torque penalty index: " << torque_penalty_index);
+    ROS_INFO_STREAM("-----------------------------------------");
+    //ROS_INFO_STREAM("torque penalty index: " << torque_penalty_index);
     ROS_INFO_STREAM("torque score index: " << ((torque_penalty_index*1000000)/2.45));
+    ROS_INFO_STREAM("-----------------------------------------");
 }
 
 
 
-void jointStatesCb(const trajectory_msgs::JointTrajectory::ConstPtr& msg)
+void jointStatesCb(const control_msgs::FollowJointTrajectoryActionGoal::ConstPtr& msg)
 {
 
   ROS_INFO_STREAM("Entro a callback y se iniciara score");
 
-  int tam=msg->joint_names.size();
-  score(msg,0);
+  int tam=msg->goal.trajectory.points.size();
 
+  double trajectory_score=0;
+  
+  for (i=0;i<tam;i++)
+  {
 
+  score(msg,i);
+  trajectory_score=trajectory_score+((torque_penalty_index*1000000)/2.45);
+
+  }
+  ROS_INFO_STREAM("trajectory score: " << trajectory_score/tam);
+  ROS_INFO_STREAM("-----------------------------------------");
     // Extracción de datos
 
 //  std::ostringstream strs;
