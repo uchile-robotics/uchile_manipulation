@@ -1,6 +1,8 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include "sensor_msgs/JointState.h"
+#include "trajectory_msgs/JointTrajectory.h"
+#include "trajectory_msgs/JointTrajectoryPoint.h"
 
 #include <string>
 #include <vector>
@@ -16,28 +18,32 @@ std::vector<double> joint_torque;
 std::vector<double> torque_max_limits;
 std::vector<double> torque_min_limits;
 std::vector<double> range;
-trajectory_evaluation::GravitationalTorqueEstimationPtr torque_estimation;
+trajectory_evaluation::GravitationalTorqueEstimationPtr torque_estimation; 
 std::string datos = "";
 
-void score(const sensor_msgs::JointState::ConstPtr& msg)
+void score(const trajectory_msgs::JointTrajectory::ConstPtr& msg, int index_point )
 {
+  
+
   std::size_t joint_idx = 0;
   for (std::vector<std::string>::iterator joint_name = joint_names.begin(); joint_name != joint_names.end(); ++joint_name)
   {
 
     // Find chain element on the message
-    std::size_t msg_idx = std::find(msg->name.begin(), msg->name.end(), *joint_name) - msg->name.begin();
-    if (msg_idx >= msg->name.size())
+    std::size_t msg_idx = std::find(msg->joint_names.begin(), msg->joint_names.end(), *joint_name) - msg->joint_names.begin();
+    if (msg_idx >= msg->joint_names.size())
     {
       // Drop message
       ROS_WARN_STREAM("JointState message doesnt contain: " << *joint_name);
       return;
     }
 
-    joint_pos[joint_idx++] = msg->position[msg_idx];
-
+    joint_pos[joint_idx++] = msg->points[index_point].positions[msg_idx];
 
   }
+
+
+
   // Torque estimation & penalty
   double penalty_multiplier_ = 1.0;
   double joint_limits_multiplier(1.0);
@@ -76,9 +82,13 @@ void score(const sensor_msgs::JointState::ConstPtr& msg)
 
 
 
-void jointStatesCb(const sensor_msgs::JointState::ConstPtr& msg)
+void jointStatesCb(const trajectory_msgs::JointTrajectory::ConstPtr& msg)
 {
-  score(msg);
+
+  ROS_INFO_STREAM("Entro a callback y se iniciara score");
+
+  int tam=msg->joint_names.size();
+  score(msg,0);
 
 
     // Extracción de datos
@@ -139,7 +149,7 @@ int main(int argc, char **argv)
     torque_min_limits[j++] = - (model.getJoint(*i)->limits->effort)*security_factor;
     
   }
-  ros::Subscriber sub = nh.subscribe("/bender/joint_states", 10, jointStatesCb);
+  ros::Subscriber sub = nh.subscribe("/bender/l_arm_controller/follow_joint_trajectory/goal", 10, jointStatesCb);
   ros::spin();
 
 
