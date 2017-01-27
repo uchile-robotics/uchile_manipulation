@@ -171,6 +171,11 @@ add_executable(trajectory_test
 )
 target_link_libraries(trajectory_test ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
+add_executable(position_penalty src/trajectory_evaluation/position_penalty.cpp)
+target_link_libraries(position_penalty ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(position_manipulability src/trajectory_evaluation/position_manipulability.cpp)
+target_link_libraries(position_manipulability ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 ## Declare a cpp library
 # add_library(bender_arm_planning

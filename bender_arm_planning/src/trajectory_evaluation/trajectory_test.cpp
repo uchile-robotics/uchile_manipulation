@@ -73,12 +73,6 @@ void score(const control_msgs::FollowJointTrajectoryActionGoal::ConstPtr& msg, i
 
     range[i] = torque_max_limits[i] - torque_min_limits[i];
     joint_limits_multiplier *= (lower_bound_distance * upper_bound_distance / (range[i] * range[i]));
-  //ROS_INFO_STREAM("limits multiplier: " << joint_limits_multiplier);
-
-  //if(joint_names[i]=="l_shoulder_roll_joint")
-  //{
-    //ROS_INFO_STREAM("---------------------------------------------------------------");
-  //}
   
   }
     torque_penalty_index = 1;
@@ -116,19 +110,7 @@ void jointStatesCb(const control_msgs::FollowJointTrajectoryActionGoal::ConstPtr
   }
   ROS_INFO_STREAM("trajectory score: " << trajectory_score/tam);
   ROS_INFO_STREAM("-----------------------------------------");
-    // Extracción de datos
-
-//  std::ostringstream strs;
-//	strs << torque_penalty_index;
-//	std::string str = strs.str();
-//	datos= datos +"\n" + str;//
-
-//  std::ofstream myfile;
-//  myfile.open ("example.txt");
-//  myfile << datos;
-//  myfile.close();
-//  ROS_INFO_STREAM("file saved!");
-
+    
 }
 
 int main(int argc, char **argv)
