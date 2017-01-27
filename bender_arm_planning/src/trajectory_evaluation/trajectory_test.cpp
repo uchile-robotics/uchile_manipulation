@@ -104,7 +104,14 @@ void jointStatesCb(const control_msgs::FollowJointTrajectoryActionGoal::ConstPtr
   {
 
   score(msg,i);
+
   trajectory_score=trajectory_score+((torque_penalty_index*1000000)/2.45);
+
+  if (torque_penalty_index==0)
+  {
+    trajectory_score=0;
+    break; 
+  }
 
   }
   ROS_INFO_STREAM("trajectory score: " << trajectory_score/tam);
