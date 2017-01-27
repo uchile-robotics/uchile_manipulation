@@ -11,20 +11,30 @@
 #include <boost/math/constants/constants.hpp>
 #include <sensor_msgs/JointState.h>
 
+#include "trajectory_msgs/JointTrajectory.h"
+#include "trajectory_msgs/JointTrajectoryPoint.h"
+#include "control_msgs/FollowJointTrajectoryActionGoal.h"
+#include "control_msgs/FollowJointTrajectoryGoal.h"
 
 
-sensor_msgs::JointStatePtr joint_state;
 
-void joint_state_cb(const sensor_msgs::JointStatePtr &current_joint_state)
+
+sensor_msgs::JointStatePtr via_points;
+double trayectory_size=1;
+
+void via_points_cb(const control_msgs::FollowJointTrajectoryActionGoalPtr &msg)
 {
-	joint_state->position = current_joint_state->position;
+	via_points->position = msg->goal.trajectory.points[0].positions;
+
+  trayectory_size = msg->goal.trajectory.points.size();
 
 }
 
-double penalty_multiplier_ = 1.0;
+
 double getJointLimitsPenalty(const robot_state::RobotState& state,
                                                  const robot_model::JointModelGroup* joint_model_group)
  {
+  double penalty_multiplier_ = 1.0;
    if (fabs(penalty_multiplier_) <= boost::math::tools::epsilon<double>())
      return 1.0;
    double joint_limits_multiplier(1.0);
@@ -78,8 +88,8 @@ int main(int argc, char **argv)
   ros::init (argc, argv, "left_arm_kinematics");
   ros::NodeHandle nh;
 
-  joint_state.reset(new sensor_msgs::JointState);
-  joint_state->position.resize(6);
+  via_points.reset(new sensor_msgs::JointState);
+  via_points->position.resize(6);
 
   
 
@@ -100,16 +110,17 @@ int main(int argc, char **argv)
   kinematic_state->setToDefaultValues();
   const robot_state::JointModelGroup* joint_model_group = kinematic_model->getJointModelGroup("l_arm");
 
-
-  ros::Subscriber joint_subs = nh.subscribe("/bender/joint_states", 1, joint_state_cb);
+  ros::Subscriber joint_subs = nh.subscribe("/bender/l_arm_controller/follow_joint_trajectory/goal", 1, via_points_cb);
 
   ros::AsyncSpinner spinner(1);
   spinner.start();
+  
 
 
   ros::Rate rate(1);
   while(ros::ok())
   {
+     
 		const std::vector<std::string> &joint_names =
 				joint_model_group->getJointModelNames();
 
@@ -117,7 +128,7 @@ int main(int argc, char **argv)
 		kinematic_state->copyJointGroupPositions(joint_model_group,
 				joint_values);
 		for (std::size_t i = 0; i < joint_names.size(); ++i) {
-			ROS_INFO("%s: %f", joint_names[i].c_str(), joint_state->position[i]);
+			ROS_INFO("%s: %f", joint_names[i].c_str(), via_points->position[i]);
 		}
 
     ROS_INFO_STREAM("---------------------------");
@@ -127,10 +138,18 @@ int main(int argc, char **argv)
 		// setJointGroupPositions() does not enforce joint limits by itself, but a call to enforceBounds() will do it.
 		/* Set one joint in the right arm outside its joint limit */
 
-    joint_values = joint_state->position; 
+    double trayectory_score=0;
+    double score=0;
+    double penalty;
+    for(int i=0;i<trayectory_size;i++)
+    {
+
+
+	 	joint_values = via_points->position; 
+
   
 
-  	kinematic_state->setJointGroupPositions(joint_model_group, joint_values);
+  		kinematic_state->setJointGroupPositions(joint_model_group, joint_values);
   //
   //		/* Check whether any joint is outside its joint limits */
   //		ROS_INFO_STREAM(
@@ -141,30 +160,39 @@ int main(int argc, char **argv)
   //		ROS_INFO_STREAM(
   //				"Current state is " << (kinematic_state->satisfiesBounds() ? "valid" : "not valid")); 
 
-  	kinematics_metrics::KinematicsMetricsPtr kin_metrics(
-  			new kinematics_metrics::KinematicsMetrics(kinematic_model));  
-
- 		double penalty = getJointLimitsPenalty(*kinematic_state, joint_model_group);
-  	double penalty_norm= (1-penalty/0.0002440)*100;             // Esta normalizado para el kuka ... revisar limites de bender ...
-  	ROS_INFO_STREAM("Penalty: " << penalty_norm); 
-
-  	double score = 100-penalty_norm;
-  	ROS_INFO_STREAM("score: " << score);
+  		kinematics_metrics::KinematicsMetricsPtr kin_metrics(
+  				new kinematics_metrics::KinematicsMetrics(kinematic_model));  
+      penalty =0;
+  		penalty = getJointLimitsPenalty(*kinematic_state,
+  				joint_model_group);
+      
+  		score = (penalty/0.0002440)*100;             // Esta normalizado para el kuka ... revisar limites de bender ...
   		
-  	ROS_INFO_STREAM("---------------------------"); 
-    
-    double score_limit=20;
-    if (score>score_limit)
+      ROS_INFO_STREAM("score: " << score);
+  		
+      trayectory_score=trayectory_score+score;
+
+  		ROS_INFO_STREAM("---------------------------"); 
+    }
+    if(trayectory_size>0)
     {
-        ROS_INFO_STREAM("PASS");
-    }
-    else{
-        ROS_INFO_STREAM("FAIL");
-    }
-    ROS_INFO_STREAM("---------------------------"); 
+        trayectory_score=trayectory_score/trayectory_size;
+        double score_limit= 30;     
 
+        ROS_INFO_STREAM("trajectory score: " << trayectory_score);
+        ROS_INFO_STREAM("---------------------------");     
+
+        if (trayectory_score>score_limit)
+        {
+            ROS_INFO_STREAM("PASS");
+        }
+        else{
+            ROS_INFO_STREAM("FAIL");
+        }
+        ROS_INFO_STREAM("---------------------------"); 
+    }
+    trayectory_size=0;
     rate.sleep();
-
   }
   return 0;
 }
