@@ -18,16 +18,17 @@
 
 
 
-
-sensor_msgs::JointStatePtr via_points;
-double trayectory_size=1;
+sensor_msgs::JointStatePtr joint_state;
+trajectory_msgs::JointTrajectoryPtr via_points;
+double trayectory_size=0;
 
 void via_points_cb(const control_msgs::FollowJointTrajectoryActionGoalPtr &msg)
 {
-	via_points->position = msg->goal.trajectory.points[0].positions;
-
+  ROS_INFO_STREAM("cb1");
   trayectory_size = msg->goal.trajectory.points.size();
-
+  ROS_INFO_STREAM("cb2");
+  via_points->points = msg->goal.trajectory.points;
+  ROS_INFO_STREAM("cb3");
 }
 
 
@@ -88,8 +89,8 @@ int main(int argc, char **argv)
   ros::init (argc, argv, "left_arm_kinematics");
   ros::NodeHandle nh;
 
-  via_points.reset(new sensor_msgs::JointState);
-  via_points->position.resize(6);
+  //joint_state.reset(new sensor_msgs::JointState);
+  //joint_state->position.resize(6);
 
   
 
@@ -128,7 +129,7 @@ int main(int argc, char **argv)
 		kinematic_state->copyJointGroupPositions(joint_model_group,
 				joint_values);
 		for (std::size_t i = 0; i < joint_names.size(); ++i) {
-			ROS_INFO("%s: %f", joint_names[i].c_str(), via_points->position[i]);
+			ROS_INFO("%s", joint_names[i].c_str());
 		}
 
     ROS_INFO_STREAM("---------------------------");
@@ -138,16 +139,23 @@ int main(int argc, char **argv)
 		// setJointGroupPositions() does not enforce joint limits by itself, but a call to enforceBounds() will do it.
 		/* Set one joint in the right arm outside its joint limit */
 
+    ROS_INFO_STREAM("pase1");
+
     double trayectory_score=0;
     double score=0;
     double penalty;
+    for(int i=0;i<5;i++)
+    {
+      ROS_INFO_STREAM("pase1.5");
+    }
     for(int i=0;i<trayectory_size;i++)
     {
+    ROS_INFO_STREAM("pase2");
+    joint_state->position = via_points->points[i].positions;
+    ROS_INFO_STREAM("pase2.5");
+	 	joint_values = joint_state->position; 
 
-
-	 	joint_values = via_points->position; 
-
-  
+    ROS_INFO_STREAM("pase3");
 
   		kinematic_state->setJointGroupPositions(joint_model_group, joint_values);
   //
@@ -160,8 +168,13 @@ int main(int argc, char **argv)
   //		ROS_INFO_STREAM(
   //				"Current state is " << (kinematic_state->satisfiesBounds() ? "valid" : "not valid")); 
 
+    ROS_INFO_STREAM("pase4");
+
   		kinematics_metrics::KinematicsMetricsPtr kin_metrics(
   				new kinematics_metrics::KinematicsMetrics(kinematic_model));  
+
+      ROS_INFO_STREAM("pase5");
+
       penalty =0;
   		penalty = getJointLimitsPenalty(*kinematic_state,
   				joint_model_group);
