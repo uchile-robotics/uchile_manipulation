@@ -58,9 +58,9 @@ void score(const control_msgs::FollowJointTrajectoryActionGoal::ConstPtr& msg, i
   penalty_ponderation[0]=1; //l_shoulder_pitch_joint
   penalty_ponderation[1]=1; //l_shoulder_roll_joint
   penalty_ponderation[2]=1; //l_shoulder_yaw_joint
-  penalty_ponderation[3]=1; //l_elbow_pitch_joint
-  penalty_ponderation[4]=1; //l_elbow_yaw_joint
-  penalty_ponderation[5]=1; //l_wrist_pitch_joint
+  penalty_ponderation[3]=10; //l_elbow_pitch_joint
+  penalty_ponderation[4]=10; //l_elbow_yaw_joint
+  penalty_ponderation[5]=100; //l_wrist_pitch_joint
 
 
   double joint_limits_multiplier(1.0);
@@ -82,16 +82,17 @@ void score(const control_msgs::FollowJointTrajectoryActionGoal::ConstPtr& msg, i
 
 
     range[i] = position_max_limits[i] - position_min_limits[i];
-    double joint_multiplier = (lower_bound_distance * upper_bound_distance / (range[i] * range[i]));
+    double joint_multiplier = 1; 
+    joint_multiplier = (lower_bound_distance * upper_bound_distance / (range[i] * range[i]))*penalty_ponderation[i];
 
     //Saturación
-     double joint_mult_sat=100000000000;
+     double joint_mult_sat=0.25; // Demostrado al maximizar la formula de joint_multiplier
      if (joint_multiplier>joint_mult_sat)
      {
        joint_multiplier=joint_mult_sat;
      }
 
-    joint_limits_multiplier *= joint_multiplier*penalty_ponderation[i];
+    joint_limits_multiplier *= joint_multiplier;
     //joint_limits_multiplier *= (lower_bound_distance * upper_bound_distance / (range[i] * range[i]));
   
   }
@@ -99,7 +100,7 @@ void score(const control_msgs::FollowJointTrajectoryActionGoal::ConstPtr& msg, i
     position_penalty_index =  (1.0 - exp(-penalty_multiplier_ * joint_limits_multiplier));
     ROS_INFO_STREAM("-----------------------------------------");
     //ROS_INFO_STREAM("torque penalty index: " << torque_penalty_index);
-    ROS_INFO_STREAM("position score index: " << (position_penalty_index*1000000000)/2439.67);
+    ROS_INFO_STREAM("position score index: " << (position_penalty_index*10000000)/25);
     ROS_INFO_STREAM("-----------------------------------------");
 }
 
@@ -124,7 +125,7 @@ void jointStatesCb(const control_msgs::FollowJointTrajectoryActionGoal::ConstPtr
 
 
   double point_score;
-  point_score=(position_penalty_index*1000000000)/2439.67; //13.33
+  point_score=(position_penalty_index*10000000)/25; //13.33
 
   if (point_score>100)
   {
