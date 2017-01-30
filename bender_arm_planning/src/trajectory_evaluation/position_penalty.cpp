@@ -61,10 +61,13 @@ double getJointLimitsPenalty(const robot_state::RobotState& state,
      {
        lower_bounds.push_back(bounds[j].min_position_);
        upper_bounds.push_back(bounds[j].max_position_);
+       //ROS_INFO_STREAM("limite superior "<< j <<upper_bounds[j]);
+       //ROS_INFO_STREAM("limite inferior "<< j <<lower_bounds[j]);
      }
      double lower_bound_distance = joint_model_vector[i]->distance(joint_values, &lower_bounds[0]);
      double upper_bound_distance = joint_model_vector[i]->distance(joint_values, &upper_bounds[0]);
      double range = lower_bound_distance + upper_bound_distance;
+
      if (range <= boost::math::tools::epsilon<double>())
        continue;
      joint_limits_multiplier *= (lower_bound_distance * upper_bound_distance / (range * range));
@@ -145,10 +148,10 @@ int main(int argc, char **argv)
   			new kinematics_metrics::KinematicsMetrics(kinematic_model));  
 
  		double penalty = getJointLimitsPenalty(*kinematic_state, joint_model_group);
-  	double penalty_norm= (1-penalty/0.0002440)*100;             // Esta normalizado para el kuka ... revisar limites de bender ...
+  	double penalty_norm= (penalty*100000);             // Esta normalizado para el kuka ... revisar limites de bender ...
   	ROS_INFO_STREAM("Penalty: " << penalty_norm); 
 
-  	double score = 100-penalty_norm;
+  	double score = (penalty*10000000)/12.807; //20.8 // con todos los joint en su centro... 11.085
   	ROS_INFO_STREAM("score: " << score);
   		
   	ROS_INFO_STREAM("---------------------------"); 

@@ -11,34 +11,38 @@
 #include <boost/math/constants/constants.hpp>
 #include <sensor_msgs/JointState.h>
 
-#include "trajectory_msgs/JointTrajectory.h"
-#include "trajectory_msgs/JointTrajectoryPoint.h"
-#include "control_msgs/FollowJointTrajectoryActionGoal.h"
-#include "control_msgs/FollowJointTrajectoryGoal.h"
-
 
 
 sensor_msgs::JointStatePtr joint_state;
-trajectory_msgs::JointTrajectoryPtr via_points;
-double trajectory_size=0;
+std::vector<std::string> joint_names;
 
-void via_points_cb(const control_msgs::FollowJointTrajectoryActionGoalPtr &msg)
+
+void joint_state_cb(const sensor_msgs::JointStatePtr &msg)
 {
-  ROS_INFO_STREAM("cb1");
-  trajectory_size = msg->goal.trajectory.points.size();
-  ROS_INFO_STREAM("cb2");
-  for(int i=0;i<trajectory_size;i++)
-  {
-    via_points->points[i] = msg->goal.trajectory.points[i];
-  }
-  ROS_INFO_STREAM("cb3");
+	//joint_state->position = current_joint_state->position;
+
+   std::size_t joint_idx = 0;
+   for (std::vector<std::string>::iterator joint_name = joint_names.begin(); joint_name != joint_names.end(); ++joint_name)
+   {
+
+     // Find chain element on the message
+     std::size_t msg_idx = std::find(msg->name.begin(), msg->name.end(), *joint_name) - msg->name.begin();
+     if (msg_idx >= msg->name.size())
+     {
+       // Drop message
+       ROS_WARN_STREAM("JointState message doesnt contain: " << *joint_name);
+     }
+
+     joint_state->position[joint_idx++] = msg->position[msg_idx];
+
+   }
+
 }
 
-
+double penalty_multiplier_ = 1.0;
 double getJointLimitsPenalty(const robot_state::RobotState& state,
                                                  const robot_model::JointModelGroup* joint_model_group)
  {
-  double penalty_multiplier_ = 1.0;
    if (fabs(penalty_multiplier_) <= boost::math::tools::epsilon<double>())
      return 1.0;
    double joint_limits_multiplier(1.0);
@@ -75,10 +79,13 @@ double getJointLimitsPenalty(const robot_state::RobotState& state,
      {
        lower_bounds.push_back(bounds[j].min_position_);
        upper_bounds.push_back(bounds[j].max_position_);
+       //ROS_DEBUG_STREAM("limite superior "<< j <<upper_bounds[j]);
+       //ROS_DEBUG_STREAM("limite inferior "<< j <<lower_bounds[j]);
      }
      double lower_bound_distance = joint_model_vector[i]->distance(joint_values, &lower_bounds[0]);
      double upper_bound_distance = joint_model_vector[i]->distance(joint_values, &upper_bounds[0]);
      double range = lower_bound_distance + upper_bound_distance;
+
      if (range <= boost::math::tools::epsilon<double>())
        continue;
      joint_limits_multiplier *= (lower_bound_distance * upper_bound_distance / (range * range));
@@ -92,8 +99,8 @@ int main(int argc, char **argv)
   ros::init (argc, argv, "left_arm_kinematics");
   ros::NodeHandle nh;
 
-  //joint_state.reset(new sensor_msgs::JointState);
-  //joint_state->position.resize(6);
+  joint_state.reset(new sensor_msgs::JointState);
+  joint_state->position.resize(6);
 
   
 
@@ -101,7 +108,7 @@ int main(int argc, char **argv)
   // .. _RobotModelLoader: http://docs.ros.org/api/moveit_ros_planning/html/classrobot__model__loader_1_1RobotModelLoader.html
   robot_model_loader::RobotModelLoader robot_model_loader("robot_description");
   robot_model::RobotModelPtr kinematic_model = robot_model_loader.getModel();
-  ROS_INFO("Model frame: %s", kinematic_model->getModelFrame().c_str());
+  ROS_DEBUG("Model frame: %s", kinematic_model->getModelFrame().c_str());
 
   // Using the :moveit_core:`RobotModel`, we can construct a
   // :moveit_core:`RobotState` that maintains the configuration
@@ -114,101 +121,71 @@ int main(int argc, char **argv)
   kinematic_state->setToDefaultValues();
   const robot_state::JointModelGroup* joint_model_group = kinematic_model->getJointModelGroup("l_arm");
 
-  ros::Subscriber joint_subs = nh.subscribe("/bender/l_arm_controller/follow_joint_trajectory/goal", 1, via_points_cb);
+
+  ros::Subscriber joint_subs = nh.subscribe("/bender/joint_states", 1, joint_state_cb);
 
   ros::AsyncSpinner spinner(1);
   spinner.start();
-  
 
 
-  ros::Rate rate(1);
+  ros::Rate rate(30);
   while(ros::ok())
   {
-     
-		const std::vector<std::string> &joint_names =
-				joint_model_group->getJointModelNames();
+		joint_names =	joint_model_group->getJointModelNames();
 
 		std::vector<double> joint_values;
 		kinematic_state->copyJointGroupPositions(joint_model_group,
 				joint_values);
 		for (std::size_t i = 0; i < joint_names.size(); ++i) {
-			ROS_INFO("%s", joint_names[i].c_str());
+			ROS_DEBUG("%s: %f", joint_names[i].c_str(), joint_state->position[i]);
 		}
 
-    ROS_INFO_STREAM("---------------------------");
+    ROS_DEBUG_STREAM("---------------------------");
 
 		// Joint Limits
 		// ^^^^^^^^^^^^
 		// setJointGroupPositions() does not enforce joint limits by itself, but a call to enforceBounds() will do it.
 		/* Set one joint in the right arm outside its joint limit */
 
-    ROS_INFO_STREAM("pase1");
+    joint_values = joint_state->position; 
+  
 
-    double trajectory_score=0;
-    double score=0;
-    double penalty;
-    for(int i=0;i<5;i++)
-    {
-      ROS_INFO_STREAM("pase1.5");
-    }
-    for(int i=0;i<trajectory_size;i++)
-    {
-    ROS_INFO_STREAM("pase2");
-    joint_state->position = via_points->points[i].positions;
-    ROS_INFO_STREAM("pase2.5");
-	 	joint_values = joint_state->position; 
-
-    ROS_INFO_STREAM("pase3");
-
-  		kinematic_state->setJointGroupPositions(joint_model_group, joint_values);
+  	kinematic_state->setJointGroupPositions(joint_model_group, joint_values);
   //
   //		/* Check whether any joint is outside its joint limits */
-  //		ROS_INFO_STREAM(
+  //		ROS_DEBUG_STREAM(
   //				"Current state is " << (kinematic_state->satisfiesBounds() ? "valid" : "not valid"));
   //
   //		/* Enforce the joint limits for this state and check again*/
   //		kinematic_state->enforceBounds();
-  //		ROS_INFO_STREAM(
+  //		ROS_DEBUG_STREAM(
   //				"Current state is " << (kinematic_state->satisfiesBounds() ? "valid" : "not valid")); 
 
-    ROS_INFO_STREAM("pase4");
+  	kinematics_metrics::KinematicsMetricsPtr kin_metrics(
+  			new kinematics_metrics::KinematicsMetrics(kinematic_model));  
 
-  		kinematics_metrics::KinematicsMetricsPtr kin_metrics(
-  				new kinematics_metrics::KinematicsMetrics(kinematic_model));  
+ 		double penalty = getJointLimitsPenalty(*kinematic_state, joint_model_group);
+  	double penalty_norm= (penalty*100000);             // Esta normalizado para el kuka ... revisar limites de bender ...
+  	ROS_DEBUG_STREAM("Penalty: " << penalty_norm); 
 
-      ROS_INFO_STREAM("pase5");
-
-      penalty =0;
-  		penalty = getJointLimitsPenalty(*kinematic_state,
-  				joint_model_group);
-      
-  		score = (penalty/0.0002440)*100;             // Esta normalizado para el kuka ... revisar limites de bender ...
+  	double score = (penalty*1000000000)/2439.67; //20.8 // con todos los joint en su centro... 11.085
+  	ROS_INFO_STREAM("score: " << score);
+    //std::cout << (penalty*10000000) << std::endl;
   		
-      ROS_INFO_STREAM("score: " << score);
-  		
-      trajectory_score=trajectory_score+score;
-
-  		ROS_INFO_STREAM("---------------------------"); 
-    }
-    if(trajectory_size>0)
+  	ROS_DEBUG_STREAM("---------------------------"); 
+    
+    double score_limit=20;
+    if (score>score_limit)
     {
-        trajectory_score=trajectory_score/trajectory_size;
-        double score_limit= 30;     
-
-        ROS_INFO_STREAM("trajectory score: " << trajectory_score);
-        ROS_INFO_STREAM("---------------------------");     
-
-        if (trajectory_score>score_limit)
-        {
-            ROS_INFO_STREAM("PASS");
-        }
-        else{
-            ROS_INFO_STREAM("FAIL");
-        }
-        ROS_INFO_STREAM("---------------------------"); 
+        ROS_DEBUG_STREAM("PASS");
     }
-    trajectory_size=0;
+    else{
+        ROS_DEBUG_STREAM("FAIL");
+    }
+    ROS_DEBUG_STREAM("---------------------------"); 
+
     rate.sleep();
+
   }
   return 0;
 }
