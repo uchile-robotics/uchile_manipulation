@@ -73,8 +73,6 @@ void score(const control_msgs::FollowJointTrajectoryActionGoal::ConstPtr& msg, i
 
 
     range[i] = position_max_limits[i] - position_min_limits[i];
-    double joint_multiplier = (lower_bound_distance * upper_bound_distance / (range[i] * range[i]));
-
     
     joint_limits_multiplier *= (lower_bound_distance * upper_bound_distance / (range[i] * range[i]));
   
