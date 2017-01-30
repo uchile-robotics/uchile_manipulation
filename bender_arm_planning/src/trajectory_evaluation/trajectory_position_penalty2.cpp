@@ -16,7 +16,7 @@
 
 std::vector<std::string> joint_names;
 std::vector<double> joint_pos;
-std::vector<double> joint_torque;
+std::vector<double> penalty_ponderation;
 std::vector<double> position_max_limits;
 std::vector<double> position_min_limits;
 std::vector<double> range;
@@ -54,12 +54,20 @@ void score(const control_msgs::FollowJointTrajectoryActionGoal::ConstPtr& msg, i
 
   // Torque estimation & penalty
   double penalty_multiplier_ = 1.0;
+
+  penalty_ponderation[0]=1; //l_shoulder_pitch_joint
+  penalty_ponderation[1]=1; //l_shoulder_roll_joint
+  penalty_ponderation[2]=1; //l_shoulder_yaw_joint
+  penalty_ponderation[3]=1; //l_elbow_pitch_joint
+  penalty_ponderation[4]=1; //l_elbow_yaw_joint
+  penalty_ponderation[5]=1; //l_wrist_pitch_joint
+
+
   double joint_limits_multiplier(1.0);
   double lower_bound_distance;
   double upper_bound_distance;
   range.resize(6);
 
-  torque_estimation->estimate(joint_pos, joint_torque);
   for (std::size_t i = 0; i < joint_names.size(); ++i)
   {
     // Joint saturation
@@ -74,10 +82,20 @@ void score(const control_msgs::FollowJointTrajectoryActionGoal::ConstPtr& msg, i
 
 
     range[i] = position_max_limits[i] - position_min_limits[i];
-    joint_limits_multiplier *= (lower_bound_distance * upper_bound_distance / (range[i] * range[i]));
+    double joint_multiplier = (lower_bound_distance * upper_bound_distance / (range[i] * range[i]));
+
+    //Saturación
+     double joint_mult_sat=100000000000;
+     if (joint_multiplier>joint_mult_sat)
+     {
+       joint_multiplier=joint_mult_sat;
+     }
+
+    joint_limits_multiplier *= joint_multiplier*penalty_ponderation[i];
+    //joint_limits_multiplier *= (lower_bound_distance * upper_bound_distance / (range[i] * range[i]));
   
   }
-    //position_penalty_index = 1;
+    position_penalty_index = 1;
     position_penalty_index =  (1.0 - exp(-penalty_multiplier_ * joint_limits_multiplier));
     ROS_INFO_STREAM("-----------------------------------------");
     //ROS_INFO_STREAM("torque penalty index: " << torque_penalty_index);
@@ -153,7 +171,7 @@ int main(int argc, char **argv)
   unsigned int dof = torque_estimation->getDOF();
   ROS_INFO_STREAM("DOF: " << dof);
   joint_pos.resize(dof, 0.0);
-  joint_torque.resize(dof, 0.0);
+  penalty_ponderation.resize(dof, 0.0);
   position_max_limits.resize(dof, 0.0);
   position_min_limits.resize(dof, 0.0);
 

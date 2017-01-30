@@ -19,7 +19,6 @@ std::vector<std::string> joint_names;
 
 void joint_state_cb(const sensor_msgs::JointStatePtr &msg)
 {
-	//joint_state->position = current_joint_state->position;
 
    std::size_t joint_idx = 0;
    for (std::vector<std::string>::iterator joint_name = joint_names.begin(); joint_name != joint_names.end(); ++joint_name)

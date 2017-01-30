@@ -14,10 +14,27 @@
 
 
 sensor_msgs::JointStatePtr joint_state;
+std::vector<std::string> joint_names;
 
-void joint_state_cb(const sensor_msgs::JointStatePtr &current_joint_state)
+
+void joint_state_cb(const sensor_msgs::JointStatePtr &msg)
 {
-	joint_state->position = current_joint_state->position;
+
+   std::size_t joint_idx = 0;
+   for (std::vector<std::string>::iterator joint_name = joint_names.begin(); joint_name != joint_names.end(); ++joint_name)
+   {
+
+     // Find chain element on the message
+     std::size_t msg_idx = std::find(msg->name.begin(), msg->name.end(), *joint_name) - msg->name.begin();
+     if (msg_idx >= msg->name.size())
+     {
+       // Drop message
+       ROS_WARN_STREAM("JointState message doesnt contain: " << *joint_name);
+     }
+
+     joint_state->position[joint_idx++] = msg->position[msg_idx];
+
+   }
 
 }
 
@@ -61,8 +78,8 @@ double getJointLimitsPenalty(const robot_state::RobotState& state,
      {
        lower_bounds.push_back(bounds[j].min_position_);
        upper_bounds.push_back(bounds[j].max_position_);
-       //ROS_INFO_STREAM("limite superior "<< j <<upper_bounds[j]);
-       //ROS_INFO_STREAM("limite inferior "<< j <<lower_bounds[j]);
+       //ROS_DEBUG_STREAM("limite superior "<< j <<upper_bounds[j]);
+       //ROS_DEBUG_STREAM("limite inferior "<< j <<lower_bounds[j]);
      }
      double lower_bound_distance = joint_model_vector[i]->distance(joint_values, &lower_bounds[0]);
      double upper_bound_distance = joint_model_vector[i]->distance(joint_values, &upper_bounds[0]);
@@ -90,7 +107,7 @@ int main(int argc, char **argv)
   // .. _RobotModelLoader: http://docs.ros.org/api/moveit_ros_planning/html/classrobot__model__loader_1_1RobotModelLoader.html
   robot_model_loader::RobotModelLoader robot_model_loader("robot_description");
   robot_model::RobotModelPtr kinematic_model = robot_model_loader.getModel();
-  ROS_INFO("Model frame: %s", kinematic_model->getModelFrame().c_str());
+  ROS_DEBUG("Model frame: %s", kinematic_model->getModelFrame().c_str());
 
   // Using the :moveit_core:`RobotModel`, we can construct a
   // :moveit_core:`RobotState` that maintains the configuration
@@ -110,20 +127,19 @@ int main(int argc, char **argv)
   spinner.start();
 
 
-  ros::Rate rate(1);
+  ros::Rate rate(30);
   while(ros::ok())
   {
-		const std::vector<std::string> &joint_names =
-				joint_model_group->getJointModelNames();
+		joint_names =	joint_model_group->getJointModelNames();
 
 		std::vector<double> joint_values;
 		kinematic_state->copyJointGroupPositions(joint_model_group,
 				joint_values);
 		for (std::size_t i = 0; i < joint_names.size(); ++i) {
-			ROS_INFO("%s: %f", joint_names[i].c_str(), joint_state->position[i]);
+			ROS_DEBUG("%s: %f", joint_names[i].c_str(), joint_state->position[i]);
 		}
 
-    ROS_INFO_STREAM("---------------------------");
+    ROS_DEBUG_STREAM("---------------------------");
 
 		// Joint Limits
 		// ^^^^^^^^^^^^
@@ -136,12 +152,12 @@ int main(int argc, char **argv)
   	kinematic_state->setJointGroupPositions(joint_model_group, joint_values);
   //
   //		/* Check whether any joint is outside its joint limits */
-  //		ROS_INFO_STREAM(
+  //		ROS_DEBUG_STREAM(
   //				"Current state is " << (kinematic_state->satisfiesBounds() ? "valid" : "not valid"));
   //
   //		/* Enforce the joint limits for this state and check again*/
   //		kinematic_state->enforceBounds();
-  //		ROS_INFO_STREAM(
+  //		ROS_DEBUG_STREAM(
   //				"Current state is " << (kinematic_state->satisfiesBounds() ? "valid" : "not valid")); 
 
   	kinematics_metrics::KinematicsMetricsPtr kin_metrics(
@@ -149,22 +165,23 @@ int main(int argc, char **argv)
 
  		double penalty = getJointLimitsPenalty(*kinematic_state, joint_model_group);
   	double penalty_norm= (penalty*100000);             // Esta normalizado para el kuka ... revisar limites de bender ...
-  	ROS_INFO_STREAM("Penalty: " << penalty_norm); 
+  	ROS_DEBUG_STREAM("Penalty: " << penalty_norm); 
 
-  	double score = (penalty*10000000)/12.807; //20.8 // con todos los joint en su centro... 11.085
+  	double score = (penalty*1000000000)/2439.67; //20.8 // con todos los joint en su centro... 11.085
   	ROS_INFO_STREAM("score: " << score);
+    //std::cout << (penalty*10000000) << std::endl;
   		
-  	ROS_INFO_STREAM("---------------------------"); 
+  	ROS_DEBUG_STREAM("---------------------------"); 
     
     double score_limit=20;
     if (score>score_limit)
     {
-        ROS_INFO_STREAM("PASS");
+        ROS_DEBUG_STREAM("PASS");
     }
     else{
-        ROS_INFO_STREAM("FAIL");
+        ROS_DEBUG_STREAM("FAIL");
     }
-    ROS_INFO_STREAM("---------------------------"); 
+    ROS_DEBUG_STREAM("---------------------------"); 
 
     rate.sleep();
 
