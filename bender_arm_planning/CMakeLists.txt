@@ -174,8 +174,7 @@ target_link_libraries(trajectory_test ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 add_executable(position_penalty src/trajectory_evaluation/position_penalty.cpp)
 target_link_libraries(position_penalty ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
-add_executable(position_penalty2 src/trajectory_evaluation/position_penalty2.cpp)
-target_link_libraries(position_penalty2 ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
 
 add_executable(trajectory_position
   src/trajectory_evaluation/gravitational_torque_estimation.cpp
@@ -183,11 +182,7 @@ add_executable(trajectory_position
 )
 target_link_libraries(trajectory_position ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
-add_executable(trajectory_position2
-  src/trajectory_evaluation/gravitational_torque_estimation.cpp
-  src/trajectory_evaluation/trajectory_position_penalty2.cpp
-)
-target_link_libraries(trajectory_position2 ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
 
 
 add_executable(position_manipulability src/trajectory_evaluation/position_manipulability.cpp)

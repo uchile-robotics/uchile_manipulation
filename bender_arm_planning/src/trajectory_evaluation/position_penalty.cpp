@@ -15,7 +15,7 @@
 
 sensor_msgs::JointStatePtr joint_state;
 std::vector<std::string> joint_names;
-
+double score2=0;
 
 void joint_state_cb(const sensor_msgs::JointStatePtr &msg)
 {
@@ -33,6 +33,7 @@ void joint_state_cb(const sensor_msgs::JointStatePtr &msg)
      }
 
      joint_state->position[joint_idx++] = msg->position[msg_idx];
+
 
    }
 
@@ -87,7 +88,43 @@ double getJointLimitsPenalty(const robot_state::RobotState& state,
 
      if (range <= boost::math::tools::epsilon<double>())
        continue;
-     joint_limits_multiplier *= (lower_bound_distance * upper_bound_distance / (range * range));
+
+     // saturacion y pitatoria
+
+     std::vector<double> penalty_ponderation;
+     penalty_ponderation.resize(6);
+     penalty_ponderation[0]=1; //l_shoulder_pitch_joint
+     penalty_ponderation[1]=1; //l_shoulder_roll_joint
+     penalty_ponderation[2]=1; //l_shoulder_yaw_joint
+     penalty_ponderation[3]=10; //l_elbow_pitch_joint
+     penalty_ponderation[4]=10; //l_elbow_yaw_joint
+     penalty_ponderation[5]=100; //l_wrist_pitch_joint
+
+     double joint_multiplier = 1;
+     joint_multiplier = (lower_bound_distance * upper_bound_distance / (range * range))*penalty_ponderation[i];;
+
+    //Saturación
+     double joint_mult_sat=0.25; // Utilizando esta funcion tiene maximo 0.25. Demostracion maximizando la funcion.
+     if (joint_multiplier>joint_mult_sat)
+     {
+       joint_multiplier=joint_mult_sat;
+     }
+
+    joint_limits_multiplier *= joint_multiplier;
+
+    //ROS_INFO_STREAM("joint multiplier: "<< joint_multiplier); 
+
+    // Extraccion de datos
+    //if (i==5)
+    //{ 
+    //  std::cout<< joint_state->position[5] <<", "<< joint_multiplier ;
+    //}
+    //if (i==5)
+    //{
+    //  std::cout<<", "<<(1.0 - exp(-penalty_multiplier_ * joint_limits_multiplier))<<std::endl;
+    //}
+    // termina extraccion de datos
+     
    }
    return (1.0 - exp(-penalty_multiplier_ * joint_limits_multiplier));
  }
@@ -165,13 +202,18 @@ int main(int argc, char **argv)
 
  		double penalty = getJointLimitsPenalty(*kinematic_state, joint_model_group);
   	double penalty_norm= (penalty*100000);             // Esta normalizado para el kuka ... revisar limites de bender ...
-  	ROS_DEBUG_STREAM("Penalty: " << penalty_norm); 
+  	//ROS_INFO_STREAM("Penalty: " << penalty_norm); 
 
-  	double score = (penalty*1000000000)/2439.67; //20.8 // con todos los joint en su centro... 11.085
-  	ROS_INFO_STREAM("score: " << score);
-    //std::cout << (penalty*10000000) << std::endl;
+  	double score = (penalty*100000)/24.41; //20.8 // con todos los joint en su centro...
+  	//ROS_INFO_STREAM("score: " << score);
+    if(score!=score2)
+    {
+      std::cout << (score) << std::endl;
+      score2=score;
+    }
+    
   		
-  	ROS_DEBUG_STREAM("---------------------------"); 
+  	//ROS_INFO_STREAM("---------------------------"); 
     
     double score_limit=20;
     if (score>score_limit)

@@ -67,8 +67,8 @@ void score(const control_msgs::FollowJointTrajectoryActionGoal::ConstPtr& msg, i
     lower_bound_distance = joint_torque[i] - torque_min_limits[i];
 
     //Saturación
-    if(upper_bound_distance<0){upper_bound_distance = 0;}
-  if(lower_bound_distance<0){ lower_bound_distance = 0;}
+    if(upper_bound_distance<0){ upper_bound_distance = 0;}
+    if(lower_bound_distance<0){ lower_bound_distance = 0;}
 
 
     range[i] = torque_max_limits[i] - torque_min_limits[i];
