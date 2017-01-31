@@ -180,6 +180,9 @@ target_link_libraries(position_penalty2 ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 add_executable(data_extractor src/trajectory_evaluation/data_extractor.cpp)
 target_link_libraries(data_extractor ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
+add_executable(data_extractor2 src/trajectory_evaluation/data_extractor2.cpp)
+target_link_libraries(data_extractor2 ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
 add_executable(trajectory_position
   src/trajectory_evaluation/gravitational_torque_estimation.cpp
   src/trajectory_evaluation/trajectory_position_penalty.cpp
