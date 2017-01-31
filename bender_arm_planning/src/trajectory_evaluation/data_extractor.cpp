@@ -11,6 +11,9 @@
 #include <boost/math/constants/constants.hpp>
 #include <sensor_msgs/JointState.h>
 
+#include "std_msgs/String.h"
+
+#include <sstream>
 
 
 
@@ -40,8 +43,7 @@ void joint_state_cb(const sensor_msgs::JointStatePtr &msg)
 
 int main(int argc, char **argv)
 {
-
-  ros::init (argc, argv, "left_arm_kinematics");
+  ros::init (argc, argv, "JointState_filter");
   ros::NodeHandle nh;
 
   joint_state.reset(new sensor_msgs::JointState);
@@ -59,6 +61,9 @@ int main(int argc, char **argv)
 
 
   ros::Subscriber joint_subs = nh.subscribe("/bender/joint_states", 1, joint_state_cb);
+
+  ros::Publisher chatter_pub = nh.advertise<sensor_msgs::JointState>("bender/joint_state_filter", 1000);
+  
 
   ros::AsyncSpinner spinner(1);
   spinner.start();
@@ -93,6 +98,7 @@ int main(int argc, char **argv)
     if(enter=="y")
     {
       
+      chatter_pub.publish(joint_state);
     ROS_INFO_STREAM("JointState published!");
     // FIN EXTRACCION DE DATOS
       
