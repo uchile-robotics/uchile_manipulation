@@ -190,19 +190,28 @@
     <end_effector name="l_eef" parent_link="bender/l_wrist_pitch_link" group="l_gripper" parent_group="l_arm" />
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot) 
     <virtual_joint name="virtual_joint" type="fixed" parent_frame="virtual_joint_parent_frame" child_link="bender/base_footprint" /> -->
+    <!--PASSIVE JOINT: Purpose: this element is used to mark joints that are not actuated-->
+    <passive_joint name="front_left_wheel_joint" />
+    <passive_joint name="front_right_wheel_joint" />
+    <passive_joint name="rear_left_wheel_joint" />
+    <passive_joint name="rear_right_wheel_joint" />
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
+    <!-- Allow gripper link collisions -->
+    <disable_collisions link1="bender/l_int_finger_link" link2="bender/l_ext_finger_link" reason="Adjacent" />
+    <disable_collisions link1="bender/r_int_finger_link" link2="bender/r_ext_finger_link" reason="Adjacent" />
+    <!-- Generated -->
     <disable_collisions link1="bender/body" link2="bender/front_left_wheel" reason="Adjacent" />
     <disable_collisions link1="bender/body" link2="bender/front_right_wheel" reason="Adjacent" />
     <disable_collisions link1="bender/body" link2="bender/l_shoulder_pitch_link" reason="Adjacent" />
-    <disable_collisions link1="bender/body" link2="bender/neck_link" reason="Adjacent" />
+    <disable_collisions link1="bender/body" link2="bender/light_head_base_link" reason="Adjacent" />
+    <disable_collisions link1="bender/body" link2="bender/light_head_pitch_link" reason="Never" />
     <disable_collisions link1="bender/body" link2="bender/r_shoulder_pitch_link" reason="Adjacent" />
     <disable_collisions link1="bender/body" link2="bender/rear_left_wheel" reason="Adjacent" />
     <disable_collisions link1="bender/body" link2="bender/rear_right_wheel" reason="Adjacent" />
-    <disable_collisions link1="bender/body" link2="bender/sensors/rgbd_head_link" reason="Never" />
     <disable_collisions link1="bender/body" link2="bender/sensors/laser_front_link" reason="Adjacent" />
     <disable_collisions link1="bender/body" link2="bender/sensors/laser_rear_link" reason="Adjacent" />
+    <disable_collisions link1="bender/body" link2="bender/sensors/rgbd_waist_link" reason="Adjacent" />
     <disable_collisions link1="bender/front_left_wheel" link2="bender/front_right_wheel" reason="Never" />
-    <disable_collisions link1="bender/front_left_wheel" link2="bender/head_link" reason="Never" />
     <disable_collisions link1="bender/front_left_wheel" link2="bender/l_elbow_pitch_link" reason="Never" />
     <disable_collisions link1="bender/front_left_wheel" link2="bender/l_elbow_yaw_link" reason="Never" />
     <disable_collisions link1="bender/front_left_wheel" link2="bender/l_ext_finger_link" reason="Never" />
@@ -211,7 +220,9 @@
     <disable_collisions link1="bender/front_left_wheel" link2="bender/l_shoulder_roll_link" reason="Never" />
     <disable_collisions link1="bender/front_left_wheel" link2="bender/l_shoulder_yaw_link" reason="Never" />
     <disable_collisions link1="bender/front_left_wheel" link2="bender/l_wrist_pitch_link" reason="Never" />
-    <disable_collisions link1="bender/front_left_wheel" link2="bender/neck_link" reason="Never" />
+    <disable_collisions link1="bender/front_left_wheel" link2="bender/light_head_base_link" reason="Never" />
+    <disable_collisions link1="bender/front_left_wheel" link2="bender/light_head_pitch_link" reason="Never" />
+    <disable_collisions link1="bender/front_left_wheel" link2="bender/light_head_yaw_link" reason="Never" />
     <disable_collisions link1="bender/front_left_wheel" link2="bender/r_elbow_pitch_link" reason="Never" />
     <disable_collisions link1="bender/front_left_wheel" link2="bender/r_elbow_yaw_link" reason="Never" />
     <disable_collisions link1="bender/front_left_wheel" link2="bender/r_ext_finger_link" reason="Never" />
@@ -222,10 +233,9 @@
     <disable_collisions link1="bender/front_left_wheel" link2="bender/r_wrist_pitch_link" reason="Never" />
     <disable_collisions link1="bender/front_left_wheel" link2="bender/rear_left_wheel" reason="Never" />
     <disable_collisions link1="bender/front_left_wheel" link2="bender/rear_right_wheel" reason="Never" />
-    <disable_collisions link1="bender/front_left_wheel" link2="bender/sensors/rgbd_head_link" reason="Never" />
     <disable_collisions link1="bender/front_left_wheel" link2="bender/sensors/laser_front_link" reason="Never" />
     <disable_collisions link1="bender/front_left_wheel" link2="bender/sensors/laser_rear_link" reason="Never" />
-    <disable_collisions link1="bender/front_right_wheel" link2="bender/head_link" reason="Never" />
+    <disable_collisions link1="bender/front_left_wheel" link2="bender/sensors/rgbd_waist_link" reason="Never" />
     <disable_collisions link1="bender/front_right_wheel" link2="bender/l_elbow_pitch_link" reason="Never" />
     <disable_collisions link1="bender/front_right_wheel" link2="bender/l_elbow_yaw_link" reason="Never" />
     <disable_collisions link1="bender/front_right_wheel" link2="bender/l_ext_finger_link" reason="Never" />
@@ -234,7 +244,9 @@
     <disable_collisions link1="bender/front_right_wheel" link2="bender/l_shoulder_roll_link" reason="Never" />
     <disable_collisions link1="bender/front_right_wheel" link2="bender/l_shoulder_yaw_link" reason="Never" />
     <disable_collisions link1="bender/front_right_wheel" link2="bender/l_wrist_pitch_link" reason="Never" />
-    <disable_collisions link1="bender/front_right_wheel" link2="bender/neck_link" reason="Never" />
+    <disable_collisions link1="bender/front_right_wheel" link2="bender/light_head_base_link" reason="Never" />
+    <disable_collisions link1="bender/front_right_wheel" link2="bender/light_head_pitch_link" reason="Never" />
+    <disable_collisions link1="bender/front_right_wheel" link2="bender/light_head_yaw_link" reason="Never" />
     <disable_collisions link1="bender/front_right_wheel" link2="bender/r_elbow_pitch_link" reason="Never" />
     <disable_collisions link1="bender/front_right_wheel" link2="bender/r_elbow_yaw_link" reason="Never" />
     <disable_collisions link1="bender/front_right_wheel" link2="bender/r_ext_finger_link" reason="Never" />
@@ -245,25 +257,9 @@
     <disable_collisions link1="bender/front_right_wheel" link2="bender/r_wrist_pitch_link" reason="Never" />
     <disable_collisions link1="bender/front_right_wheel" link2="bender/rear_left_wheel" reason="Never" />
     <disable_collisions link1="bender/front_right_wheel" link2="bender/rear_right_wheel" reason="Never" />
-    <disable_collisions link1="bender/front_right_wheel" link2="bender/sensors/rgbd_head_link" reason="Never" />
     <disable_collisions link1="bender/front_right_wheel" link2="bender/sensors/laser_front_link" reason="Never" />
     <disable_collisions link1="bender/front_right_wheel" link2="bender/sensors/laser_rear_link" reason="Never" />
-    <disable_collisions link1="bender/head_link" link2="bender/l_elbow_pitch_link" reason="Never" />
-    <disable_collisions link1="bender/head_link" link2="bender/l_elbow_yaw_link" reason="Never" />
-    <disable_collisions link1="bender/head_link" link2="bender/l_shoulder_pitch_link" reason="Never" />
-    <disable_collisions link1="bender/head_link" link2="bender/l_shoulder_roll_link" reason="Never" />
-    <disable_collisions link1="bender/head_link" link2="bender/l_shoulder_yaw_link" reason="Never" />
-    <disable_collisions link1="bender/head_link" link2="bender/neck_link" reason="Adjacent" />
-    <disable_collisions link1="bender/head_link" link2="bender/r_elbow_pitch_link" reason="Never" />
-    <disable_collisions link1="bender/head_link" link2="bender/r_elbow_yaw_link" reason="Never" />
-    <disable_collisions link1="bender/head_link" link2="bender/r_shoulder_pitch_link" reason="Never" />
-    <disable_collisions link1="bender/head_link" link2="bender/r_shoulder_roll_link" reason="Never" />
-    <disable_collisions link1="bender/head_link" link2="bender/r_shoulder_yaw_link" reason="Never" />
-    <disable_collisions link1="bender/head_link" link2="bender/rear_left_wheel" reason="Never" />
-    <disable_collisions link1="bender/head_link" link2="bender/rear_right_wheel" reason="Never" />
-    <disable_collisions link1="bender/head_link" link2="bender/sensors/rgbd_head_link" reason="Adjacent" />
-    <disable_collisions link1="bender/head_link" link2="bender/sensors/laser_front_link" reason="Never" />
-    <disable_collisions link1="bender/head_link" link2="bender/sensors/laser_rear_link" reason="Never" />
+    <disable_collisions link1="bender/front_right_wheel" link2="bender/sensors/rgbd_waist_link" reason="Never" />
     <disable_collisions link1="bender/l_elbow_pitch_link" link2="bender/l_elbow_yaw_link" reason="Adjacent" />
     <disable_collisions link1="bender/l_elbow_pitch_link" link2="bender/l_ext_finger_link" reason="Never" />
     <disable_collisions link1="bender/l_elbow_pitch_link" link2="bender/l_int_finger_link" reason="Never" />
@@ -271,16 +267,16 @@
     <disable_collisions link1="bender/l_elbow_pitch_link" link2="bender/l_shoulder_roll_link" reason="Never" />
     <disable_collisions link1="bender/l_elbow_pitch_link" link2="bender/l_shoulder_yaw_link" reason="Adjacent" />
     <disable_collisions link1="bender/l_elbow_pitch_link" link2="bender/l_wrist_pitch_link" reason="Never" />
-    <disable_collisions link1="bender/l_elbow_pitch_link" link2="bender/neck_link" reason="Never" />
+    <disable_collisions link1="bender/l_elbow_pitch_link" link2="bender/light_head_base_link" reason="Never" />
+    <disable_collisions link1="bender/l_elbow_pitch_link" link2="bender/light_head_pitch_link" reason="Never" />
+    <disable_collisions link1="bender/l_elbow_pitch_link" link2="bender/light_head_yaw_link" reason="Never" />
     <disable_collisions link1="bender/l_elbow_pitch_link" link2="bender/r_elbow_pitch_link" reason="Never" />
     <disable_collisions link1="bender/l_elbow_pitch_link" link2="bender/r_elbow_yaw_link" reason="Never" />
     <disable_collisions link1="bender/l_elbow_pitch_link" link2="bender/r_shoulder_pitch_link" reason="Never" />
     <disable_collisions link1="bender/l_elbow_pitch_link" link2="bender/r_shoulder_roll_link" reason="Never" />
     <disable_collisions link1="bender/l_elbow_pitch_link" link2="bender/r_shoulder_yaw_link" reason="Never" />
-    <disable_collisions link1="bender/l_elbow_pitch_link" link2="bender/r_wrist_pitch_link" reason="Never" />
     <disable_collisions link1="bender/l_elbow_pitch_link" link2="bender/rear_left_wheel" reason="Never" />
     <disable_collisions link1="bender/l_elbow_pitch_link" link2="bender/rear_right_wheel" reason="Never" />
-    <disable_collisions link1="bender/l_elbow_pitch_link" link2="bender/sensors/rgbd_head_link" reason="Never" />
     <disable_collisions link1="bender/l_elbow_pitch_link" link2="bender/sensors/laser_front_link" reason="Never" />
     <disable_collisions link1="bender/l_elbow_pitch_link" link2="bender/sensors/laser_rear_link" reason="Never" />
     <disable_collisions link1="bender/l_elbow_yaw_link" link2="bender/l_ext_finger_link" reason="Never" />
@@ -289,7 +285,9 @@
     <disable_collisions link1="bender/l_elbow_yaw_link" link2="bender/l_shoulder_roll_link" reason="Never" />
     <disable_collisions link1="bender/l_elbow_yaw_link" link2="bender/l_shoulder_yaw_link" reason="Never" />
     <disable_collisions link1="bender/l_elbow_yaw_link" link2="bender/l_wrist_pitch_link" reason="Adjacent" />
-    <disable_collisions link1="bender/l_elbow_yaw_link" link2="bender/neck_link" reason="Never" />
+    <disable_collisions link1="bender/l_elbow_yaw_link" link2="bender/light_head_base_link" reason="Never" />
+    <disable_collisions link1="bender/l_elbow_yaw_link" link2="bender/light_head_pitch_link" reason="Never" />
+    <disable_collisions link1="bender/l_elbow_yaw_link" link2="bender/light_head_yaw_link" reason="Never" />
     <disable_collisions link1="bender/l_elbow_yaw_link" link2="bender/r_elbow_pitch_link" reason="Never" />
     <disable_collisions link1="bender/l_elbow_yaw_link" link2="bender/r_shoulder_pitch_link" reason="Never" />
     <disable_collisions link1="bender/l_elbow_yaw_link" link2="bender/r_shoulder_roll_link" reason="Never" />
@@ -298,33 +296,35 @@
     <disable_collisions link1="bender/l_elbow_yaw_link" link2="bender/rear_right_wheel" reason="Never" />
     <disable_collisions link1="bender/l_elbow_yaw_link" link2="bender/sensors/laser_front_link" reason="Never" />
     <disable_collisions link1="bender/l_elbow_yaw_link" link2="bender/sensors/laser_rear_link" reason="Never" />
-    <disable_collisions link1="bender/l_ext_finger_link" link2="bender/l_int_finger_link" reason="Never" />
     <disable_collisions link1="bender/l_ext_finger_link" link2="bender/l_shoulder_pitch_link" reason="Never" />
     <disable_collisions link1="bender/l_ext_finger_link" link2="bender/l_shoulder_roll_link" reason="Never" />
     <disable_collisions link1="bender/l_ext_finger_link" link2="bender/l_shoulder_yaw_link" reason="Never" />
     <disable_collisions link1="bender/l_ext_finger_link" link2="bender/l_wrist_pitch_link" reason="Adjacent" />
-    <disable_collisions link1="bender/l_ext_finger_link" link2="bender/neck_link" reason="Never" />
+    <disable_collisions link1="bender/l_ext_finger_link" link2="bender/light_head_base_link" reason="Never" />
+    <disable_collisions link1="bender/l_ext_finger_link" link2="bender/light_head_pitch_link" reason="Never" />
+    <disable_collisions link1="bender/l_ext_finger_link" link2="bender/light_head_yaw_link" reason="Never" />
     <disable_collisions link1="bender/l_ext_finger_link" link2="bender/r_shoulder_pitch_link" reason="Never" />
     <disable_collisions link1="bender/l_ext_finger_link" link2="bender/r_shoulder_roll_link" reason="Never" />
     <disable_collisions link1="bender/l_ext_finger_link" link2="bender/rear_left_wheel" reason="Never" />
     <disable_collisions link1="bender/l_ext_finger_link" link2="bender/rear_right_wheel" reason="Never" />
-    <disable_collisions link1="bender/l_ext_finger_link" link2="bender/sensors/laser_front_link" reason="Never" />
     <disable_collisions link1="bender/l_ext_finger_link" link2="bender/sensors/laser_rear_link" reason="Never" />
     <disable_collisions link1="bender/l_int_finger_link" link2="bender/l_shoulder_pitch_link" reason="Never" />
     <disable_collisions link1="bender/l_int_finger_link" link2="bender/l_shoulder_roll_link" reason="Never" />
     <disable_collisions link1="bender/l_int_finger_link" link2="bender/l_shoulder_yaw_link" reason="Never" />
     <disable_collisions link1="bender/l_int_finger_link" link2="bender/l_wrist_pitch_link" reason="Adjacent" />
-    <disable_collisions link1="bender/l_int_finger_link" link2="bender/neck_link" reason="Never" />
+    <disable_collisions link1="bender/l_int_finger_link" link2="bender/light_head_base_link" reason="Never" />
+    <disable_collisions link1="bender/l_int_finger_link" link2="bender/light_head_pitch_link" reason="Never" />
+    <disable_collisions link1="bender/l_int_finger_link" link2="bender/light_head_yaw_link" reason="Never" />
     <disable_collisions link1="bender/l_int_finger_link" link2="bender/r_shoulder_pitch_link" reason="Never" />
-    <disable_collisions link1="bender/l_int_finger_link" link2="bender/r_shoulder_roll_link" reason="Never" />
     <disable_collisions link1="bender/l_int_finger_link" link2="bender/rear_left_wheel" reason="Never" />
     <disable_collisions link1="bender/l_int_finger_link" link2="bender/rear_right_wheel" reason="Never" />
-    <disable_collisions link1="bender/l_int_finger_link" link2="bender/sensors/laser_front_link" reason="Never" />
     <disable_collisions link1="bender/l_int_finger_link" link2="bender/sensors/laser_rear_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_pitch_link" link2="bender/l_shoulder_roll_link" reason="Adjacent" />
     <disable_collisions link1="bender/l_shoulder_pitch_link" link2="bender/l_shoulder_yaw_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_pitch_link" link2="bender/l_wrist_pitch_link" reason="Never" />
-    <disable_collisions link1="bender/l_shoulder_pitch_link" link2="bender/neck_link" reason="Never" />
+    <disable_collisions link1="bender/l_shoulder_pitch_link" link2="bender/light_head_base_link" reason="Never" />
+    <disable_collisions link1="bender/l_shoulder_pitch_link" link2="bender/light_head_pitch_link" reason="Never" />
+    <disable_collisions link1="bender/l_shoulder_pitch_link" link2="bender/light_head_yaw_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_pitch_link" link2="bender/r_elbow_pitch_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_pitch_link" link2="bender/r_elbow_yaw_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_pitch_link" link2="bender/r_ext_finger_link" reason="Never" />
@@ -335,40 +335,45 @@
     <disable_collisions link1="bender/l_shoulder_pitch_link" link2="bender/r_wrist_pitch_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_pitch_link" link2="bender/rear_left_wheel" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_pitch_link" link2="bender/rear_right_wheel" reason="Never" />
-    <disable_collisions link1="bender/l_shoulder_pitch_link" link2="bender/sensors/rgbd_head_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_pitch_link" link2="bender/sensors/laser_front_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_pitch_link" link2="bender/sensors/laser_rear_link" reason="Never" />
+    <disable_collisions link1="bender/l_shoulder_pitch_link" link2="bender/sensors/rgbd_waist_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_roll_link" link2="bender/l_shoulder_yaw_link" reason="Adjacent" />
     <disable_collisions link1="bender/l_shoulder_roll_link" link2="bender/l_wrist_pitch_link" reason="Never" />
-    <disable_collisions link1="bender/l_shoulder_roll_link" link2="bender/neck_link" reason="Never" />
+    <disable_collisions link1="bender/l_shoulder_roll_link" link2="bender/light_head_base_link" reason="Never" />
+    <disable_collisions link1="bender/l_shoulder_roll_link" link2="bender/light_head_pitch_link" reason="Never" />
+    <disable_collisions link1="bender/l_shoulder_roll_link" link2="bender/light_head_yaw_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_roll_link" link2="bender/r_elbow_pitch_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_roll_link" link2="bender/r_elbow_yaw_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_roll_link" link2="bender/r_ext_finger_link" reason="Never" />
+    <disable_collisions link1="bender/l_shoulder_roll_link" link2="bender/r_int_finger_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_roll_link" link2="bender/r_shoulder_pitch_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_roll_link" link2="bender/r_shoulder_roll_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_roll_link" link2="bender/r_shoulder_yaw_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_roll_link" link2="bender/r_wrist_pitch_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_roll_link" link2="bender/rear_left_wheel" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_roll_link" link2="bender/rear_right_wheel" reason="Never" />
-    <disable_collisions link1="bender/l_shoulder_roll_link" link2="bender/sensors/rgbd_head_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_roll_link" link2="bender/sensors/laser_front_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_roll_link" link2="bender/sensors/laser_rear_link" reason="Never" />
+    <disable_collisions link1="bender/l_shoulder_roll_link" link2="bender/sensors/rgbd_waist_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_yaw_link" link2="bender/l_wrist_pitch_link" reason="Never" />
-    <disable_collisions link1="bender/l_shoulder_yaw_link" link2="bender/neck_link" reason="Never" />
+    <disable_collisions link1="bender/l_shoulder_yaw_link" link2="bender/light_head_base_link" reason="Never" />
+    <disable_collisions link1="bender/l_shoulder_yaw_link" link2="bender/light_head_pitch_link" reason="Never" />
+    <disable_collisions link1="bender/l_shoulder_yaw_link" link2="bender/light_head_yaw_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_yaw_link" link2="bender/r_elbow_pitch_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_yaw_link" link2="bender/r_elbow_yaw_link" reason="Never" />
-    <disable_collisions link1="bender/l_shoulder_yaw_link" link2="bender/r_ext_finger_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_yaw_link" link2="bender/r_shoulder_pitch_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_yaw_link" link2="bender/r_shoulder_roll_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_yaw_link" link2="bender/r_shoulder_yaw_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_yaw_link" link2="bender/r_wrist_pitch_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_yaw_link" link2="bender/rear_left_wheel" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_yaw_link" link2="bender/rear_right_wheel" reason="Never" />
-    <disable_collisions link1="bender/l_shoulder_yaw_link" link2="bender/sensors/rgbd_head_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_yaw_link" link2="bender/sensors/laser_front_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_yaw_link" link2="bender/sensors/laser_rear_link" reason="Never" />
-    <disable_collisions link1="bender/l_wrist_pitch_link" link2="bender/neck_link" reason="Never" />
-    <disable_collisions link1="bender/l_wrist_pitch_link" link2="bender/r_elbow_pitch_link" reason="Never" />
+    <disable_collisions link1="bender/l_shoulder_yaw_link" link2="bender/sensors/rgbd_waist_link" reason="Never" />
+    <disable_collisions link1="bender/l_wrist_pitch_link" link2="bender/light_head_base_link" reason="Never" />
+    <disable_collisions link1="bender/l_wrist_pitch_link" link2="bender/light_head_pitch_link" reason="Never" />
+    <disable_collisions link1="bender/l_wrist_pitch_link" link2="bender/light_head_yaw_link" reason="Never" />
     <disable_collisions link1="bender/l_wrist_pitch_link" link2="bender/r_shoulder_pitch_link" reason="Never" />
     <disable_collisions link1="bender/l_wrist_pitch_link" link2="bender/r_shoulder_roll_link" reason="Never" />
     <disable_collisions link1="bender/l_wrist_pitch_link" link2="bender/r_shoulder_yaw_link" reason="Never" />
@@ -376,18 +381,48 @@
     <disable_collisions link1="bender/l_wrist_pitch_link" link2="bender/rear_right_wheel" reason="Never" />
     <disable_collisions link1="bender/l_wrist_pitch_link" link2="bender/sensors/laser_front_link" reason="Never" />
     <disable_collisions link1="bender/l_wrist_pitch_link" link2="bender/sensors/laser_rear_link" reason="Never" />
-    <disable_collisions link1="bender/neck_link" link2="bender/r_elbow_pitch_link" reason="Never" />
-    <disable_collisions link1="bender/neck_link" link2="bender/r_elbow_yaw_link" reason="Never" />
-    <disable_collisions link1="bender/neck_link" link2="bender/r_int_finger_link" reason="Never" />
-    <disable_collisions link1="bender/neck_link" link2="bender/r_shoulder_pitch_link" reason="Never" />
-    <disable_collisions link1="bender/neck_link" link2="bender/r_shoulder_roll_link" reason="Never" />
-    <disable_collisions link1="bender/neck_link" link2="bender/r_shoulder_yaw_link" reason="Never" />
-    <disable_collisions link1="bender/neck_link" link2="bender/r_wrist_pitch_link" reason="Never" />
-    <disable_collisions link1="bender/neck_link" link2="bender/rear_left_wheel" reason="Never" />
-    <disable_collisions link1="bender/neck_link" link2="bender/rear_right_wheel" reason="Never" />
-    <disable_collisions link1="bender/neck_link" link2="bender/sensors/rgbd_head_link" reason="Never" />
-    <disable_collisions link1="bender/neck_link" link2="bender/sensors/laser_front_link" reason="Never" />
-    <disable_collisions link1="bender/neck_link" link2="bender/sensors/laser_rear_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_base_link" link2="bender/light_head_pitch_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_base_link" link2="bender/light_head_yaw_link" reason="Adjacent" />
+    <disable_collisions link1="bender/light_head_base_link" link2="bender/r_elbow_pitch_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_base_link" link2="bender/r_elbow_yaw_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_base_link" link2="bender/r_ext_finger_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_base_link" link2="bender/r_int_finger_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_base_link" link2="bender/r_shoulder_pitch_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_base_link" link2="bender/r_shoulder_roll_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_base_link" link2="bender/r_shoulder_yaw_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_base_link" link2="bender/r_wrist_pitch_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_base_link" link2="bender/rear_left_wheel" reason="Never" />
+    <disable_collisions link1="bender/light_head_base_link" link2="bender/rear_right_wheel" reason="Never" />
+    <disable_collisions link1="bender/light_head_base_link" link2="bender/sensors/laser_front_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_base_link" link2="bender/sensors/laser_rear_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_base_link" link2="bender/sensors/rgbd_waist_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_pitch_link" link2="bender/light_head_yaw_link" reason="Adjacent" />
+    <disable_collisions link1="bender/light_head_pitch_link" link2="bender/r_elbow_pitch_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_pitch_link" link2="bender/r_elbow_yaw_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_pitch_link" link2="bender/r_ext_finger_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_pitch_link" link2="bender/r_int_finger_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_pitch_link" link2="bender/r_shoulder_pitch_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_pitch_link" link2="bender/r_shoulder_roll_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_pitch_link" link2="bender/r_shoulder_yaw_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_pitch_link" link2="bender/r_wrist_pitch_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_pitch_link" link2="bender/rear_left_wheel" reason="Never" />
+    <disable_collisions link1="bender/light_head_pitch_link" link2="bender/rear_right_wheel" reason="Never" />
+    <disable_collisions link1="bender/light_head_pitch_link" link2="bender/sensors/laser_front_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_pitch_link" link2="bender/sensors/laser_rear_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_pitch_link" link2="bender/sensors/rgbd_waist_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_yaw_link" link2="bender/r_elbow_pitch_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_yaw_link" link2="bender/r_elbow_yaw_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_yaw_link" link2="bender/r_ext_finger_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_yaw_link" link2="bender/r_int_finger_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_yaw_link" link2="bender/r_shoulder_pitch_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_yaw_link" link2="bender/r_shoulder_roll_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_yaw_link" link2="bender/r_shoulder_yaw_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_yaw_link" link2="bender/r_wrist_pitch_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_yaw_link" link2="bender/rear_left_wheel" reason="Never" />
+    <disable_collisions link1="bender/light_head_yaw_link" link2="bender/rear_right_wheel" reason="Never" />
+    <disable_collisions link1="bender/light_head_yaw_link" link2="bender/sensors/laser_front_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_yaw_link" link2="bender/sensors/laser_rear_link" reason="Never" />
+    <disable_collisions link1="bender/light_head_yaw_link" link2="bender/sensors/rgbd_waist_link" reason="Never" />
     <disable_collisions link1="bender/r_elbow_pitch_link" link2="bender/r_elbow_yaw_link" reason="Adjacent" />
     <disable_collisions link1="bender/r_elbow_pitch_link" link2="bender/r_ext_finger_link" reason="Never" />
     <disable_collisions link1="bender/r_elbow_pitch_link" link2="bender/r_int_finger_link" reason="Never" />
@@ -397,7 +432,6 @@
     <disable_collisions link1="bender/r_elbow_pitch_link" link2="bender/r_wrist_pitch_link" reason="Never" />
     <disable_collisions link1="bender/r_elbow_pitch_link" link2="bender/rear_left_wheel" reason="Never" />
     <disable_collisions link1="bender/r_elbow_pitch_link" link2="bender/rear_right_wheel" reason="Never" />
-    <disable_collisions link1="bender/r_elbow_pitch_link" link2="bender/sensors/rgbd_head_link" reason="Never" />
     <disable_collisions link1="bender/r_elbow_pitch_link" link2="bender/sensors/laser_front_link" reason="Never" />
     <disable_collisions link1="bender/r_elbow_pitch_link" link2="bender/sensors/laser_rear_link" reason="Never" />
     <disable_collisions link1="bender/r_elbow_yaw_link" link2="bender/r_ext_finger_link" reason="Never" />
@@ -410,14 +444,12 @@
     <disable_collisions link1="bender/r_elbow_yaw_link" link2="bender/rear_right_wheel" reason="Never" />
     <disable_collisions link1="bender/r_elbow_yaw_link" link2="bender/sensors/laser_front_link" reason="Never" />
     <disable_collisions link1="bender/r_elbow_yaw_link" link2="bender/sensors/laser_rear_link" reason="Never" />
-    <disable_collisions link1="bender/r_ext_finger_link" link2="bender/r_int_finger_link" reason="Never" />
     <disable_collisions link1="bender/r_ext_finger_link" link2="bender/r_shoulder_pitch_link" reason="Never" />
     <disable_collisions link1="bender/r_ext_finger_link" link2="bender/r_shoulder_roll_link" reason="Never" />
     <disable_collisions link1="bender/r_ext_finger_link" link2="bender/r_shoulder_yaw_link" reason="Never" />
     <disable_collisions link1="bender/r_ext_finger_link" link2="bender/r_wrist_pitch_link" reason="Adjacent" />
     <disable_collisions link1="bender/r_ext_finger_link" link2="bender/rear_left_wheel" reason="Never" />
     <disable_collisions link1="bender/r_ext_finger_link" link2="bender/rear_right_wheel" reason="Never" />
-    <disable_collisions link1="bender/r_ext_finger_link" link2="bender/sensors/laser_front_link" reason="Never" />
     <disable_collisions link1="bender/r_ext_finger_link" link2="bender/sensors/laser_rear_link" reason="Never" />
     <disable_collisions link1="bender/r_int_finger_link" link2="bender/r_shoulder_pitch_link" reason="Never" />
     <disable_collisions link1="bender/r_int_finger_link" link2="bender/r_shoulder_roll_link" reason="Never" />
@@ -425,41 +457,40 @@
     <disable_collisions link1="bender/r_int_finger_link" link2="bender/r_wrist_pitch_link" reason="Adjacent" />
     <disable_collisions link1="bender/r_int_finger_link" link2="bender/rear_left_wheel" reason="Never" />
     <disable_collisions link1="bender/r_int_finger_link" link2="bender/rear_right_wheel" reason="Never" />
-    <disable_collisions link1="bender/r_int_finger_link" link2="bender/sensors/laser_front_link" reason="Never" />
     <disable_collisions link1="bender/r_int_finger_link" link2="bender/sensors/laser_rear_link" reason="Never" />
     <disable_collisions link1="bender/r_shoulder_pitch_link" link2="bender/r_shoulder_roll_link" reason="Adjacent" />
     <disable_collisions link1="bender/r_shoulder_pitch_link" link2="bender/r_shoulder_yaw_link" reason="Never" />
     <disable_collisions link1="bender/r_shoulder_pitch_link" link2="bender/r_wrist_pitch_link" reason="Never" />
     <disable_collisions link1="bender/r_shoulder_pitch_link" link2="bender/rear_left_wheel" reason="Never" />
     <disable_collisions link1="bender/r_shoulder_pitch_link" link2="bender/rear_right_wheel" reason="Never" />
-    <disable_collisions link1="bender/r_shoulder_pitch_link" link2="bender/sensors/rgbd_head_link" reason="Never" />
     <disable_collisions link1="bender/r_shoulder_pitch_link" link2="bender/sensors/laser_front_link" reason="Never" />
     <disable_collisions link1="bender/r_shoulder_pitch_link" link2="bender/sensors/laser_rear_link" reason="Never" />
+    <disable_collisions link1="bender/r_shoulder_pitch_link" link2="bender/sensors/rgbd_waist_link" reason="Never" />
     <disable_collisions link1="bender/r_shoulder_roll_link" link2="bender/r_shoulder_yaw_link" reason="Adjacent" />
     <disable_collisions link1="bender/r_shoulder_roll_link" link2="bender/r_wrist_pitch_link" reason="Never" />
     <disable_collisions link1="bender/r_shoulder_roll_link" link2="bender/rear_left_wheel" reason="Never" />
     <disable_collisions link1="bender/r_shoulder_roll_link" link2="bender/rear_right_wheel" reason="Never" />
-    <disable_collisions link1="bender/r_shoulder_roll_link" link2="bender/sensors/rgbd_head_link" reason="Never" />
     <disable_collisions link1="bender/r_shoulder_roll_link" link2="bender/sensors/laser_front_link" reason="Never" />
     <disable_collisions link1="bender/r_shoulder_roll_link" link2="bender/sensors/laser_rear_link" reason="Never" />
+    <disable_collisions link1="bender/r_shoulder_roll_link" link2="bender/sensors/rgbd_waist_link" reason="Never" />
     <disable_collisions link1="bender/r_shoulder_yaw_link" link2="bender/r_wrist_pitch_link" reason="Never" />
     <disable_collisions link1="bender/r_shoulder_yaw_link" link2="bender/rear_left_wheel" reason="Never" />
     <disable_collisions link1="bender/r_shoulder_yaw_link" link2="bender/rear_right_wheel" reason="Never" />
-    <disable_collisions link1="bender/r_shoulder_yaw_link" link2="bender/sensors/rgbd_head_link" reason="Never" />
     <disable_collisions link1="bender/r_shoulder_yaw_link" link2="bender/sensors/laser_front_link" reason="Never" />
     <disable_collisions link1="bender/r_shoulder_yaw_link" link2="bender/sensors/laser_rear_link" reason="Never" />
+    <disable_collisions link1="bender/r_shoulder_yaw_link" link2="bender/sensors/rgbd_waist_link" reason="Never" />
     <disable_collisions link1="bender/r_wrist_pitch_link" link2="bender/rear_left_wheel" reason="Never" />
     <disable_collisions link1="bender/r_wrist_pitch_link" link2="bender/rear_right_wheel" reason="Never" />
     <disable_collisions link1="bender/r_wrist_pitch_link" link2="bender/sensors/laser_front_link" reason="Never" />
     <disable_collisions link1="bender/r_wrist_pitch_link" link2="bender/sensors/laser_rear_link" reason="Never" />
     <disable_collisions link1="bender/rear_left_wheel" link2="bender/rear_right_wheel" reason="Never" />
-    <disable_collisions link1="bender/rear_left_wheel" link2="bender/sensors/rgbd_head_link" reason="Never" />
     <disable_collisions link1="bender/rear_left_wheel" link2="bender/sensors/laser_front_link" reason="Never" />
     <disable_collisions link1="bender/rear_left_wheel" link2="bender/sensors/laser_rear_link" reason="Never" />
-    <disable_collisions link1="bender/rear_right_wheel" link2="bender/sensors/rgbd_head_link" reason="Never" />
+    <disable_collisions link1="bender/rear_left_wheel" link2="bender/sensors/rgbd_waist_link" reason="Never" />
     <disable_collisions link1="bender/rear_right_wheel" link2="bender/sensors/laser_front_link" reason="Never" />
     <disable_collisions link1="bender/rear_right_wheel" link2="bender/sensors/laser_rear_link" reason="Never" />
-    <disable_collisions link1="bender/sensors/rgbd_head_link" link2="bender/sensors/laser_front_link" reason="Never" />
-    <disable_collisions link1="bender/sensors/rgbd_head_link" link2="bender/sensors/laser_rear_link" reason="Never" />
+    <disable_collisions link1="bender/rear_right_wheel" link2="bender/sensors/rgbd_waist_link" reason="Never" />
     <disable_collisions link1="bender/sensors/laser_front_link" link2="bender/sensors/laser_rear_link" reason="Never" />
+    <disable_collisions link1="bender/sensors/laser_front_link" link2="bender/sensors/rgbd_waist_link" reason="Never" />
+    <disable_collisions link1="bender/sensors/laser_rear_link" link2="bender/sensors/rgbd_waist_link" reason="Never" />
 </robot>
