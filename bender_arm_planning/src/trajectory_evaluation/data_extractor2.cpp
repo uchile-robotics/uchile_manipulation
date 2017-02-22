@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 
   ros::Subscriber joint_subs = nh.subscribe("/bender/l_arm/joint_states", 1, joint_state_cb);
 
-  ros::Publisher chatter_pub = nh.advertise<sensor_msgs::JointState>("bender/joint_state_filter", 1000);
+  ros::Publisher chatter_pub = nh.advertise<sensor_msgs::JointState>("bender/joint_states_filter", 1000);
   
 
   ros::AsyncSpinner spinner(1);
