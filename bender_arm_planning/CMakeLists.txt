@@ -177,6 +177,9 @@ target_link_libraries(position_penalty ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 add_executable(position_penalty2 src/trajectory_evaluation/position_penalty2.cpp)
 target_link_libraries(position_penalty2 ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
+add_executable(pos_penal_r src/trajectory_evaluation/pos_penal_r.cpp)
+target_link_libraries(pos_penal_r ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
 add_executable(data_extractor src/trajectory_evaluation/data_extractor.cpp)
 target_link_libraries(data_extractor ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 

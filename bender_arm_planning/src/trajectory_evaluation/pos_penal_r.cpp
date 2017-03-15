@@ -138,7 +138,7 @@ double getJointLimitsPenalty(const robot_state::RobotState& state,
 int main(int argc, char **argv)
 {
 
-  ros::init (argc, argv, "left_arm_kinematics");
+  ros::init (argc, argv, "right_arm_kinematics");
   ros::NodeHandle nh;
 
   joint_state.reset(new sensor_msgs::JointState);
@@ -161,10 +161,10 @@ int main(int argc, char **argv)
   // robot.
   robot_state::RobotStatePtr kinematic_state(new robot_state::RobotState(kinematic_model));
   kinematic_state->setToDefaultValues();
-  const robot_state::JointModelGroup* joint_model_group = kinematic_model->getJointModelGroup("l_arm");
+  const robot_state::JointModelGroup* joint_model_group = kinematic_model->getJointModelGroup("r_arm");
 
 
-  ros::Subscriber joint_subs = nh.subscribe("/bender/joint_states", 1, joint_state_cb);
+  ros::Subscriber joint_subs = nh.subscribe("/bender/joint_states_filter", 1, joint_state_cb);
 
   ros::AsyncSpinner spinner(1);
   spinner.start();
@@ -214,52 +214,14 @@ int main(int argc, char **argv)
   	//ROS_INFO_STREAM("score: " << score);
 
 
+    //Extraccion de datos
 
-    // if(score!=score2)
-    // {
-    //   std::cout << (score) << std::endl;
-    //   score2=score;
-    // }
+     if(score!=score2)
+     {
+       std::cout << (score) << std::endl;
+       score2=score;
+     }
     
-
-
-    // Extracción de datos
-
-
-  	std::ostringstream strs;
-    strs << score;
-    std::string str = strs.str();
-    datos= datos +"\n" + str;//
-
-    std::ofstream myfile;
-    myfile.open ("scores_buenos.txt");
-    myfile << datos;
-    myfile.close();
-    ROS_INFO_STREAM("file saved!");
-
-
-
-
-    // ROS_INFO_STREAM("Desea guardar?");
-    // std::string enter="";
-    // std::cin>>enter;
-
-    // if(enter=="y")
-    // {
-    //   std::ostringstream strs;
-    //   strs << score;
-    //   std::string str = strs.str();
-    //   datos= datos +"\n" + str;//
-
-    //   std::ofstream myfile;
-    //   myfile.open ("scores_buenos.txt");
-    // myfile << datos;
-    // myfile.close();
-    // ROS_INFO_STREAM("file saved!");
-    // // FIN EXTRACCION DE DATOS 
-    // //ROS_INFO_STREAM("---------------------------"); 
-    // }
-
 
   
     
