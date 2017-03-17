@@ -216,11 +216,24 @@ int main(int argc, char **argv)
 
     //Extraccion de datos
 
-     if(score!=score2)
-     {
-       std::cout << (score) << std::endl;
+    if(score!=score2)
+    {
+
+
+    std::ostringstream strs;
+    strs << score;
+    std::string str = strs.str();
+    datos= datos +"\n" + str;//
+
+    std::ofstream myfile;
+    myfile.open ("scores_r_arm.txt");
+    myfile << datos;
+    myfile.close();
+    ROS_INFO_STREAM("file saved!");
+
+
        score2=score;
-     }
+    }
     
 
   

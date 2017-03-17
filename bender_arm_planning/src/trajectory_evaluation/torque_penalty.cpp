@@ -18,7 +18,6 @@ std::vector<double> torque_min_limits;
 std::vector<double> range;
 trajectory_evaluation::GravitationalTorqueEstimationPtr torque_estimation;
 std::string datos = "";
-double score2=0;
 
 
 void jointStatesCb(const sensor_msgs::JointState::ConstPtr& msg)
@@ -119,30 +118,6 @@ void jointStatesCb(const sensor_msgs::JointState::ConstPtr& msg)
     ROS_INFO_STREAM("torque score index: " << score);
 
 
-    // Extracción de datos
-
-
-	if(score!=score2)
-    {
-
-
-    std::ostringstream strs;
-    strs << score;
-    std::string str = strs.str();
-    datos= datos +"\n" + str;//
-
-    std::ofstream myfile;
-    myfile.open ("scores_torque.txt");
-    myfile << datos;
-    myfile.close();
-    ROS_INFO_STREAM("file saved!");
-
-
-       score2=score;
-    }
-
-
-
 
 }
 
@@ -189,7 +164,7 @@ int main(int argc, char **argv)
     torque_min_limits[j++] = - (model.getJoint(*i)->limits->effort)*security_factor;
     
   }
-  ros::Subscriber sub = nh.subscribe("/bender/joint_states_filter", 10, jointStatesCb);
+  ros::Subscriber sub = nh.subscribe("/bender/joint_states", 10, jointStatesCb);
   ros::spin();
 
 
