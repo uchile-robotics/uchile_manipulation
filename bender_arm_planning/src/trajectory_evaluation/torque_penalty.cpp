@@ -18,6 +18,7 @@ std::vector<double> torque_min_limits;
 std::vector<double> range;
 trajectory_evaluation::GravitationalTorqueEstimationPtr torque_estimation;
 std::string datos = "";
+double score2=0;
 
 
 void jointStatesCb(const sensor_msgs::JointState::ConstPtr& msg)
@@ -62,6 +63,20 @@ void jointStatesCb(const sensor_msgs::JointState::ConstPtr& msg)
   double upper_bound_distance;
   range.resize(6);
 
+  // saturacion y pitatoria
+
+     std::vector<double> penalty_ponderation;
+     penalty_ponderation.resize(6);
+     penalty_ponderation[0]=1; //l_shoulder_pitch_joint
+     penalty_ponderation[1]=1; //l_shoulder_roll_joint
+     penalty_ponderation[2]=1; //l_shoulder_yaw_joint
+     penalty_ponderation[3]=10; //l_elbow_pitch_joint
+     penalty_ponderation[4]=10; //l_elbow_yaw_joint
+     penalty_ponderation[5]=100; //l_wrist_pitch_joint
+
+
+
+
   torque_estimation->estimate(joint_pos, joint_torque);
   for (std::size_t i = 0; i < joint_names.size(); ++i)
   {
@@ -75,7 +90,19 @@ void jointStatesCb(const sensor_msgs::JointState::ConstPtr& msg)
 
 
     range[i] = torque_max_limits[i] - torque_min_limits[i];
-    joint_limits_multiplier *= (lower_bound_distance * upper_bound_distance / (range[i] * range[i]));
+
+    double joint_multiplier = 1;
+     joint_multiplier = (lower_bound_distance * upper_bound_distance / (range[i] * range[i]))*penalty_ponderation[i];
+
+    //Saturación
+     double joint_mult_sat=0.25; // Utilizando esta funcion tiene maximo 0.25. Demostracion maximizando la funcion.
+     if (joint_multiplier>joint_mult_sat)
+     {
+       joint_multiplier=joint_mult_sat;
+     }
+
+    joint_limits_multiplier *= joint_multiplier;
+
  	ROS_INFO_STREAM("limits multiplier: " << joint_limits_multiplier);
 
  	//if(joint_names[i]=="l_shoulder_roll_joint")
@@ -88,21 +115,34 @@ void jointStatesCb(const sensor_msgs::JointState::ConstPtr& msg)
     torque_penalty_index =  (1.0 - exp(-penalty_multiplier_ * joint_limits_multiplier));
     ROS_INFO_STREAM("---------------------------------------------------------------");
     ROS_INFO_STREAM("torque penalty index: " << torque_penalty_index);
-    ROS_INFO_STREAM("torque score index: " << ((torque_penalty_index*1000000)/2.45));
+    double score = ((torque_penalty_index*100000)/24.5);
+    ROS_INFO_STREAM("torque score index: " << score);
 
 
     // Extracción de datos
 
-//  std::ostringstream strs;
-//	strs << torque_penalty_index;
-//	std::string str = strs.str();
-//	datos= datos +"\n" + str;//
 
-//  std::ofstream myfile;
-//  myfile.open ("example.txt");
-//  myfile << datos;
-//  myfile.close();
-//  ROS_INFO_STREAM("file saved!");
+	if(score!=score2)
+    {
+
+
+    std::ostringstream strs;
+    strs << score;
+    std::string str = strs.str();
+    datos= datos +"\n" + str;//
+
+    std::ofstream myfile;
+    myfile.open ("scores_torque.txt");
+    myfile << datos;
+    myfile.close();
+    ROS_INFO_STREAM("file saved!");
+
+
+       score2=score;
+    }
+
+
+
 
 }
 
