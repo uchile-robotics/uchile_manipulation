@@ -6,7 +6,7 @@
   <arg name="robot_description" default="robot_description"/>
 
   <!-- Robot model type -->
-  <arg name="model_type" default="asus"/>
+  <arg name="model_type" default="standard"/>
 
   <!-- Load universal robot description format (URDF) -->
   <param if="$(arg load_robot_description)" name="$(arg robot_description)" textfile="$(find bender_description)/robots/bender_$(arg model_type).urdf"/>

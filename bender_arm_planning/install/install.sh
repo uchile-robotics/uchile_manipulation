@@ -45,7 +45,7 @@ if [ ! -r "$BACKUP_FILE_FULL" ]; then
 
 	# create backup
 	echo "$installer Creating backup on $BACKUP_FILE_FULL"
-	mkdir -p "BACKUP_FOLDER"
+	mkdir -p "$BACKUP_FOLDER"
 	cp "$BACKUP_FILE" "$BACKUP_FILE_FULL"
 	
 else
