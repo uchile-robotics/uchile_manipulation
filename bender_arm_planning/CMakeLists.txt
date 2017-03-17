@@ -165,6 +165,12 @@ add_executable(torque_penalty_simple
 )
 target_link_libraries(torque_penalty_simple ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
+add_executable(torque_penalty_simple2
+  src/trajectory_evaluation/gravitational_torque_estimation.cpp
+  src/trajectory_evaluation/torque_penalty2.cpp
+)
+target_link_libraries(torque_penalty_simple2 ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
 add_executable(trajectory_test
   src/trajectory_evaluation/gravitational_torque_estimation.cpp
   src/trajectory_evaluation/trajectory_test.cpp

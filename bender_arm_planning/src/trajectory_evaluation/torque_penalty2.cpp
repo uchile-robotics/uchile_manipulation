@@ -24,34 +24,11 @@ double score2=0;
 void jointStatesCb(const sensor_msgs::JointState::ConstPtr& msg)
 {
   std::size_t joint_idx = 0;
-  for (std::vector<std::string>::iterator joint_name = joint_names.begin(); joint_name != joint_names.end(); ++joint_name)
+  for (joint_idx;joint_idx<6;joint_idx++)
   {
 
-    // Find chain element on the message
-    std::size_t msg_idx = std::find(msg->name.begin(), msg->name.end(), *joint_name) - msg->name.begin();
-    if (msg_idx >= msg->name.size())
-    {
-      // Drop message
-      ROS_WARN_STREAM("JointState message doesnt contain: " << *joint_name);
-      return;
-    }
 
-    joint_pos[joint_idx++] = msg->position[msg_idx];
-
-    //ROS_INFO_STREAM("Obteniendo limites...");
-//    torque_max_limits= msg->effort;
-//    torque_min_limits= msg->effort;//msg->effort[msg_idx];//
-
-//    ROS_INFO_STREAM("se cargaron los limites");//
-
-//    for(int i=0; i<6;i++){//
-
-//    	ROS_INFO_STREAM("limites: "<< torque_max_limits[i]);
-//    	ROS_INFO_STREAM("limites: "<< msg->effort[i]);
-//    		
-//    }//
-
-//    //
+    joint_pos[joint_idx] = msg->position[joint_idx];
 
 //    ROS_INFO_STREAM("se cargaron los posiciones");
 
