@@ -1,14 +1,13 @@
-// ROS
 #include <ros/ros.h>
-
-// For visualizing things in rviz
 #include <rviz_visual_tools/rviz_visual_tools.h>
+#include <eigen_stl_containers/eigen_stl_vector_container.h>
 
 namespace hb_grasp_generator
 {
+
     class GraspGenerator
     {
-        void generateGrasp(const Eigen::Affine3d& object_grasp_point);
+        void generateGrasp(const Eigen::Affine3d& object_grasp_point, EigenSTL::vector_Affine3d& grasps);
     };
 
     class CylindricalGraspGenerator : public GraspGenerator
@@ -39,7 +38,7 @@ namespace hb_grasp_generator
           visual_tools_->enableBatchPublishing();
         }
 
-        void generateGrasp(const Eigen::Affine3d& object_grasp_point)
+        void generateGrasp(const Eigen::Affine3d& object_grasp_point, EigenSTL::vector_Affine3d& grasps)
         {
           Eigen::Affine3d grasp_pose;
 
@@ -74,6 +73,8 @@ namespace hb_grasp_generator
               Eigen::Affine3d x_translation = Eigen::Affine3d::Identity();
               x_translation.translation().x() = 0.0;
               grasp_pose = object_grasp_point * polar_rotation * azimuthal_rotation * x_translation;
+              // Add grasp point
+              grasps.push_back(grasp_pose);
               visual_tools_->publishAxis(grasp_pose);
             }
           }
@@ -104,7 +105,10 @@ int main(int argc, char** argv)
                                   * Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitY())
                                   * Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ());
   object_center.translation().x() = 1.0;
-  demo.generateGrasp(object_center);
+  EigenSTL::vector_Affine3d grasp;
+  demo.generateGrasp(object_center, grasp);
+
+  ROS_INFO_STREAM("Generated grasps: " << grasp.size());
 
   ROS_INFO_STREAM("Shutting down.");
   return 0;

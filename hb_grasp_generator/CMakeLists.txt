@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   eigen_conversions
+  eigen_stl_containers
   moveit_ros_planning
   moveit_ros_planning_interface
   moveit_core
