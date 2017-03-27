@@ -1,0 +1,10 @@
+<launch>
+
+    <!-- Grasp generator node -->
+    <node pkg="hb_grasp_generator" type="grasp_test" name="grasp_generator" output="screen" />
+
+    <!-- RViz with shadow robot -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find hb_grasp_generator)/config/test.rviz" />
+
+
+</launch>
