@@ -1,0 +1,8 @@
+cylindrical_grasp_generator:
+  yaw_angle_count: 30
+  pitch_angle_count: 5
+  pitch_angle_min: -0.3
+  pitch_angle_max: 0.3
+  roll_angle_count: 5
+  roll_angle_min: -0.1
+  roll_angle_max: 0.1

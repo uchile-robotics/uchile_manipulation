@@ -1,22 +1,85 @@
 #include <ros/ros.h>
 #include <rviz_visual_tools/rviz_visual_tools.h>
 #include <eigen_stl_containers/eigen_stl_vector_container.h>
+#include <iostream>
 
 namespace hb_grasp_generator
 {
 
     class GraspGenerator
     {
-        void generateGrasp(const Eigen::Affine3d& object_grasp_point, EigenSTL::vector_Affine3d& grasps);
-        void generatePregrasp(const EigenSTL::vector_Affine3d& grasps, const EigenSTL::vector_Affine3d& pregrasps);
+      void generateGrasp(const Eigen::Affine3d& object_grasp_point, EigenSTL::vector_Affine3d& grasps);
+      void generatePregrasp(const EigenSTL::vector_Affine3d& grasps, const EigenSTL::vector_Affine3d& pregrasps);
     };
+
+    class CylindricalGraspGeneratorOptions
+    {
+    public:
+        // Yaw params
+        int yaw_angle_count;
+        // Pitch params
+        int pitch_angle_count;
+        double pitch_angle_min;
+        double pitch_angle_max;
+        double pitch_angle_res;
+        // Roll params
+        int roll_angle_count;
+        double roll_angle_min;
+        double roll_angle_max;
+        double roll_angle_res;
+    public:
+        CylindricalGraspGeneratorOptions():
+                // Default values
+                yaw_angle_count(50),
+                pitch_angle_count(5),
+                pitch_angle_min(-M_PI/180.0 * 15.0), // 15 degrees
+                pitch_angle_max( M_PI/180.0 * 15.0),
+                pitch_angle_res((pitch_angle_max - pitch_angle_min)/pitch_angle_count),
+                roll_angle_count(5),
+                roll_angle_min(-M_PI/180.0 * 5.0), // 5 degrees
+                roll_angle_max( M_PI/180.0 * 5.0),
+                roll_angle_res((pitch_angle_max - pitch_angle_min)/pitch_angle_count)
+        {}
+
+        bool load(const ros::NodeHandle& nh)
+        {
+          // Child nodehandle
+          ros::NodeHandle child_nh(nh, "cylindrical_grasp_generator");
+          // 50 points
+          child_nh.param<int>("yaw_angle_count", yaw_angle_count, 50);
+          // 5 points
+          child_nh.param<int>("pitch_angle_count", pitch_angle_count, 5);
+          // 15 degrees
+          child_nh.param<double>("pitch_angle_min", pitch_angle_min, -M_PI/180.0 * 15.0);
+          child_nh.param<double>("pitch_angle_max", pitch_angle_max,  M_PI/180.0 * 15.0);
+          // 5 points
+          child_nh.param<int>("roll_angle_count", roll_angle_count, 5);
+          // 5 degrees
+          child_nh.param<double>("roll_angle_min", roll_angle_min, -M_PI/180.0 * 5.0);
+          child_nh.param<double>("roll_angle_max", roll_angle_max,  M_PI/180.0 * 5.0);
+        }
+
+        friend std::ostream& operator<<(std::ostream& os, const CylindricalGraspGeneratorOptions& opt);
+    }; // CylindricalGraspGeneratorOptions
+
+    std::ostream& operator<<(std::ostream& os, const CylindricalGraspGeneratorOptions& opt)
+    {
+      os << "Cylindrical grasp generator options:" << std::endl;
+      os << "Yaw angle: count: " << opt.yaw_angle_count << std::endl;
+      os << "Pitch angle: count: " << opt.pitch_angle_count << " (" << opt.pitch_angle_min
+         << ", " << opt.pitch_angle_min << ")" << std::endl;
+      os << "Roll angle: count: " << opt.roll_angle_count << " (" << opt.roll_angle_min
+         << ", " << opt.roll_angle_max << ")";
+      return os;
+    }
 
     class CylindricalGraspGenerator : public GraspGenerator
     {
     private:
         // A shared node handle
         ros::NodeHandle nh_;
-
+        // Grasp generator options
+        CylindricalGraspGeneratorOptions opt_;
         // For visualizing things in rviz
         rviz_visual_tools::RvizVisualToolsPtr visual_tools_;
 
@@ -29,14 +92,15 @@ namespace hb_grasp_generator
          * \brief Constructor
          */
         CylindricalGraspGenerator():
-                nh_(),
-                name_("rviz_demo"),
+                nh_("~"),
+                opt_(),
+                name_("cylindrical_grasp_generator"),
                 verbose_(true)
         {
           visual_tools_.reset(new rviz_visual_tools::RvizVisualTools("base_link", "/grasp"));
-
-          ROS_INFO("Sleeping 3 seconds before running demo");
           ros::Duration(2.0).sleep();
+          opt_.load(nh_);
+          ROS_DEBUG_STREAM_NAMED(name_, opt_);
 
           // Clear messages
           visual_tools_->deleteAllMarkers();
@@ -47,41 +111,25 @@ namespace hb_grasp_generator
         {
           Eigen::Affine3d grasp_pose;
 
-          // Yaw params
-          const std::size_t yaw_angle_count = 4;
-          // Pitch params
-          const std::size_t pitch_angle_count = 2;
-          const double pitch_angle_min = - M_PI/180.0 * 15.0; // 15 degrees
-          const double pitch_angle_max = M_PI/180.0 * 15.0;
-          const double pitch_angle_res = (pitch_angle_max - pitch_angle_min)/pitch_angle_count;
-          // Roll params
-          const std::size_t roll_angle_count = 3;
-          const double roll_angle_min = - M_PI/180.0 * 5.0; // 5 degrees
-          const double roll_angle_max = M_PI/180.0 * 5.0;
-          const double roll_angle_res = (pitch_angle_max - pitch_angle_min)/pitch_angle_count;
-
-          // --------------------------------------------------------------------
-          ROS_INFO_STREAM_NAMED(name_, "Object center");
-
-          for (std::size_t yaw_angle_idx = 0; yaw_angle_idx < yaw_angle_count; ++yaw_angle_idx)
+          for (std::size_t yaw_angle_idx = 0; yaw_angle_idx < opt_.yaw_angle_count; ++yaw_angle_idx)
           {
             // Yaw angle generation (rotation on Z axis)
             Eigen::Affine3d yaw_rotation = Eigen::Affine3d::Identity() * Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX())
                                              * Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitY())
-                                             * Eigen::AngleAxisd(2*M_PI*yaw_angle_idx/yaw_angle_count, Eigen::Vector3d::UnitZ());
+                                             * Eigen::AngleAxisd(2*M_PI*yaw_angle_idx/opt_.yaw_angle_count, Eigen::Vector3d::UnitZ());
 
-            for (std::size_t pitch_angle_idx = 0; pitch_angle_idx < pitch_angle_count; ++pitch_angle_idx)
+            for (std::size_t pitch_angle_idx = 0; pitch_angle_idx < opt_.pitch_angle_count; ++pitch_angle_idx)
             {
               // Pitch angle generation (rotation on Y axis)
-              double pitch_angle = pitch_angle_min + pitch_angle_idx*pitch_angle_res;
+              double pitch_angle = opt_.pitch_angle_min + pitch_angle_idx*opt_.pitch_angle_res;
               Eigen::Affine3d pitch_rotation = Eigen::Affine3d::Identity() * Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX())
                                                    * Eigen::AngleAxisd(pitch_angle, Eigen::Vector3d::UnitY())
                                                    * Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ());
 
-              for (std::size_t roll_angle_idx = 0; roll_angle_idx < roll_angle_count; ++roll_angle_idx)
+              for (std::size_t roll_angle_idx = 0; roll_angle_idx < opt_.roll_angle_count; ++roll_angle_idx)
               {
                 // Roll angle generation (rotation on X axis)
-                double roll_angle = roll_angle_min + roll_angle_idx*roll_angle_res;
+                double roll_angle = opt_.roll_angle_min + roll_angle_idx*opt_.roll_angle_res;
                 Eigen::Affine3d roll_rotation = Eigen::Affine3d::Identity() * Eigen::AngleAxisd(roll_angle, Eigen::Vector3d::UnitX())
                                                  * Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitY())
                                                  * Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ());
@@ -141,8 +189,8 @@ namespace hb_grasp_generator
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "visual_tools_demo");
-  ROS_INFO_STREAM("Visual Tools Demo");
+  ros::init(argc, argv, "cylindrical_grasp_generator_test");
+  ROS_INFO_STREAM("Grasp generator Demo");
 
   // Allow the action server to recieve and send ros messages
   ros::AsyncSpinner spinner(1);
