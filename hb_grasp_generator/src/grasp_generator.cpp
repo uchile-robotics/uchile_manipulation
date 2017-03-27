@@ -1,10 +1,34 @@
 #include <ros/ros.h>
 #include <rviz_visual_tools/rviz_visual_tools.h>
+#include <moveit_visual_tools/moveit_visual_tools.h>
 #include <eigen_stl_containers/eigen_stl_vector_container.h>
 #include <iostream>
+#include <moveit/robot_model/robot_model.h>
+#include <moveit/robot_state/robot_state.h>
 
 namespace hb_grasp_generator
 {
+    class GraspFilter
+    {
+    public:
+        GraspFilter(robot_state::RobotState robot_state, moveit_visual_tools::MoveItVisualToolsPtr& visual_tools):
+                robot_state_(robot_state),
+                visual_tools_(visual_tools)
+        {
+
+        }
+    private:
+        // State of robot
+        robot_state::RobotState robot_state_;
+
+        // threaded kinematic solvers
+        std::map<std::string, std::vector<kinematics::KinematicsBaseConstPtr> > kin_solvers_;
+
+        // class for publishing stuff to rviz
+        moveit_visual_tools::MoveItVisualToolsPtr visual_tools_;
+    };
+
+
 
     class GraspGenerator
     {
