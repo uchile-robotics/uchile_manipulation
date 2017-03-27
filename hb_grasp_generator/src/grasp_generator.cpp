@@ -117,6 +117,7 @@ namespace hb_grasp_generator
 
             for(std::size_t pregrasp_idx = 0; pregrasp_idx < pregrap_count; ++pregrasp_idx)
             {
+              // Generate translation on x axis
               pregrasp_traslation.translation().x() = pregrap_min + pregrasp_idx*pregrap_res;
               pregrasp_pose = *grasp_pose * pregrasp_traslation;
               pregrasps.push_back(pregrasp_pose);
@@ -156,12 +157,14 @@ int main(int argc, char** argv)
   object_center.translation().x() = 1.0; // Move one meter on x axis
   // Generate grasp positions
   EigenSTL::vector_Affine3d grasp;
+  ros::Time t0 = ros::Time::now();
   demo.generateGrasp(object_center, grasp);
-  ROS_INFO_STREAM("Generated grasps: " << grasp.size());
+  ROS_INFO_STREAM("Generated grasps: " << grasp.size() << " sec: " << (ros::Time::now() - t0).toSec());
   // Generate pregrasp positions
   EigenSTL::vector_Affine3d pregrasp;
+  t0 = ros::Time::now();
   demo.generatePregrasp(grasp, pregrasp);
-  ROS_INFO_STREAM("Generated pregrasps: " << pregrasp.size());
+  ROS_INFO_STREAM("Generated pregrasps: " << pregrasp.size() << " sec: " << (ros::Time::now() - t0).toSec());
 
   return 0;
 }
