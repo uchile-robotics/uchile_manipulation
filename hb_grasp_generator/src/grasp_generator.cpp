@@ -27,6 +27,11 @@ namespace hb_grasp_generator
         double roll_angle_min;
         double roll_angle_max;
         double roll_angle_res;
+        // Pregrasp params
+        int pregrasp_count;
+        double pregrasp_min;
+        double pregrasp_max;
+        double pregrasp_res;
     public:
         CylindricalGraspGeneratorOptions():
                 // Default values
@@ -38,25 +43,48 @@ namespace hb_grasp_generator
                 roll_angle_count(5),
                 roll_angle_min(-M_PI/180.0 * 5.0), // 5 degrees
                 roll_angle_max( M_PI/180.0 * 5.0),
-                roll_angle_res((pitch_angle_max - pitch_angle_min)/pitch_angle_count)
+                roll_angle_res((roll_angle_max - roll_angle_min)/roll_angle_count),
+                pregrasp_count(5),
+                pregrasp_min(0.1),
+                pregrasp_max(0.3),
+                pregrasp_res((pregrasp_max - pregrasp_min)/pregrasp_count)
         {}
 
         bool load(const ros::NodeHandle& nh)
         {
           // Child nodehandle
           ros::NodeHandle child_nh(nh, "cylindrical_grasp_generator");
-          // 50 points
+
+          // --------------------------------------------------------
+          // Grasp data
+
+          // Yaw angle: 50 points
           child_nh.param<int>("yaw_angle_count", yaw_angle_count, 50);
+
+          // Pitch angle
           // 5 points
           child_nh.param<int>("pitch_angle_count", pitch_angle_count, 5);
           // 15 degrees
           child_nh.param<double>("pitch_angle_min", pitch_angle_min, -M_PI/180.0 * 15.0);
           child_nh.param<double>("pitch_angle_max", pitch_angle_max,  M_PI/180.0 * 15.0);
+          pitch_angle_res = (pitch_angle_max - pitch_angle_min)/pitch_angle_count;
+
+          // Roll angle
           // 5 points
           child_nh.param<int>("roll_angle_count", roll_angle_count, 5);
           // 5 degrees
           child_nh.param<double>("roll_angle_min", roll_angle_min, -M_PI/180.0 * 5.0);
           child_nh.param<double>("roll_angle_max", roll_angle_max,  M_PI/180.0 * 5.0);
+          roll_angle_res = (roll_angle_max - roll_angle_min)/roll_angle_count;
+
+          // --------------------------------------------------------
+          // Pregrasp data
+          // 3 points
+          child_nh.param<int>("pregrasp_count", pregrasp_count, 5);
+          // 5 degrees
+          child_nh.param<double>("pregrasp_min", pregrasp_min, 0.1);
+          child_nh.param<double>("pregrasp_max", pregrasp_max, 0.3);
+          pregrasp_res = (pregrasp_max - pregrasp_min)/pregrasp_count;
         }
 
         friend std::ostream& operator<<(std::ostream& os, const CylindricalGraspGeneratorOptions& opt);
@@ -69,7 +97,10 @@ namespace hb_grasp_generator
       os << "Pitch angle: count: " << opt.pitch_angle_count << " (" << opt.pitch_angle_min
          << ", " << opt.pitch_angle_min << ")" << std::endl;
       os << "Roll angle: count: " << opt.roll_angle_count << " (" << opt.roll_angle_min
-         << ", " << opt.roll_angle_max << ")";
+         << ", " << opt.roll_angle_max << ")" << std::endl;
+      os << "Pregrasp options:" << std::endl;
+      os << "Pregrasp count: " << opt.pregrasp_count << " (" << opt.pregrasp_min << ", "
+         << opt.pregrasp_max << ")";
       return os;
     }
 
@@ -100,7 +131,7 @@ namespace hb_grasp_generator
           visual_tools_.reset(new rviz_visual_tools::RvizVisualTools("base_link", "/grasp"));
           ros::Duration(2.0).sleep();
           opt_.load(nh_);
-          ROS_DEBUG_STREAM_NAMED(name_, opt_);
+          ROS_INFO_STREAM_NAMED(name_, opt_);
 
           // Clear messages
           visual_tools_->deleteAllMarkers();
@@ -152,21 +183,16 @@ namespace hb_grasp_generator
         void generatePregrasp(const EigenSTL::vector_Affine3d& grasps, EigenSTL::vector_Affine3d& pregrasps)
         {
           Eigen::Affine3d pregrasp_pose;
-          // Pregrasp params
-          const std::size_t pregrap_count = 3;
-          const double pregrap_min = 0.1; // 10 cm
-          const double pregrap_max = 0.2; // 20 cm
-          const double pregrap_res = (pregrap_max - pregrap_min)/pregrap_count;
           // Iterate over grasps positions
           EigenSTL::vector_Affine3d::const_iterator grasp_pose;
           for(grasp_pose = grasps.begin(); grasp_pose != grasps.end(); ++grasp_pose)
           {
             Eigen::Affine3d pregrasp_traslation = Eigen::Affine3d::Identity();
 
-            for(std::size_t pregrasp_idx = 0; pregrasp_idx < pregrap_count; ++pregrasp_idx)
+            for(std::size_t pregrasp_idx = 0; pregrasp_idx < opt_.pregrasp_count; ++pregrasp_idx)
             {
               // Generate translation on x axis
-              pregrasp_traslation.translation().x() = pregrap_min + pregrasp_idx*pregrap_res;
+              pregrasp_traslation.translation().x() = opt_.pregrasp_min + pregrasp_idx*opt_.pregrasp_res;
               pregrasp_pose = *grasp_pose * pregrasp_traslation;
               pregrasps.push_back(pregrasp_pose);
               // Publish poses
