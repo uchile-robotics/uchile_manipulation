@@ -71,9 +71,9 @@ namespace hb_grasp_generator
 
         bool generateGrasp(const geometry_msgs::Pose& object_pose, std::vector<moveit_msgs::Grasp>& possible_grasps)
         {
-          Eigen::Affine3d object_global_transform;
           // ------------------------------------------------------------------------------------------
           // Create a transform from the object's frame (center of object) to /base_link
+          Eigen::Affine3d object_global_transform;
           tf::poseMsgToEigen(object_pose, object_global_transform);
 
           // ------------------------------------------------------------------------------------------
@@ -81,18 +81,12 @@ namespace hb_grasp_generator
           // Create approach motion
           moveit_msgs::GripperTranslation pre_grasp_approach;
           pre_grasp_approach.direction.header.stamp = ros::Time::now();
-          // The distance the origin of a robot link needs to travel
-          pre_grasp_approach.desired_distance = opt_.pregrasp_max;
-          pre_grasp_approach.min_distance = opt_.pregrasp_min;
 
           // ------------------------------------------------------------------------------------------
           // Retreat
           // Create retreat motion
           moveit_msgs::GripperTranslation post_grasp_retreat;
           post_grasp_retreat.direction.header.stamp = ros::Time::now();
-          // The distance the origin of a robot link needs to travel
-          post_grasp_retreat.desired_distance = opt_.pregrasp_max;
-          post_grasp_retreat.min_distance =  opt_.pregrasp_min;
 
           // Create re-usable blank pose
           geometry_msgs::PoseStamped grasp_pose_msg;
@@ -153,8 +147,8 @@ namespace hb_grasp_generator
 
                 // ------------------------------------------------------------------------
                 // Approach vector
-                double approach_angle = 0.0; // TODO: Parametro
-                Eigen::Vector3d approach_vector = -1*(Eigen::AngleAxisd(approach_angle, Eigen::Vector3d::UnitY()) * Eigen::Vector3d::UnitX());
+                double approach_angle = 0.0; // TODO Set as param
+                Eigen::Vector3d approach_vector = -1.0 * (Eigen::AngleAxisd(approach_angle, Eigen::Vector3d::UnitY()) * Eigen::Vector3d::UnitX());
                 approach_vector = opt_.grasp_pose_to_eff * approach_vector;
 
                 // ------------------------------------------------------------------------
@@ -165,18 +159,31 @@ namespace hb_grasp_generator
 
                 // ------------------------------------------------------------------------
                 // Retreat
-                tf::vectorEigenToMsg(-1*approach_vector, post_grasp_retreat.direction.vector);
+                tf::vectorEigenToMsg(-1.0 * approach_vector, post_grasp_retreat.direction.vector);
                 post_grasp_retreat.direction.header.frame_id = opt_.end_effector_parent_link;
                 new_grasp.post_grasp_retreat = post_grasp_retreat;
 
-                // Add to vector
-                possible_grasps.push_back(new_grasp);
-
-                // Publish poses
-                if (verbose_)
+                // ------------------------------------------------------------------------
+                // Approach and retreat loop
+                for(std::size_t distance_idx = 0; distance_idx < opt_.pregrasp_count; ++distance_idx)
                 {
-                  visual_tools_->publishAxis(grasp_pose);
-                  visual_tools_->triggerBatchPublish();
+                  double distance = opt_.pregrasp_min + opt_.pregrasp_res*distance_idx;
+                  // The distance the origin of a robot link needs to travel
+                  pre_grasp_approach.desired_distance = distance;
+                  pre_grasp_approach.min_distance = 0.9 * distance; // TODO Set as param
+
+                  post_grasp_retreat.desired_distance = distance;
+                  post_grasp_retreat.min_distance =  0.9 * distance; // TODO Set as param
+
+                  // Add to vector
+                  possible_grasps.push_back(new_grasp);
+
+                  // Publish poses
+                  if (verbose_)
+                  {
+                    visual_tools_->publishAxis(grasp_pose);
+                    visual_tools_->triggerBatchPublish();
+                  }
                 }
               }
             }
@@ -184,27 +191,6 @@ namespace hb_grasp_generator
           ROS_DEBUG_STREAM_NAMED("grasp", "Generated " << possible_grasps.size() << " grasps." );
           return true;
         }
-
-/*        void generatePregrasp(GraspPose& grasp_pose)
-        {
-          Eigen::Affine3d pregrasp_pose;
-          Eigen::Affine3d pregrasp_traslation = Eigen::Affine3d::Identity();
-          grasp_pose.pregrasp.reserve(opt_.pregrasp_count);
-          for(std::size_t pregrasp_idx = 0; pregrasp_idx < opt_.pregrasp_count; ++pregrasp_idx)
-          {
-            // Generate translation on x axis
-            pregrasp_traslation.translation().x() = opt_.pregrasp_min + pregrasp_idx*opt_.pregrasp_res;
-            pregrasp_pose = grasp_pose.grasp * pregrasp_traslation * opt_.grasp_pose_to_eff;
-
-            grasp_pose.pregrasp.push_back(pregrasp_pose);
-            // Publish poses
-            if (verbose_)
-            {
-              visual_tools_->publishAxis(pregrasp_pose);
-              visual_tools_->triggerBatchPublish();
-            }
-          }
-        }*/
 
         /**
          * \brief Destructor

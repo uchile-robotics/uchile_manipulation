@@ -184,7 +184,7 @@ namespace hb_grasp_generator
     }
 
 
-    std::ostream& operator<<(std::ostream& os, const CylindricalGraspGeneratorOptions& opt)
+    std::ostream& operator<<(std::ostream& os, const hb_grasp_generator::CylindricalGraspGeneratorOptions& opt)
     {
       os << "Base link: " << opt.base_link << std::endl;
       os << "End effector: " << opt.end_effector_name << std::endl;

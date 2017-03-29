@@ -1,7 +1,7 @@
 #ifndef HB_GRASP_GRASP_OPTIONS_H
 #define HB_GRASP_GRASP_OPTIONS_H
 
-#include <iostream>
+#include <ostream>
 // Eigen
 #include <Eigen/Core>
 #include <Eigen/Geometry>
