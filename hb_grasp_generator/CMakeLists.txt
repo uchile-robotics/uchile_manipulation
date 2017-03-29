@@ -29,6 +29,8 @@ find_package(Boost REQUIRED thread system)
 
 # Catkin
 catkin_package(
+  LIBRARIES
+    hb_grasp
   CATKIN_DEPENDS
     actionlib_msgs
     geometry_msgs
@@ -46,6 +48,16 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+add_library(hb_grasp
+    src/grasp_generator.cpp
+    src/grasp_options.cpp
+)
+target_link_libraries(hb_grasp
+    ${catkin_LIBRARIES} ${Boost_LIBRARIES}
+)
+
 # Test grasp executable
-add_executable(grasp_test src/grasp_generator.cpp src/grasp_options.cpp)
-target_link_libraries(grasp_test ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+add_executable(grasp_test src/simple_grasps_test.cpp)
+target_link_libraries(grasp_test ${catkin_LIBRARIES} ${Boost_LIBRARIES} hb_grasp)
+
+
