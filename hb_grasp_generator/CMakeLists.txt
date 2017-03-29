@@ -47,5 +47,5 @@ include_directories(
 )
 
 # Test grasp executable
- add_executable(grasp_test src/grasp_generator.cpp)
- target_link_libraries(grasp_test ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+add_executable(grasp_test src/grasp_generator.cpp src/grasp_options.cpp)
+target_link_libraries(grasp_test ${catkin_LIBRARIES} ${Boost_LIBRARIES})
