@@ -57,6 +57,7 @@ namespace hb_grasp_generator
          */
         ~CylindricalGraspGenerator() {};
     };  // end class
+    typedef boost::shared_ptr<CylindricalGraspGenerator> CylindricalGraspGeneratorPtr;
 
 }  // namespace hb_grasp_generator
 
