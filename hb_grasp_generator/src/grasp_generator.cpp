@@ -11,16 +11,10 @@ namespace hb_grasp_generator
     CylindricalGraspGenerator::CylindricalGraspGenerator():
       nh_("~"),
       opt_(),
-      name_("cylindrical_grasp_generator"),
-      verbose_(true)
+      name_("cylindrical_grasp_generator")
     {
-      visual_tools_.reset(new rviz_visual_tools::RvizVisualTools("base_link", "/grasp"));
       opt_.load(nh_, "l_gripper");
       ROS_DEBUG_STREAM_NAMED(name_, opt_);
-
-      // Clear messages
-      visual_tools_->deleteAllMarkers();
-      visual_tools_->enableBatchPublishing();
     }
 
     bool CylindricalGraspGenerator::generateGrasp(const geometry_msgs::Pose& object_pose, std::vector<moveit_msgs::Grasp>& possible_grasps)
@@ -131,13 +125,6 @@ namespace hb_grasp_generator
 
               // Add to vector
               possible_grasps.push_back(new_grasp);
-
-              // Publish poses
-              if (verbose_)
-              {
-                visual_tools_->publishAxis(grasp_pose);
-                visual_tools_->triggerBatchPublish();
-              }
             }
           }
         }

@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 
   ROS_INFO_STREAM_NAMED("main","Simple Grasps Test");
 
-  ros::AsyncSpinner spinner(2);
+  ros::AsyncSpinner spinner(1);
   spinner.start();
 
   // Benchmark time
@@ -46,7 +46,6 @@ int main(int argc, char *argv[])
   // Generate set of grasps for one object
   simple_grasps_->generateGrasp(object_pose, possible_grasps);
   ROS_INFO_STREAM("Generated grasps: " << possible_grasps.size());
-
 
   // Visualize grasps
   ros::Duration(2.0).sleep(); // Wait for RViz

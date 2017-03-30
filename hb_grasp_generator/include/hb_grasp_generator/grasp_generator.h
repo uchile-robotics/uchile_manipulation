@@ -38,12 +38,8 @@ namespace hb_grasp_generator
         ros::NodeHandle nh_;
         // Grasp generator options
         CylindricalGraspGeneratorOptions opt_;
-        // For visualizing things in rviz
-        rviz_visual_tools::RvizVisualToolsPtr visual_tools_;
-
-        std::string name_;
-        // Verbose
-        bool verbose_;
+        // Class name
+        const std::string name_;
 
     public:
         /**
