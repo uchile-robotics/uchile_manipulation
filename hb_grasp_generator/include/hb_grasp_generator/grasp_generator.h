@@ -28,7 +28,7 @@ namespace hb_grasp_generator
 
     class GraspGenerator
     {
-        bool generateGrasp(const geometry_msgs::Pose& object_pose, std::vector<moveit_msgs::Grasp>& possible_grasps);
+        virtual bool generateGrasp(const geometry_msgs::Pose& object_pose, std::vector<moveit_msgs::Grasp>& possible_grasps) = 0;
     };
 
     class CylindricalGraspGenerator : public GraspGenerator

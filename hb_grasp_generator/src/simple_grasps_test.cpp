@@ -112,9 +112,6 @@ int main(int argc, char *argv[])
   ros::AsyncSpinner spinner(2);
   spinner.start();
 
-  // Seed random
-  srand(ros::Time::now().toSec());
-
   // Benchmark time
   ros::Time start_time;
   start_time = ros::Time::now();

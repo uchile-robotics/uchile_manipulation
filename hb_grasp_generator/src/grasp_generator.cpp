@@ -122,7 +122,7 @@ namespace hb_grasp_generator
             // Approach and retreat loop
             for(std::size_t distance_idx = 0; distance_idx < opt_.pregrasp_count; ++distance_idx)
             {
-              double distance = opt_.pregrasp_min + opt_.pregrasp_res*distance_idx;
+              float distance = opt_.pregrasp_min + opt_.pregrasp_res*distance_idx;
               // The distance the origin of a robot link needs to travel
               pre_grasp_approach.desired_distance = distance;
               pre_grasp_approach.min_distance = 0.9 * distance; // TODO Set as param
