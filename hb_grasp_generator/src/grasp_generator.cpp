@@ -15,9 +15,8 @@ namespace hb_grasp_generator
       verbose_(true)
     {
       visual_tools_.reset(new rviz_visual_tools::RvizVisualTools("base_link", "/grasp"));
-      ros::Duration(2.0).sleep();
       opt_.load(nh_, "l_gripper");
-      ROS_INFO_STREAM_NAMED(name_, opt_);
+      ROS_DEBUG_STREAM_NAMED(name_, opt_);
 
       // Clear messages
       visual_tools_->deleteAllMarkers();
