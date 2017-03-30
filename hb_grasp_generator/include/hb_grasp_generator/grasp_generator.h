@@ -11,37 +11,39 @@
 
 namespace hb_grasp_generator
 {
-    geometry_msgs::PoseStamped getPreGraspPose(const moveit_msgs::Grasp& grasp, const std::string& ee_parent_link);
+geometry_msgs::PoseStamped getPreGraspPose(const moveit_msgs::Grasp &grasp, const std::string &ee_parent_link);
 
-    class GraspGenerator
-    {
-    public:
-        virtual bool generateGrasp(const geometry_msgs::Pose& object_pose, std::vector<moveit_msgs::Grasp>& possible_grasps) = 0;
-    };
+class GraspGenerator
+{
+ public:
+  virtual bool generateGrasp(const geometry_msgs::Pose &object_pose,
+                             std::vector<moveit_msgs::Grasp> &possible_grasps) = 0;
+};
 
-    class CylindricalGraspGenerator : public GraspGenerator
-    {
-    private:
-        // A shared node handle
-        ros::NodeHandle nh_;
-        // Grasp generator options
-        CylindricalGraspGeneratorOptions opt_;
-        // Class name
-        const std::string name_;
+class CylindricalGraspGenerator : public GraspGenerator
+{
+ private:
+  // A shared node handle
+  ros::NodeHandle nh_;
+  // Grasp generator options
+  CylindricalGraspGeneratorOptions opt_;
+  // Class name
+  const std::string name_;
 
-    public:
-        /**
-         * \brief Constructor
-         */
-        CylindricalGraspGenerator();
-        bool generateGrasp(const geometry_msgs::Pose& object_pose, std::vector<moveit_msgs::Grasp>& possible_grasps);
+ public:
+  /**
+   * \brief Constructor
+   */
+  CylindricalGraspGenerator();
+  bool generateGrasp(const geometry_msgs::Pose &object_pose, std::vector<moveit_msgs::Grasp> &possible_grasps);
 
-        /**
-         * \brief Destructor
-         */
-        ~CylindricalGraspGenerator() {};
-    };  // end class
-    typedef boost::shared_ptr<CylindricalGraspGenerator> CylindricalGraspGeneratorPtr;
+  /**
+   * \brief Destructor
+   */
+  ~CylindricalGraspGenerator()
+  {};
+};  // end class
+typedef boost::shared_ptr<CylindricalGraspGenerator> CylindricalGraspGeneratorPtr;
 
 }  // namespace hb_grasp_generator
 

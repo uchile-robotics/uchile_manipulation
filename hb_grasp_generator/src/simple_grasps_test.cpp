@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 {
   ros::init(argc, argv, "grasp_generator_test");
 
-  ROS_INFO_STREAM_NAMED("main","Simple Grasps Test");
+  ROS_INFO_STREAM_NAMED("main", "Simple Grasps Test");
 
   ros::AsyncSpinner spinner(1);
   spinner.start();
@@ -23,7 +23,8 @@ int main(int argc, char *argv[])
   // Load visualization tools for publishing to Rviz
   planning_scene_monitor::PlanningSceneMonitorPtr planning_scene;
   planning_scene.reset(new planning_scene_monitor::PlanningSceneMonitor("robot_description"));
-  moveit_visual_tools::MoveItVisualToolsPtr visual_tools_(new moveit_visual_tools::MoveItVisualTools("bender/base_link", "/grasp_test", planning_scene));
+  moveit_visual_tools::MoveItVisualToolsPtr
+      visual_tools_(new moveit_visual_tools::MoveItVisualTools("bender/base_link", "/grasp_test", planning_scene));
   visual_tools_->setLifetime(120.0);
   visual_tools_->loadMarkerPub();
 
@@ -52,11 +53,12 @@ int main(int argc, char *argv[])
   visual_tools_->enableBatchPublishing(true);
   visual_tools_->publishCylinder(object_pose, rviz_visual_tools::BLUE, 0.05, 0.05);
   visual_tools_->triggerBatchPublish();
-  const robot_model::JointModelGroup* ee_jmg = visual_tools_->getRobotModel()->getJointModelGroup("l_gripper");
+  const robot_model::JointModelGroup *ee_jmg = visual_tools_->getRobotModel()->getJointModelGroup("l_gripper");
   // Hardcoded way, publishAnimatedGrasps didn't work
   for (std::size_t i = 0; i < possible_grasps.size(); ++i)
   {
-    geometry_msgs::PoseStamped pregrasp = hb_grasp_generator::getPreGraspPose(possible_grasps[i], "bender/l_wrist_pitch_link");
+    geometry_msgs::PoseStamped
+        pregrasp = hb_grasp_generator::getPreGraspPose(possible_grasps[i], "bender/l_wrist_pitch_link");
     visual_tools_->publishEEMarkers(pregrasp.pose, ee_jmg, rviz_visual_tools::DARK_GREY);
     visual_tools_->triggerBatchPublish();
     ros::Duration(0.06).sleep();
@@ -67,7 +69,7 @@ int main(int argc, char *argv[])
   }
   // Benchmark time
   double duration = (ros::Time::now() - start_time).toNSec() * 1e-6;
-  ROS_INFO_STREAM_NAMED("","Total time: " << duration);
+  ROS_INFO_STREAM_NAMED("", "Total time: " << duration);
 
   return 0;
 }
