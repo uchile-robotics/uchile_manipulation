@@ -11,23 +11,11 @@
 
 namespace hb_grasp_generator
 {
-    class GraspFilter
-    {
-    public:
-        GraspFilter(robot_state::RobotState robot_state, moveit_visual_tools::MoveItVisualToolsPtr& visual_tools);
-    private:
-        // State of robot
-        robot_state::RobotState robot_state_;
-
-        // Threaded kinematic solvers
-        std::map<std::string, std::vector<kinematics::KinematicsBaseConstPtr> > kin_solvers_;
-
-        // Visualization on RViz
-        moveit_visual_tools::MoveItVisualToolsPtr visual_tools_;
-    };
+    geometry_msgs::PoseStamped getPreGraspPose(const moveit_msgs::Grasp& grasp, const std::string& ee_parent_link);
 
     class GraspGenerator
     {
+    public:
         virtual bool generateGrasp(const geometry_msgs::Pose& object_pose, std::vector<moveit_msgs::Grasp>& possible_grasps) = 0;
     };
 
