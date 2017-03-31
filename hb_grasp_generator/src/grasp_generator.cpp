@@ -8,6 +8,12 @@
 
 namespace hb_grasp_generator
 {
+/**
+ * Get the pregrasp pose from a grasp message.
+ * @param grasp Grasp message.
+ * @param ee_parent_link
+ * @return
+ */
 geometry_msgs::PoseStamped getPreGraspPose(const moveit_msgs::Grasp &grasp, const std::string &ee_parent_link)
 {
   // Grasp Pose Variables

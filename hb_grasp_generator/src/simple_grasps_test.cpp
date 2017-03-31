@@ -1,10 +1,11 @@
 // ROS
 #include <ros/ros.h>
 #include <geometry_msgs/PoseArray.h>
+// Eigen
+#include <eigen_conversions/eigen_msg.h>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-#include <eigen_conversions/eigen_msg.h>
 #include "hb_grasp_generator/grasp_generator.h"
 
 int main(int argc, char *argv[])
@@ -54,15 +55,31 @@ int main(int argc, char *argv[])
   visual_tools_->publishCylinder(object_pose, rviz_visual_tools::BLUE, 0.05, 0.05);
   visual_tools_->triggerBatchPublish();
   const robot_model::JointModelGroup *ee_jmg = visual_tools_->getRobotModel()->getJointModelGroup("l_gripper");
+  Eigen::Affine3d grasp_pose, pregrasp_pose;
+  Eigen::Quaterniond quat;
   // Hardcoded way, publishAnimatedGrasps didn't work
   for (std::size_t i = 0; i < possible_grasps.size(); ++i)
   {
+    // View pregrasp pose
     geometry_msgs::PoseStamped
         pregrasp = hb_grasp_generator::getPreGraspPose(possible_grasps[i], "bender/l_wrist_pitch_link");
     visual_tools_->publishEEMarkers(pregrasp.pose, ee_jmg, rviz_visual_tools::DARK_GREY);
     visual_tools_->triggerBatchPublish();
     ros::Duration(0.06).sleep();
 
+    // View aproximation vector
+    tf::poseMsgToEigen(pregrasp.pose, pregrasp_pose);
+    tf::poseMsgToEigen(possible_grasps[i].grasp_pose.pose, grasp_pose);
+    quat.setFromTwoVectors(pregrasp_pose.translation(), grasp_pose.translation()); // From pregrasp to grasp
+    visual_tools_->publishZArrow(
+        pregrasp_pose * quat * Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitX()), // Turn around x axis
+        rviz_visual_tools::RED,
+        rviz_visual_tools::REGULAR,
+        possible_grasps[i].pre_grasp_approach.desired_distance);
+    visual_tools_->triggerBatchPublish();
+    ros::Duration(0.03).sleep();
+
+    // View grasp pose
     visual_tools_->publishEEMarkers(possible_grasps[i].grasp_pose.pose, ee_jmg, rviz_visual_tools::DARK_GREY);
     visual_tools_->triggerBatchPublish();
     ros::Duration(0.03).sleep();
