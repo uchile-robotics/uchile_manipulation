@@ -74,20 +74,20 @@ public:
 
     // ---------------------------------------------------------------------------------------------
     // Load the Robot Viz Tools for publishing to Rviz
-    visual_tools_.reset(new moveit_visual_tools::MoveItVisualTools("bender/base_link", "/grasp_test", planning_scene_monitor_));
+    visual_tools_.reset(new moveit_visual_tools::MoveItVisualTools("bender/base_link",
+                                                                   "/grasp_test",
+                                                                   planning_scene_monitor_));
     visual_tools_->setLifetime(40.0);
-    visual_tools_->loadEEMarker("l_gripper");
-    visual_tools_->setFloorToBaseHeight(-0.9);
+    const robot_model::JointModelGroup* ee_jmg = planning_scene_monitor_->getRobotModel()->getJointModelGroup("l_gripper");
+    visual_tools_->loadEEMarker(ee_jmg);
 
-    // Clear out old collision objects just because
-    //visual_tools_->removeAllCollisionObjects();
-// ---------------------------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------------------
     // Load grasp generator
-    simple_grasps_.reset( new hb_grasp_generator::CylindricalGraspGenerator() );
+    simple_grasps_.reset(new hb_grasp_generator::CylindricalGraspGenerator());
 
     // ---------------------------------------------------------------------------------------------
     // Load grasp filter
-    robot_state::RobotState robot_state = planning_scene_monitor_->getPlanningScene()->getCurrentState();
+    const robot_state::RobotState& robot_state = planning_scene_monitor_->getPlanningScene()->getCurrentState();
     grasp_filter_.reset(new hb_grasp_generator::GraspFilter(robot_state, visual_tools_) );
 
     // ---------------------------------------------------------------------------------------------
@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
   start_time = ros::Time::now();
 
   // Run Tests
-  hb_grasp_generator::GraspGeneratorTest tester();
+  hb_grasp_generator::GraspGeneratorTest tester;
 
   // Benchmark time
   double duration = (ros::Time::now() - start_time).toNSec() * 1e-6;

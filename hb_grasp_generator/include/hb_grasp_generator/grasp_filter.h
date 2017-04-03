@@ -86,7 +86,7 @@ class GraspFilter
  public:
 
   // Constructor
-  GraspFilter(robot_state::RobotState robot_state,
+  GraspFilter(const robot_state::RobotState& robot_state,
               moveit_visual_tools::MoveItVisualToolsPtr &visual_tools);
 
   // Destructor

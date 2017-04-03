@@ -58,8 +58,8 @@ target_link_libraries(hb_grasp
 )
 
 # Test grasp executable
-add_executable(grasp_test src/simple_grasps_test.cpp)
-target_link_libraries(grasp_test ${catkin_LIBRARIES} ${Boost_LIBRARIES} hb_grasp)
+add_executable(grasp_generator_test src/grasp_generator_test.cpp)
+target_link_libraries(grasp_generator_test ${catkin_LIBRARIES} ${Boost_LIBRARIES} hb_grasp)
 
 add_executable(grasp_filter_test src/grasp_filter_test.cpp)
 target_link_libraries(grasp_filter_test ${catkin_LIBRARIES} ${Boost_LIBRARIES} hb_grasp)
