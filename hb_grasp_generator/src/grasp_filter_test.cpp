@@ -94,7 +94,7 @@ public:
     // Generate grasps for a bunch of random objects
     geometry_msgs::Pose object_pose;
     object_pose.position.x = 0.8;
-    object_pose.position.y = -0.3;
+    object_pose.position.y = 0.3;
     object_pose.position.z = 0.8;
 
     object_pose.orientation.x = 0.0;
