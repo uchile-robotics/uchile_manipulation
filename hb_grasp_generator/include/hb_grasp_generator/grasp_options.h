@@ -31,6 +31,7 @@ class CylindricalGraspGeneratorOptions
   double pregrasp_min;
   double pregrasp_max;
   double pregrasp_res;
+  double approach_angle;
   // Grasp point to end effector
   Eigen::Affine3d grasp_pose_to_eff;
   // Frames

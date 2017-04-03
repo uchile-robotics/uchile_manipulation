@@ -17,7 +17,8 @@ CylindricalGraspGeneratorOptions::CylindricalGraspGeneratorOptions() :
     pregrasp_count(5),
     pregrasp_min(0.1),
     pregrasp_max(0.3),
-    pregrasp_res((pregrasp_max - pregrasp_min) / pregrasp_count)
+    pregrasp_res((pregrasp_max - pregrasp_min) / pregrasp_count),
+    approach_angle(0.0)
 {}
 
 bool CylindricalGraspGeneratorOptions::load(const ros::NodeHandle &nh, const std::string &end_effector)
@@ -171,6 +172,8 @@ bool CylindricalGraspGeneratorOptions::load(const ros::NodeHandle &nh, const std
   ros::NodeHandle grasp_gen_nh(ee_nh, "cylindrical_grasp_generator");
   // --------------------------------------------------------
   // Grasp data
+  // Approach angle
+  grasp_gen_nh.param<double>("approach_angle", approach_angle, 0.0);
   // Yaw angle: 50 points
   grasp_gen_nh.param<int>("yaw_angle_count", yaw_angle_count, 50);
 

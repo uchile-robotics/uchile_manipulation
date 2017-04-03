@@ -24,13 +24,14 @@ l_gripper:
 
   # Cylindrical grasp generator params
   cylindrical_grasp_generator:
-    yaw_angle_count: 10
+    approach_angle: 0.2
+    yaw_angle_count: 4
     pitch_angle_count: 4
     pitch_angle_min: -0.05
     pitch_angle_max: 0.2
     roll_angle_count: 4
     roll_angle_min: -0.1
     roll_angle_max: 0.1
-    pregrasp_count: 2
+    pregrasp_count: 3
     pregrasp_min: 0.1
-    pregrasp_max: 0.15
+    pregrasp_max: 0.8

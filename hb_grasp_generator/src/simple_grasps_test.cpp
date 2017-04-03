@@ -55,7 +55,8 @@ int main(int argc, char *argv[])
   visual_tools_->publishCylinder(object_pose, rviz_visual_tools::BLUE, 0.05, 0.05);
   visual_tools_->triggerBatchPublish();
   const robot_model::JointModelGroup *ee_jmg = visual_tools_->getRobotModel()->getJointModelGroup("l_gripper");
-  Eigen::Affine3d grasp_pose, pregrasp_pose;
+  Eigen::Affine3d grasp_pose, pregrasp_pose, arrow_pose;
+  Eigen::Vector3d approach;
   Eigen::Quaterniond quat;
   // Hardcoded way, publishAnimatedGrasps didn't work
   for (std::size_t i = 0; i < possible_grasps.size(); ++i)
@@ -67,15 +68,23 @@ int main(int argc, char *argv[])
     visual_tools_->triggerBatchPublish();
     ros::Duration(0.06).sleep();
 
-    // View aproximation vector
+    // Convert to Eigen
     tf::poseMsgToEigen(pregrasp.pose, pregrasp_pose);
     tf::poseMsgToEigen(possible_grasps[i].grasp_pose.pose, grasp_pose);
-    quat.setFromTwoVectors(pregrasp_pose.translation(), grasp_pose.translation()); // From pregrasp to grasp
-    visual_tools_->publishZArrow(
-        pregrasp_pose * quat * Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitX()), // Turn around x axis
-        rviz_visual_tools::RED,
-        rviz_visual_tools::REGULAR,
-        possible_grasps[i].pre_grasp_approach.desired_distance);
+    // Get approach vector wrt global frame
+    approach = grasp_pose.rotation() * Eigen::Vector3d(
+        possible_grasps[i].pre_grasp_approach.direction.vector.x * possible_grasps[i].pre_grasp_approach.desired_distance,
+        possible_grasps[i].pre_grasp_approach.direction.vector.y * possible_grasps[i].pre_grasp_approach.desired_distance,
+        possible_grasps[i].pre_grasp_approach.direction.vector.z * possible_grasps[i].pre_grasp_approach.desired_distance
+    );
+    // Get quaternion that transform x axis of pregrasp pose to global x axis
+    quat.setFromTwoVectors(Eigen::Vector3d::UnitX(), approach);
+    arrow_pose = quat; // Copy rotation from quaternion
+    arrow_pose.translation() = pregrasp_pose.translation(); // Copy translation of pregrasp pose
+    visual_tools_->publishXArrow(arrow_pose,
+                                rviz_visual_tools::RED,
+                                rviz_visual_tools::REGULAR,
+                                possible_grasps[i].pre_grasp_approach.desired_distance);
     visual_tools_->triggerBatchPublish();
     ros::Duration(0.03).sleep();
 
@@ -83,6 +92,9 @@ int main(int argc, char *argv[])
     visual_tools_->publishEEMarkers(possible_grasps[i].grasp_pose.pose, ee_jmg, rviz_visual_tools::DARK_GREY);
     visual_tools_->triggerBatchPublish();
     ros::Duration(0.03).sleep();
+
+    if (!ros::ok())
+      break;
   }
   // Benchmark time
   double duration = (ros::Time::now() - start_time).toNSec() * 1e-6;

@@ -148,9 +148,9 @@ bool CylindricalGraspGenerator::generateGrasp(const geometry_msgs::Pose &object_
 
         // ------------------------------------------------------------------------
         // Approach vector
-        double approach_angle = 0.0; // TODO Set as param
+        // Turn around y axis and apply end effector transform
         Eigen::Vector3d approach_vector =
-            -1.0 * (Eigen::AngleAxisd(approach_angle, Eigen::Vector3d::UnitY()) * Eigen::Vector3d::UnitX());
+            -1.0 * (Eigen::AngleAxisd(opt_.approach_angle, Eigen::Vector3d::UnitY()) * Eigen::Vector3d::UnitX());
         approach_vector = opt_.grasp_pose_to_eff * approach_vector;
 
         // ------------------------------------------------------------------------
