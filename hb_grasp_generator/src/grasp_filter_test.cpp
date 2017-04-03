@@ -8,10 +8,7 @@
 // MoveIt
 #include <moveit_msgs/MoveGroupAction.h>
 #include <moveit_msgs/DisplayTrajectory.h>
-#include <moveit_msgs/RobotState.h>
 #include <moveit/kinematic_constraints/utils.h>
-#include <moveit/robot_state/robot_state.h>
-#include <moveit/robot_state/conversions.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
 
 // Rviz
@@ -21,7 +18,7 @@
 // Grasp
 #include <moveit_visual_tools/moveit_visual_tools.h>
 
-// Baxter specific properties
+// Grasp generation
 #include "hb_grasp_generator/grasp_options.h"
 #include "hb_grasp_generator/grasp_filter.h"
 #include "hb_grasp_generator/grasp_generator.h"
@@ -42,7 +39,7 @@ private:
   moveit_visual_tools::MoveItVisualToolsPtr visual_tools_;
 
   // Grasp filter
-  hb_grasp_generator::GraspFilter grasp_filter_;
+  hb_grasp_generator::GraspFilterPtr grasp_filter_;
 
   // data for generating grasps
   hb_grasp_generator::CylindricalGraspGeneratorOptions grasp_data_;
@@ -58,7 +55,7 @@ private:
 public:
 
   // Constructor
-  GraspGeneratorTest(int num_tests) 
+  GraspGeneratorTest()
     : nh_("~")
   {
     // Get arm info from param server
@@ -77,7 +74,7 @@ public:
 
     // ---------------------------------------------------------------------------------------------
     // Load the Robot Viz Tools for publishing to Rviz
-    visual_tools_.reset(new moveit_visual_tools::MoveItVisualTools(grasp_data_.base_link_, "/grasp_test", planning_scene_monitor_));
+    visual_tools_.reset(new moveit_visual_tools::MoveItVisualTools("bender/base_link", "/grasp_test", planning_scene_monitor_));
     visual_tools_->setLifetime(40.0);
     visual_tools_->loadEEMarker("l_gripper");
     visual_tools_->setFloorToBaseHeight(-0.9);
@@ -86,105 +83,52 @@ public:
     //visual_tools_->removeAllCollisionObjects();
 // ---------------------------------------------------------------------------------------------
     // Load grasp generator
-    simple_grasps_.reset( new hb_grasp_generator::CylindricalGraspGeneratorPtr(visual_tools_) );
+    simple_grasps_.reset( new hb_grasp_generator::CylindricalGraspGenerator() );
 
     // ---------------------------------------------------------------------------------------------
     // Load grasp filter
     robot_state::RobotState robot_state = planning_scene_monitor_->getPlanningScene()->getCurrentState();
-    grasp_filter_.reset(new moveit_simple_grasps::GraspFilter(robot_state, visual_tools_) );
+    grasp_filter_.reset(new hb_grasp_generator::GraspFilter(robot_state, visual_tools_) );
 
     // ---------------------------------------------------------------------------------------------
     // Generate grasps for a bunch of random objects
     geometry_msgs::Pose object_pose;
+    object_pose.position.x = 0.8;
+    object_pose.position.y = -0.3;
+    object_pose.position.z = 0.8;
+
+    object_pose.orientation.x = 0.0;
+    object_pose.orientation.y = 0.0;
+    object_pose.orientation.z = 0.0;
+    object_pose.orientation.w = 1.0;
+
     std::vector<moveit_msgs::Grasp> possible_grasps;
     std::vector<trajectory_msgs::JointTrajectoryPoint> ik_solutions; // save each grasps ik solution for visualization
 
-    // Loop
-    for (int i = 0; i < num_tests; ++i)
+    ROS_INFO_STREAM_NAMED("test","Adding object");
+
+    possible_grasps.clear();
+    ik_solutions.clear();
+
+    // Generate set of grasps for one object
+    simple_grasps_->generateGrasp( object_pose, possible_grasps);
+
+    // Filter the grasp for only the ones that are reachable
+    while (ros::ok())
     {
-      ROS_INFO_STREAM_NAMED("test","Adding random object " << i+1 << " of " << num_tests);
-
-      // Remove randomness when we are only running one test
-      if (num_tests == 1)
-        generateTestObject(object_pose);
-      else
-        generateRandomObject(object_pose);
-
       // Show the block
-      visual_tools_->publishBlock(object_pose, rviz_visual_tools::BLUE, BLOCK_SIZE);
+      visual_tools_->publishCylinder(object_pose, rviz_visual_tools::BLUE, 0.05, 0.05);
 
-      possible_grasps.clear();
-      ik_solutions.clear();
-
-      // Generate set of grasps for one object
-      simple_grasps_->generateBlockGrasps( object_pose, grasp_data_, possible_grasps);
-
-      // Filter the grasp for only the ones that are reachable
       bool filter_pregrasps = true;
-      grasp_filter_->filterGrasps(possible_grasps, ik_solutions, filter_pregrasps, grasp_data_.ee_parent_link_, planning_group_name_);
+      grasp_filter_->filterGrasps(possible_grasps, ik_solutions, filter_pregrasps, "bender/l_wrist_pitch_link", planning_group_name_);
 
       // Visualize them
-      const robot_model::JointModelGroup* ee_jmg = planning_scene_monitor_->getRobotModel()->getJointModelGroup(grasp_data_.ee_group_);
+      const robot_model::JointModelGroup* ee_jmg = planning_scene_monitor_->getRobotModel()->getJointModelGroup("l_gripper");
       visual_tools_->publishAnimatedGrasps(possible_grasps, ee_jmg);
       const robot_model::JointModelGroup* arm_jmg = planning_scene_monitor_->getRobotModel()->getJointModelGroup(planning_group_name_);
       visual_tools_->publishIKSolutions(ik_solutions, arm_jmg, 0.25);
-
-
-      // Make sure ros is still going
-      if(!ros::ok())
-        break;
+      ros::Duration(0.5).sleep();
     }
-
-
-  }
-
-  void generateTestObject(geometry_msgs::Pose& object_pose)
-  {
-    // Position
-    geometry_msgs::Pose start_object_pose;
-    geometry_msgs::Pose end_object_pose;
-
-    start_object_pose.position.x = 0.8;
-    start_object_pose.position.y = -0.5;
-    start_object_pose.position.z = 0.02;
-
-    end_object_pose.position.x = 0.25;
-    end_object_pose.position.y = 0.15;
-    end_object_pose.position.z = 0.02;
-
-    // Orientation
-    double angle = M_PI / 1.5;
-    Eigen::Quaterniond quat(Eigen::AngleAxis<double>(double(angle), Eigen::Vector3d::UnitZ()));
-    start_object_pose.orientation.x = quat.x();
-    start_object_pose.orientation.y = quat.y();
-    start_object_pose.orientation.z = quat.z();
-    start_object_pose.orientation.w = quat.w();
-
-    angle = M_PI / 1.1;
-    quat = Eigen::Quaterniond(Eigen::AngleAxis<double>(double(angle), Eigen::Vector3d::UnitZ()));
-    end_object_pose.orientation.x = quat.x();
-    end_object_pose.orientation.y = quat.y();
-    end_object_pose.orientation.z = quat.z();
-    end_object_pose.orientation.w = quat.w();
-
-    // Choose which object to test
-    object_pose = start_object_pose;
-  }
-
-  void generateRandomObject(geometry_msgs::Pose& object_pose)
-  {
-    // Position
-    object_pose.position.x = visual_tools_->dRand(0.7,TABLE_DEPTH);
-    object_pose.position.y = visual_tools_->dRand(-TABLE_WIDTH/2,-0.1);
-    object_pose.position.z = TABLE_Z + TABLE_HEIGHT / 2.0 + BLOCK_SIZE / 2.0;
-  
-    // Orientation
-    double angle = M_PI * visual_tools_->dRand(0.1,1);
-    Eigen::Quaterniond quat(Eigen::AngleAxis<double>(double(angle), Eigen::Vector3d::UnitZ()));
-    object_pose.orientation.x = quat.x();
-    object_pose.orientation.y = quat.y();
-    object_pose.orientation.z = quat.z();
-    object_pose.orientation.w = quat.w();
   }
 
 }; // end of class
@@ -196,25 +140,11 @@ int main(int argc, char *argv[])
 {
   int num_tests = 5;
 
-  ros::init(argc, argv, "grasp_generator_test");
+  ros::init(argc, argv, "grasp_filter_test");
 
   // Allow the action server to recieve and send ros messages
   ros::AsyncSpinner spinner(2);
   spinner.start();
-
-  // Check for verbose flag
-  bool verbose = false;
-  if (argc > 1)
-  {
-    for (std::size_t i = 0; i < argc; ++i)
-    {
-      if (strcmp(argv[i], "--verbose") == 0)
-      {
-        ROS_INFO_STREAM_NAMED("main","Running in VERBOSE mode (much slower)");
-        verbose = true;
-      }
-    }
-  }
   
   // Seed random
   srand(ros::Time::now().toSec());
@@ -224,12 +154,11 @@ int main(int argc, char *argv[])
   start_time = ros::Time::now();
 
   // Run Tests
-  moveit_simple_grasps::GraspGeneratorTest tester(num_tests);
+  hb_grasp_generator::GraspGeneratorTest tester();
 
   // Benchmark time
   double duration = (ros::Time::now() - start_time).toNSec() * 1e-6;
   ROS_INFO_STREAM_NAMED("","Total time: " << duration);
-  std::cout << duration << "\t" << num_tests << std::endl;
 
   ros::Duration(1.0).sleep(); // let rviz markers finish publishing
 
