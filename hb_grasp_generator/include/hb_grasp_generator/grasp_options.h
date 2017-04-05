@@ -11,8 +11,36 @@
 
 namespace hb_grasp_generator
 {
+
+class GraspOptions
+{
+ public:
+  // Grasp point to end effector
+  Eigen::Affine3d grasp_pose_to_eff;
+  // Frames
+  std::string base_link;
+  std::string end_effector_name;
+  std::string end_effector_parent_link;
+  std::vector<std::string> joint_names;
+  std::vector<double> grasp_posture;
+  std::vector<double> pre_grasp_posture;
+  trajectory_msgs::JointTrajectory grasp_posture_msg;
+  trajectory_msgs::JointTrajectory pre_grasp_posture_msg;
+  double pregrasp_time_from_start;
+  double grasp_time_from_start;
+
+ public:
+  GraspOptions();
+
+  bool load(const ros::NodeHandle &nh, const std::string &end_effector);
+
+  friend std::ostream &operator<<(std::ostream &os, const GraspOptions &opt);
+};
+
 class CylindricalGraspGeneratorOptions
 {
+ private:
+  const std::string name_;
  public:
   // Yaw params
   int yaw_angle_count;
@@ -32,24 +60,11 @@ class CylindricalGraspGeneratorOptions
   double pregrasp_max;
   double pregrasp_res;
   double approach_angle;
-  // Grasp point to end effector
-  Eigen::Affine3d grasp_pose_to_eff;
-  // Frames
-  std::string base_link;
-  std::string end_effector_name;
-  std::string end_effector_parent_link;
-  std::vector<std::string> joint_names;
-  std::vector<double> grasp_posture;
-  std::vector<double> pre_grasp_posture;
-  trajectory_msgs::JointTrajectory grasp_posture_msg;
-  trajectory_msgs::JointTrajectory pre_grasp_posture_msg;
-  double pregrasp_time_from_start;
-  double grasp_time_from_start;
 
  public:
   CylindricalGraspGeneratorOptions();
 
-  bool load(const ros::NodeHandle &nh, const std::string &end_effector);
+  bool load(const ros::NodeHandle &nh);
 
   friend std::ostream &operator<<(std::ostream &os, const CylindricalGraspGeneratorOptions &opt);
 };

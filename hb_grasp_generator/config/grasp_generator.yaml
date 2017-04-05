@@ -30,8 +30,8 @@ l_gripper:
     pitch_angle_min: 0.0
     pitch_angle_max: 0.2
     roll_angle_count: 3
-    roll_angle_min: 0.0
+    roll_angle_min: -0.1
     roll_angle_max: 0.1
     pregrasp_count: 3
-    pregrasp_min: 0.01
-    pregrasp_max: 0.02
+    pregrasp_min: 0.1
+    pregrasp_max: 0.15

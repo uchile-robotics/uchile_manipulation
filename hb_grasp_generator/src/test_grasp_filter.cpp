@@ -84,8 +84,12 @@ public:
     visual_tools_->loadEEMarker(ee_jmg);
 
     // ---------------------------------------------------------------------------------------------
-    // Load grasp generator
-    simple_grasps_.reset(new hb_grasp_generator::CylindricalGraspGenerator());
+    // Load grasp options
+    hb_grasp_generator::GraspOptions opt;
+    opt.load(nh_, ee_group_name_);
+    ros::NodeHandle grasp_nh(nh_, ee_group_name_);
+    simple_grasps_.reset(new hb_grasp_generator::CylindricalGraspGenerator(grasp_nh, opt));
+
 
     // ---------------------------------------------------------------------------------------------
     // Load Grasp filter
@@ -123,11 +127,12 @@ public:
 
     // Apply grasp filter
     bool filter_pregrasps = true;
+    double ik_timeout = 0.1;
     grasp_filter_->filterGrasps(possible_grasps,
                                 ik_solutions,
                                 filter_pregrasps,
                                 "bender/l_wrist_pitch_link",
-                                planning_group_name_);
+                                planning_group_name_, ik_timeout);
 
     // Visualize IK solutions
     visual_tools_->publishIKSolutions(ik_solutions, arm_jmg, 0.25);

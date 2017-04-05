@@ -28,8 +28,11 @@ int main(int argc, char *argv[])
   visual_tools_->loadMarkerPub();
 
   // Load grasp generator
-  hb_grasp_generator::CylindricalGraspGeneratorPtr simple_grasps_(new hb_grasp_generator::CylindricalGraspGenerator());
-
+  ros::NodeHandle nh("~");
+  hb_grasp_generator::GraspOptions opt;
+  opt.load(nh, "l_gripper");
+  ros::NodeHandle grasp_nh(nh, "l_gripper");
+  hb_grasp_generator::CylindricalGraspGeneratorPtr simple_grasps_(new hb_grasp_generator::CylindricalGraspGenerator(grasp_nh, opt));
   // Test object pose
   geometry_msgs::Pose object_pose;
   object_pose.position.x = 0.50;

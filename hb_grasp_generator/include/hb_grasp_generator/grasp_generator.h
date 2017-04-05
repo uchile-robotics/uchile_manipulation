@@ -23,18 +23,20 @@ class GraspGenerator
 class CylindricalGraspGenerator : public GraspGenerator
 {
  private:
-  // A shared node handle
-  ros::NodeHandle nh_;
-  // Grasp generator options
-  CylindricalGraspGeneratorOptions opt_;
   // Class name
   const std::string name_;
+  // A shared node handle
+  ros::NodeHandle nh_;
+  // Global options
+  GraspOptions global_opt_;
+  // Grasp generator options
+  CylindricalGraspGeneratorOptions opt_;
 
  public:
   /**
    * \brief Constructor
    */
-  CylindricalGraspGenerator();
+  CylindricalGraspGenerator(const ros::NodeHandle &nh, const hb_grasp_generator::GraspOptions &opt);
   bool generateGrasp(const geometry_msgs::Pose &object_pose, std::vector<moveit_msgs::Grasp> &possible_grasps);
 
   /**

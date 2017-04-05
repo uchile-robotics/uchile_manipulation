@@ -36,7 +36,7 @@ bool GraspFilter::chooseBestGrasp(const std::vector<moveit_msgs::Grasp> &possibl
 // Return grasps that are kinematically feasible
 bool GraspFilter::filterGrasps(std::vector<moveit_msgs::Grasp> &possible_grasps,
                                std::vector<trajectory_msgs::JointTrajectoryPoint> &ik_solutions, bool filter_pregrasp,
-                               const std::string &ee_parent_link, const std::string &planning_group)
+                               const std::string &ee_parent_link, const std::string &planning_group, const double override_ik_timeout)
 {
   // -----------------------------------------------------------------------------------------------
   // Error check
@@ -59,7 +59,8 @@ bool GraspFilter::filterGrasps(std::vector<moveit_msgs::Grasp> &possible_grasps,
   // -----------------------------------------------------------------------------------------------
   // Get the solver timeout from kinematics.yaml
   double timeout = robot_state_.getRobotModel()->getJointModelGroup(planning_group)->getDefaultIKTimeout();
-  timeout = 0.3; // TODO Set param
+  if (override_ik_timeout > 0.0)
+    timeout = override_ik_timeout;
   ROS_DEBUG_STREAM_NAMED(name_, "Grasp filter IK timeout " << timeout);
 
   // -----------------------------------------------------------------------------------------------

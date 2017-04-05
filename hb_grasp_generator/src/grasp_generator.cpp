@@ -29,7 +29,6 @@ geometry_msgs::PoseStamped getPreGraspPose(const moveit_msgs::Grasp &grasp, cons
   Eigen::Vector3d pre_grasp_approach_direction_local;
 
   // The direction of the pre-grasp
-  // Calculate the current animation position based on the percent
   Eigen::Vector3d pre_grasp_approach_direction = Eigen::Vector3d(
       -1 * grasp.pre_grasp_approach.direction.vector.x * grasp.pre_grasp_approach.desired_distance,
       -1 * grasp.pre_grasp_approach.direction.vector.y * grasp.pre_grasp_approach.desired_distance,
@@ -59,12 +58,12 @@ geometry_msgs::PoseStamped getPreGraspPose(const moveit_msgs::Grasp &grasp, cons
   return pre_grasp_pose;
 }
 
-CylindricalGraspGenerator::CylindricalGraspGenerator() :
-    nh_("~"),
-    opt_(),
-    name_("cylindrical_grasp_generator")
+CylindricalGraspGenerator::CylindricalGraspGenerator(const ros::NodeHandle &nh, const hb_grasp_generator::GraspOptions &opt):
+    name_("cylindrical_grasp_generator"),
+    nh_(nh, name_),
+    global_opt_(opt)
 {
-  opt_.load(nh_, "l_gripper");
+  opt_.load(nh_);
   ROS_DEBUG_STREAM_NAMED(name_, opt_);
 }
 
@@ -128,17 +127,17 @@ bool CylindricalGraspGenerator::generateGrasp(const geometry_msgs::Pose &object_
         // ------------------------------------------------------------------------
         // Pregrasp and grasp postures
         // The internal posture of the hand for the pre-grasp only positions are used
-        new_grasp.pre_grasp_posture = opt_.pre_grasp_posture_msg;
+        new_grasp.pre_grasp_posture = global_opt_.pre_grasp_posture_msg;
         // The internal posture of the hand for the grasp positions and efforts are used
-        new_grasp.grasp_posture = opt_.grasp_posture_msg;
+        new_grasp.grasp_posture = global_opt_.grasp_posture_msg;
 
         // Change grasp to frame of reference of this custom end effector
-        grasp_pose = grasp_pose * opt_.grasp_pose_to_eff;
+        grasp_pose = grasp_pose * global_opt_.grasp_pose_to_eff;
 
         // Fill grasp message with grasp pose and header info
         tf::poseEigenToMsg(grasp_pose, new_grasp.grasp_pose.pose);
         new_grasp.grasp_pose.header.stamp = ros::Time::now();
-        new_grasp.grasp_pose.header.frame_id = opt_.base_link;
+        new_grasp.grasp_pose.header.frame_id = global_opt_.base_link;
 
         // The maximum contact force to use while grasping (<=0 to disable)
         new_grasp.max_contact_force = 0;
@@ -148,18 +147,18 @@ bool CylindricalGraspGenerator::generateGrasp(const geometry_msgs::Pose &object_
         // Turn around y axis and apply end effector transform
         Eigen::Vector3d approach_vector =
             -1.0 * (Eigen::AngleAxisd(opt_.approach_angle, Eigen::Vector3d::UnitY()) * Eigen::Vector3d::UnitX());
-        approach_vector = opt_.grasp_pose_to_eff * approach_vector;
+        approach_vector = global_opt_.grasp_pose_to_eff * approach_vector;
 
         // ------------------------------------------------------------------------
         // Approach
         tf::vectorEigenToMsg(approach_vector, pre_grasp_approach.direction.vector);
-        pre_grasp_approach.direction.header.frame_id = opt_.end_effector_parent_link;
+        pre_grasp_approach.direction.header.frame_id = global_opt_.end_effector_parent_link;
         new_grasp.pre_grasp_approach = pre_grasp_approach;
 
         // ------------------------------------------------------------------------
         // Retreat
         tf::vectorEigenToMsg(-1.0 * approach_vector, post_grasp_retreat.direction.vector);
-        post_grasp_retreat.direction.header.frame_id = opt_.end_effector_parent_link;
+        post_grasp_retreat.direction.header.frame_id = global_opt_.end_effector_parent_link;
         new_grasp.post_grasp_retreat = post_grasp_retreat;
 
         // ------------------------------------------------------------------------
@@ -168,11 +167,11 @@ bool CylindricalGraspGenerator::generateGrasp(const geometry_msgs::Pose &object_
         {
           float distance = opt_.pregrasp_min + opt_.pregrasp_res * distance_idx;
           // The distance the origin of a robot link needs to travel
-          pre_grasp_approach.desired_distance = distance;
-          pre_grasp_approach.min_distance = 0.9 * distance; // TODO Set as param
+          new_grasp.pre_grasp_approach.desired_distance = distance;
+          new_grasp.pre_grasp_approach.min_distance = 0.9 * distance; // TODO Set as param
 
-          post_grasp_retreat.desired_distance = distance;
-          post_grasp_retreat.min_distance = 0.9 * distance; // TODO Set as param
+          new_grasp.post_grasp_retreat.desired_distance = distance;
+          new_grasp.post_grasp_retreat.min_distance = 0.9 * distance; // TODO Set as param
 
           // Add to vector
           possible_grasps.push_back(new_grasp);

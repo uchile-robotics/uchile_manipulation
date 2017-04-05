@@ -116,7 +116,8 @@ class GraspFilter
   bool filterGrasps(std::vector<moveit_msgs::Grasp> &possible_grasps,
                     std::vector<trajectory_msgs::JointTrajectoryPoint> &ik_solutions,
                     bool filter_pregrasp, const std::string &ee_parent_link,
-                    const std::string &planning_group);
+                    const std::string &planning_group,
+                    const double override_ik_timeout = 0.0);
 
  private:
 
