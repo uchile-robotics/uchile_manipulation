@@ -56,13 +56,11 @@ public:
   {
 
     // Get arm info from param server
-    nh_.param("arm", arm_, std::string("l_arm"));
-    nh_.param("ee_group_name", ee_group_name_, std::string("l_gripper"));
-    planning_group_name_ = "l_arm";
+    nh_.param("arm", planning_group_name_, std::string("l_arm"));
+    nh_.param("ee_name", ee_group_name_, std::string("l_gripper"));
 
-    ROS_INFO_STREAM_NAMED("test","Arm: " << arm_);
-    ROS_INFO_STREAM_NAMED("test","End Effector: " << ee_group_name_);
     ROS_INFO_STREAM_NAMED("test","Planning Group: " << planning_group_name_);
+    ROS_INFO_STREAM_NAMED("test","End Effector: " << ee_group_name_);
 
 
     // ---------------------------------------------------------------------------------------------
@@ -78,7 +76,7 @@ public:
     visual_tools_->setLifetime(40.0);
     // Get joint model groups
     const robot_model::JointModelGroup
-        *ee_jmg = planning_scene_monitor_->getRobotModel()->getJointModelGroup("l_gripper");
+        *ee_jmg = planning_scene_monitor_->getRobotModel()->getJointModelGroup(ee_group_name_);
     const robot_model::JointModelGroup
         *arm_jmg = planning_scene_monitor_->getRobotModel()->getJointModelGroup(planning_group_name_);
     visual_tools_->loadEEMarker(ee_jmg);
@@ -131,7 +129,7 @@ public:
     grasp_filter_->filterGrasps(possible_grasps,
                                 ik_solutions,
                                 filter_pregrasps,
-                                "bender/l_wrist_pitch_link",
+                                opt.end_effector_parent_link,
                                 planning_group_name_, ik_timeout);
 
     // Visualize IK solutions
