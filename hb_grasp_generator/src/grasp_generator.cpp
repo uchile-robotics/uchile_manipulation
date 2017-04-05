@@ -88,11 +88,6 @@ bool CylindricalGraspGenerator::generateGrasp(const geometry_msgs::Pose &object_
   moveit_msgs::GripperTranslation post_grasp_retreat;
   post_grasp_retreat.direction.header.stamp = ros::Time::now();
 
-  // Create re-usable blank pose
-  geometry_msgs::PoseStamped grasp_pose_msg;
-  grasp_pose_msg.header.stamp = ros::Time::now();
-  grasp_pose_msg.header.frame_id = opt_.base_link;
-
   // ---------------------------------------------------------------------------------------------
   // Grasp generator loop
 
@@ -140,8 +135,10 @@ bool CylindricalGraspGenerator::generateGrasp(const geometry_msgs::Pose &object_
         // Change grasp to frame of reference of this custom end effector
         grasp_pose = grasp_pose * opt_.grasp_pose_to_eff;
 
-        // Fill grasp message with grasp pose
+        // Fill grasp message with grasp pose and header info
         tf::poseEigenToMsg(grasp_pose, new_grasp.grasp_pose.pose);
+        new_grasp.grasp_pose.header.stamp = ros::Time::now();
+        new_grasp.grasp_pose.header.frame_id = opt_.base_link;
 
         // The maximum contact force to use while grasping (<=0 to disable)
         new_grasp.max_contact_force = 0;

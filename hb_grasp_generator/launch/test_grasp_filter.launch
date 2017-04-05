@@ -7,16 +7,19 @@
     <arg unless="$(arg verbose)" name="command_args" value="" />
     <arg     if="$(arg verbose)" name="command_args" value="--verbose" />
 
-    <!-- Load the URDF, SRDF and other .yaml configuration files on the param server -->
-    <include file="$(find bender_moveit_config)/launch/planning_context.launch">
-        <arg name="load_robot_description" value="true"/>
+    <!-- Cargar modelo con TF-->
+    <include file="$(find bender_tf)/launch/tf_model.launch">
+        <arg name="use_gui" value="true" />
+        <arg name="model_type" value="standard" />
     </include>
 
-    <!-- Publish world frame -->
-    <node pkg="tf" type="static_transform_publisher" name="tf_publisher_world" args="0 0 0 0 0 0 /world /bender/base_link 25" />
-
-    <!-- Grasp filter node -->
-    <node pkg="hb_grasp_generator" type="grasp_filter_test" name="grasp_filter_test" output="screen" >
+    <!-- Load SRDF and other MoveIt configuration files on the param server -->
+    <include file="$(find bender_moveit_config)/launch/planning_context.launch">
+        <arg name="load_robot_description" value="false"/>
+    </include>
+    
+    <!-- Grasp generator node -->
+    <node pkg="hb_grasp_generator" type="test_grasp_filter" name="test_grasp_filter" output="screen" >
         <rosparam command="load" file="$(find hb_grasp_generator)/config/grasp_generator.yaml" />
     </node>
 

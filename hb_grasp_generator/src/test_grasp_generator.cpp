@@ -3,8 +3,6 @@
 #include <geometry_msgs/PoseArray.h>
 // Eigen
 #include <eigen_conversions/eigen_msg.h>
-#include <Eigen/Core>
-#include <Eigen/Geometry>
 
 #include "hb_grasp_generator/grasp_generator.h"
 
@@ -32,11 +30,12 @@ int main(int argc, char *argv[])
   // Load grasp generator
   hb_grasp_generator::CylindricalGraspGeneratorPtr simple_grasps_(new hb_grasp_generator::CylindricalGraspGenerator());
 
-  // Object pose
+  // Test object pose
   geometry_msgs::Pose object_pose;
-  object_pose.position.x = 0.0;
-  object_pose.position.y = 0.0;
-  object_pose.position.z = 0.0;
+  object_pose.position.x = 0.50;
+  object_pose.position.y = 0.29;
+  object_pose.position.z = 0.60;
+
   object_pose.orientation.x = 0.0;
   object_pose.orientation.y = 0.0;
   object_pose.orientation.z = 0.0;
@@ -66,7 +65,7 @@ int main(int argc, char *argv[])
         pregrasp = hb_grasp_generator::getPreGraspPose(possible_grasps[i], "bender/l_wrist_pitch_link");
     visual_tools_->publishEEMarkers(pregrasp.pose, ee_jmg, rviz_visual_tools::DARK_GREY);
     visual_tools_->triggerBatchPublish();
-    ros::Duration(0.06).sleep();
+    ros::Duration(0.01).sleep();
 
     // Convert to Eigen
     tf::poseMsgToEigen(pregrasp.pose, pregrasp_pose);
@@ -86,19 +85,18 @@ int main(int argc, char *argv[])
                                 rviz_visual_tools::REGULAR,
                                 possible_grasps[i].pre_grasp_approach.desired_distance);
     visual_tools_->triggerBatchPublish();
-    ros::Duration(0.03).sleep();
+    ros::Duration(0.01).sleep();
 
     // View grasp pose
     visual_tools_->publishEEMarkers(possible_grasps[i].grasp_pose.pose, ee_jmg, rviz_visual_tools::DARK_GREY);
     visual_tools_->triggerBatchPublish();
-    ros::Duration(0.03).sleep();
+    ros::Duration(0.01).sleep();
 
     if (!ros::ok())
       break;
   }
   // Benchmark time
-  double duration = (ros::Time::now() - start_time).toNSec() * 1e-6;
-  ROS_INFO_STREAM_NAMED("", "Total time: " << duration);
+  ROS_INFO_STREAM_NAMED("", "Total time: " << (ros::Time::now() - start_time).toSec());
 
   return 0;
 }

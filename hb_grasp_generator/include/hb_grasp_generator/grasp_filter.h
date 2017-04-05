@@ -72,15 +72,13 @@ class GraspFilter
  private:
   // State of robot
   robot_state::RobotState robot_state_;
-
   // Kinematic solvers
   std::map<std::string, std::vector<kinematics::KinematicsBaseConstPtr> > kin_solvers_;
-
-  // class for publishing stuff to rviz
+  // Visualization tools
   moveit_visual_tools::MoveItVisualToolsPtr visual_tools_;
-
+  // Verbose mode
   bool verbose_;
-
+  // Log namespace
   const std::string name_;
 
  public:
@@ -105,6 +103,15 @@ class GraspFilter
    * \param
    * \param whether to also check ik feasibility for the pregrasp position
    * \return true on success
+   */
+  /**
+   * @brief Filter grasps kinematically .
+   * @param possible_grasps Grasps from grasp generator function.
+   * @param ik_solutions IK solutions found.
+   * @param filter_pregrasp
+   * @param ee_parent_link
+   * @param planning_group
+   * @return
    */
   bool filterGrasps(std::vector<moveit_msgs::Grasp> &possible_grasps,
                     std::vector<trajectory_msgs::JointTrajectoryPoint> &ik_solutions,
