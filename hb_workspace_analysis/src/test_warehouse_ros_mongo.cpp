@@ -1,4 +1,4 @@
-#include "test_mongo_helpers.h"
+#include "hb_workspace_analysis/test_mongo_helpers.h"
 #include <mongo_ros/message_collection.h>
 
 namespace mr=mongo_ros;
