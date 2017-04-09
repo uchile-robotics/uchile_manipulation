@@ -7,10 +7,8 @@
 namespace hb_grasp_generator
 {
 // Constructor
-GraspFilter::GraspFilter(const robot_state::RobotState& robot_state,
-                         moveit_visual_tools::MoveItVisualToolsPtr &visual_tools):
+GraspFilter::GraspFilter(const robot_state::RobotState& robot_state):
     robot_state_(robot_state),
-    visual_tools_(visual_tools),
     verbose_(true),
     name_("grasp_filter")
 {

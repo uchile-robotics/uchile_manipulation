@@ -1,4 +1,4 @@
-// ROS
+ // ROS
 #include <ros/ros.h>
 #include <geometry_msgs/PoseArray.h>
 #include <sensor_msgs/JointState.h>
@@ -92,7 +92,7 @@ public:
     // ---------------------------------------------------------------------------------------------
     // Load Grasp filter
     const robot_state::RobotState& robot_state = planning_scene_monitor_->getPlanningScene()->getCurrentState();
-    grasp_filter_.reset(new hb_grasp_generator::GraspFilter(robot_state, visual_tools_) );
+    grasp_filter_.reset(new hb_grasp_generator::GraspFilter(robot_state) );
 
     // ---------------------------------------------------------------------------------------------
     // Test grasp position

@@ -10,6 +10,8 @@ project(hb_workspace_analysis)
 find_package(catkin REQUIRED COMPONENTS
   hb_grasp_generator
   warehouse_ros
+  moveit_msgs
+  trajectory_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -46,11 +48,11 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+  GraspPoint.msg
+  GraspStorage.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -67,10 +69,11 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  moveit_msgs
+  trajectory_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -135,6 +138,7 @@ link_directories(${catkin_LIBRARY_DIRS})
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/hb_workspace_analysis_node.cpp)
 add_executable(test_db src/test_warehouse_ros_mongo.cpp)
+add_dependencies(test_db ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(test_db ${catkin_LIBRARIES})
 
 

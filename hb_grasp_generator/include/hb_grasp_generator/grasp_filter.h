@@ -8,9 +8,6 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <moveit_msgs/Grasp.h>
 
-// Rviz
-#include <moveit_visual_tools/moveit_visual_tools.h>
-
 // MoveIt
 #include <moveit/robot_state/robot_state.h>
 #include <moveit/kinematics_plugin_loader/kinematics_plugin_loader.h>
@@ -74,8 +71,6 @@ class GraspFilter
   robot_state::RobotState robot_state_;
   // Kinematic solvers
   std::map<std::string, std::vector<kinematics::KinematicsBaseConstPtr> > kin_solvers_;
-  // Visualization tools
-  moveit_visual_tools::MoveItVisualToolsPtr visual_tools_;
   // Verbose mode
   bool verbose_;
   // Log namespace
@@ -84,8 +79,7 @@ class GraspFilter
  public:
 
   // Constructor
-  GraspFilter(const robot_state::RobotState& robot_state,
-              moveit_visual_tools::MoveItVisualToolsPtr &visual_tools);
+  GraspFilter(const robot_state::RobotState& robot_state);
 
   // Destructor
   ~GraspFilter();
