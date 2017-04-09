@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(hb_workspace_analysis)
 
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/" ${CMAKE_MODULE_PATH})
 ## Add support for C++11, supported in ROS Kinetic and newer
 # add_definitions(-std=c++11)
 
