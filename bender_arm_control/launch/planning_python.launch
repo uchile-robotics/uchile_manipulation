@@ -1,0 +1,22 @@
+<launch>
+  <!-- both, r_arm, l_arm-->
+  <arg name="use_arm" default="both" />
+  <!-- Model type -->
+  <arg name="model_type" default="standard" />
+
+  <!-- MoveIt move_group --> 
+  <include file="$(find bender_moveit_config)/launch/bender_moveit.launch">
+    <arg name="use_gui" value="true"/>
+    <arg name="use_arm" value="$(arg use_arm)" />
+    <arg name="model_type" value="$(arg model_type)" />
+  </include>
+
+  <!-- Capability Map file -->
+  <param name="capmap_file" type="string" value="$(find bender_arm_planning)/database/cap_map.dat" />
+  
+  <!-- Capa de servicios de planning, integra para ambos brazos -->
+  <node name="arm_planning" pkg="bender_arm_control" type="test_skills.py" output="screen">
+    <rosparam command="load" file="$(find bender_arm_control)/config/grasp_data.yaml"/>
+  </node>
+
+</launch>
