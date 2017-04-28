@@ -68,15 +68,7 @@ def main():
     rospy.ServiceProxy('/manage_octomap', ManageOctomap)
     #octomap = rospy.ServiceProxy('/manage_octomap', ManageOctomap)
 
-    # Grasp ob
-    pringles_pose = get_pose(0.60, 0.25, 0.75)
-    pringles = get_collision_cylinder(pringles_pose, 'pringles', [0.10, 0.04])
-
-    # Actualizar y congelar octomap
-    # octomap_opt = OctomapOptions(OctomapOptions.UPDATE)
-    # octomap(octomap_opt)
-
-
+    
     limb = Limb('l')
 
     ################################
@@ -87,43 +79,31 @@ def main():
     ################################
     #limb.arm.go_home()
     print "INICIA INTERVENCION GIO"
+    gio_home =[0.0,0.0,0.0,0.0,0.0,0.0]
+
+    print "HOMING"
+
+    limb.arm.move_joint(gio_home)
+    rospy.sleep(5.0)
+
+    print "HOME STATE"
+
+    rospy.sleep(2.0)
+
     gio=[0.373582124710083, 0.4276796877384186, 0.5884131789207458, 1.1624618768692017, -0.5723373293876648, 0.25651833415031433]
 
-    gio=[0.373582124710083, 0.4276796877384186, 0.5884131789207458, 1.7700000000000017, -0.5723373293876648, 0.25651833415031433]
+    gio2=[0.373582124710083, 0.4276796877384186, 0.5884131789207458, 1.7700000000000017, -0.5723373293876648, 0.25651833415031433]
 
+    print "GIO1 START"
     limb.arm.move_joint(gio)
-    print pringles_pose
+    rospy.sleep(5.0)
+    print "GIO2 START"
+    limb.arm.move_joint(gio2)
+    rospy.sleep(5.0)
+    print "GIO2 END"
     print "TERMINA INTERVENCION GIO"
+    print "BYE BYE =)"
     ################################
-
-    possible_grasp = limb.arm.get_grasp_capmap(pringles)
-
-    if not possible_grasp:
-        rospy.logerr('No se encontraron grasps')
-        return
-
-    limb.arm.set_position_named('home')
-    rospy.sleep(2.0)
-    limb.arm.set_position_named('premanip_1')
-    rospy.sleep(3.0)
-
-    rospy.loginfo('Se encontraron {} grasps'.format(len(possible_grasp['pregrasp'])))
-    # Escoger grasps
-    pregrasp_joints = possible_grasp['pregrasp'][0]
-    grasp_joints = possible_grasp['grasp'][0]
-
-    result = limb.arm.set_joint(pregrasp_joints) # Movimiento con planificador
-
-    if (result.error_code.val == MoveItErrorCodes.SUCCESS):
-        limb.gripper.open(effort = 300)
-        rospy.sleep(1.0)
-
-        limb.arm.move_joint(grasp_joints, interval = 2.5) # Movimiento con collisiones permitidas
-        limb.arm.wait()
-        rospy.sleep(0.5)
-
-        limb.gripper.close(effort = 300)
-        rospy.sleep(1.0)
 
 
 if __name__ == '__main__':
