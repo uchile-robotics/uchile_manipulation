@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 
-from bender_moveit_python import move_group_interface
+from bender_moveit_python import MoveGroupInterface
 
 JOINT_STATE_TOPIC = "/bender/joint_states"
 ROBOT_DESCRIPTION = "robot_description"
@@ -27,6 +27,8 @@ def main():
 
     #Interface para move_group l_arm y r_arm
 
+    l_arm = MoveGroupInterface("planning_group_name", "bender/l_arm_base")
+    r_arm = MoveGroupInterface("planning_group_name", "bender/r_arm_base")
     #Capa de servicios
 
     rospy.spin()
