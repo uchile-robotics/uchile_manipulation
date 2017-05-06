@@ -11,6 +11,10 @@ COLLISION_OBJECT_TOPIC = "/collision_object"
 PLANNING_SCENE_TOPIC = "/planning_scene"
 PLANNING_SCENE_WORLD_TOPIC = "/planning_scene_world"
 
+
+
+
+
 def main():
 
     #Iniciar Nodo ROS
@@ -23,12 +27,16 @@ def main():
 
     #Modificar planning scene monitor para obtener el estado del robot
 
+    psi = PlanningSceneInterface("bender/l_arm_base")
+
+    
+
     rospy.loginfo("Publishing planning scene on "+PLANNING_SCENE_TOPIC)
 
     #Interface para move_group l_arm y r_arm
 
-    l_arm = MoveGroupInterface("planning_group_name", "bender/l_arm_base")
-    r_arm = MoveGroupInterface("planning_group_name", "bender/r_arm_base")
+    l_arm = MoveGroupInterface(planning_group, "bender/l_arm_base")
+    #r_arm = MoveGroupInterface("planning_group_name", "bender/r_arm_base")
     #Capa de servicios
 
     rospy.spin()
