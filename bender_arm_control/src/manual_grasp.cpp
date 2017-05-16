@@ -1,4 +1,4 @@
-bool grasp(bender_msgs::CylindricalObject& target, std::vector<GraspPoint>& grasp_points)
+bool grasp(uchile_msgs::CylindricalObject& target, std::vector<GraspPoint>& grasp_points)
     {
       // Asumimos posicion wrt base_link
       double height = target.height;
