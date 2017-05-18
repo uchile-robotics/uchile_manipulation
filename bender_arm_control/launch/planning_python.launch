@@ -14,9 +14,5 @@
   <!-- Capability Map file -->
   <param name="capmap_file" type="string" value="$(find bender_arm_planning)/database/cap_map.dat" />
   
-  <!-- Capa de servicios de planning, integra para ambos brazos -->
-  <node name="arm_planning" pkg="bender_arm_control" type="test_skills.py" output="screen">
-    <rosparam command="load" file="$(find bender_arm_control)/config/grasp_data.yaml"/>
-  </node>
 
 </launch>
