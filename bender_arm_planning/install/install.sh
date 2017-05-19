@@ -29,14 +29,14 @@ cd "$WORK_DIR"
 
 
 #  - - - - - - - - - Download files - - - - - - - - - - - 
-BACKUP_FOLDER="$BENDER_WS"/install/soft/manipulation/arm_planning
+BACKUP_FOLDER="$UCHILE_WS"/deps/bender/soft/manipulation/arm_planning
 BACKUP_FILE=bender_arm_planning.zip
 BACKUP_FILE_FULL="$BACKUP_FOLDER/$BACKUP_FILE"
 if [ ! -r "$BACKUP_FILE_FULL" ]; then
 	
 	# Download bender_arm_planning capability map
 	echo "$installer Backup file not found ($BACKUP_FILE_FULL), downloading capability map file ..."
-	"$BENDER_SYSTEM"/shell/megadown/megadown 'https://mega.nz/#!e9NmnD6D!kXfuEhqlOtme87Cb1ZyiIDLI7XBzRdBWikLq0Pbu4KA'
+	"$UCHILE_WS"/system/shell/megadown/megadown 'https://mega.nz/#!e9NmnD6D!kXfuEhqlOtme87Cb1ZyiIDLI7XBzRdBWikLq0Pbu4KA'
 	if [ $? -ne 0 ]; then
 	    echo "$installer ${red}Error downloading capability map file.${reset}"
 	    exit 1 # Terminate and indicate error
@@ -58,7 +58,7 @@ fi
 
 # Extract files
 echo "$installer Extracting Capability map files"
-unzip -q -o "$BACKUP_FILE" -d "$BENDER_WS"/soft_ws/src/uchile_manipulation/
+unzip -q -o "$BACKUP_FILE" -d "$UCHILE_WS"/ros/bender/soft_ws/src/uchile_manipulation  
 OUT=$?
 if [ $OUT -ne 0 ]; then
     echo "$installer ${red}Error extracting Capability map file.${reset}"
