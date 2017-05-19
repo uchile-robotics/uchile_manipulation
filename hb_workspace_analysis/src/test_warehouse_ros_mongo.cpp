@@ -4,32 +4,11 @@
 #include <hb_grasp_generator/grasp_filter.h>
 #include <hb_grasp_generator/grasp_options.h>
 #include <hb_grasp_generator/grasp_generator.h>
+// Eigen
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 
-#include <moveit/planning_scene_monitor/planning_scene_monitor.h>
-
-namespace gm=geometry_msgs;
-namespace hb_wa=hb_workspace_analysis;
-
-using std::vector;
-using std::string;
-using std::cout;
-
-typedef mongo_ros::MessageWithMetadata<gm::Pose> PoseWithMetadata;
-typedef PoseWithMetadata::ConstPtr PoseMetaPtr;
-
-// Helper function that creates metadata for a message.
-// Here we'll use the x and y position, as well as a 'name'
-// field that isn't part of the original message.
-mongo_ros::Metadata makeMetadata (const gm::Pose& p, const string& v)
-{
-  return mongo_ros::Metadata("x", p.position.x, "y", p.position.y, "name", v);
-}
-
-mongo_ros::Metadata makeMetadata(const hb_workspace_analysis::GraspStorage& grasp)
-{
-    return mongo_ros::Metadata("x", grasp.pose.position.x, "y", grasp.pose.position.y,
-                               "z", grasp.pose.position.z);
-}
+typedef mongo_ros::MessageWithMetadata<hb_workspace_analysis::GraspStorage> GraspStorageWithMetadata;
 
 void test()
 {
@@ -39,11 +18,10 @@ void test()
   using mongo_ros::GT;
 
   // Clear existing data if any
-  mongo_ros::dropDatabase("capability_map", "localhost", 27017, 5.0);
+  mongo_ros::dropDatabase("workspace_analysis", "localhost", 27017, 5.0);
   
   // Set up db
-  mongo_ros::MessageCollection<hb_workspace_analysis::GraspStorage> coll("workspace_analysis", "localhost",
-                                       27017, 5.0);
+  mongo_ros::MessageCollection<hb_workspace_analysis::GraspStorage> coll("workspace_analysis", "capability_map", "localhost", 27017, 5.0);
 
   // Arrange to index on metadata field 'z'
   coll.ensureIndex("z");
@@ -85,9 +63,9 @@ void test()
   // ---------------------------------------------------------------------------------------------
   // Test grasp position
   geometry_msgs::Pose object_pose;
-  object_pose.position.x = 0.50;
+  object_pose.position.x = 0.40;
   object_pose.position.y = 0.29;
-  object_pose.position.z = 0.60;
+  object_pose.position.z = 0.50;
 
   object_pose.orientation.x = 0.0;
   object_pose.orientation.y = 0.0;
@@ -128,8 +106,74 @@ void test()
       grasp_vector.grasp.push_back(point);
   }
 
-  coll.insert(grasp_vector, makeMetadata(grasp_vector));
+  // Create metadata, this data is used for queries
+  mongo_ros::Metadata metadata("x", grasp_vector.pose.position.x, "y", grasp_vector.pose.position.y,
+                        "z", grasp_vector.pose.position.z);
+  // Insert data in db
+  coll.insert(grasp_vector, metadata);
   ROS_INFO_STREAM("Collection count: " << coll.count());
+
+  // Query data
+  mongo_ros::Query q = mongo_ros::Query().append("x", mongo_ros::LT, 0.51).append("x", mongo_ros::GT, 0.49);
+  std::vector<GraspStorageWithMetadata::ConstPtr> result = coll.pullAllResults(q, false, "z", false);
+  ROS_INFO_STREAM("Found result: " << result.size());
+
+  Eigen::Vector3d init_position(0.3, 0.25, 0.5);
+  Eigen::Vector3d final_position(0.4, 0.35, 0.7);
+
+  double resolution = 0.01; // 1cm
+
+  for(std::size_t i = 0; init_position.x()+i*resolution < final_position.x(); ++i)
+  {
+    for(std::size_t j = 0; init_position.y()+j*resolution < final_position.y(); ++j)
+    {
+      for(std::size_t k = 0; init_position.z()+k*resolution < final_position.z(); ++k)
+      {
+        object_pose.position.x = init_position.x()+i*resolution;
+        object_pose.position.y = init_position.y()+j*resolution;
+        object_pose.position.z = init_position.z()+k*resolution;
+        ROS_INFO_STREAM("x: " << object_pose.position.x << " | y: " << object_pose.position.y << " | z: " << object_pose.position.z);
+
+        possible_grasps.clear();
+        ik_solutions.clear();
+
+        // Generate set of grasps for one object
+        simple_grasps_->generateGrasp(object_pose, possible_grasps);
+
+        // Apply grasp filter
+        grasp_filter_->filterGrasps(possible_grasps,
+                                    ik_solutions,
+                                    filter_pregrasps,
+                                    opt.end_effector_parent_link,
+                                    planning_group_name_, ik_timeout);
+
+        if (possible_grasps.empty())
+          continue;
+
+        // Construct grasp storage
+        hb_workspace_analysis::GraspStorage grasp_vector;
+        grasp_vector.header.frame_id = opt.base_link;
+        grasp_vector.pose = object_pose;
+        grasp_vector.grasp.reserve(possible_grasps.size());
+        for(std::size_t i = 0; i < possible_grasps.size(); ++i)
+        {
+          hb_workspace_analysis::GraspPoint point;
+          point.grasp = possible_grasps[i];
+          point.pregrasp_position = ik_solutions[2*i];
+          point.grasp_position = ik_solutions[2*i+1];
+          grasp_vector.grasp.push_back(point);
+        }
+
+        // Create metadata, this data is used for queries
+        mongo_ros::Metadata metadata("x", grasp_vector.pose.position.x, "y", grasp_vector.pose.position.y,
+                                     "z", grasp_vector.pose.position.z);
+        // Insert data in db
+        coll.insert(grasp_vector, metadata);
+        ROS_INFO_STREAM("Collection count: " << coll.count());
+
+      }
+    }
+  }
 
   // Add some poses and metadata
 /*  const gm::Pose p1 = makePose(24, 42, 0);
