@@ -1,4 +1,3 @@
-#include <hb_workspace_analysis/test_mongo_helpers.h>
 #include <mongo_ros/message_collection.h>
 #include <hb_workspace_analysis/GraspStorage.h>
 #include <hb_grasp_generator/grasp_filter.h>
