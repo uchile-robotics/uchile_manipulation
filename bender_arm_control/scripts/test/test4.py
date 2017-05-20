@@ -7,7 +7,7 @@ __email__ = 'giom.pais@gmail.com'
 
 import rospy
 from bender_arm_control.arm_commander import Limb
-from moveit_python import *
+from moveit_python import MoveGroupInterface
 
 from geometry_msgs.msg import Pose, PoseStamped, Point
 
@@ -38,7 +38,7 @@ def main():
 
 
     #Movimiento en espacio de joint
-    g.moveToJointPosition(joint_names,pos1)
+    g.moveToJointPosition(joint_names,home)
 
 
     #Movimiento en espacio cartesiano
