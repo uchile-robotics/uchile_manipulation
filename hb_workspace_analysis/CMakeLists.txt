@@ -137,9 +137,9 @@ link_directories(${catkin_LIBRARY_DIRS})
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/hb_workspace_analysis_node.cpp)
-add_executable(test_db src/test_warehouse_ros_mongo.cpp)
-add_dependencies(test_db ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(test_db ${catkin_LIBRARIES})
+add_executable(capability_map_mongo src/capability_map_mongo.cpp)
+add_dependencies(capability_map_mongo ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(capability_map_mongo ${catkin_LIBRARIES})
 
 
 ## Rename C++ executable without prefix
