@@ -70,6 +70,7 @@ def main():
 
     # Grasp ob
     pringles_pose = get_pose(0.60, 0.25, 0.75)
+    
     pringles = get_collision_cylinder(pringles_pose, 'pringles', [0.10, 0.04])
 
     # Actualizar y congelar octomap
