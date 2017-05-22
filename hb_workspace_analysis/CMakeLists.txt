@@ -12,6 +12,10 @@ find_package(catkin REQUIRED COMPONENTS
   warehouse_ros
   moveit_msgs
   trajectory_msgs
+  moveit_core
+  moveit_ros_move_group
+  moveit_ros_planning
+  moveit_ros_planning_interface
 )
 
 ## System dependencies are found with CMake's conventions
@@ -106,7 +110,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include 
-  CATKIN_DEPENDS hb_grasp_generator warehouse_ros
+  CATKIN_DEPENDS hb_grasp_generator warehouse_ros moveit_core moveit_ros_planning moveit_ros_planning_interface moveit_ros_move_group
 )
 
 ###########
@@ -140,6 +144,12 @@ link_directories(${catkin_LIBRARY_DIRS})
 add_executable(capability_map_mongo src/capability_map_mongo.cpp)
 add_dependencies(capability_map_mongo ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(capability_map_mongo ${catkin_LIBRARIES})
+
+add_library(hb_move_group_capabilities
+        src/capability_map_plugin.cpp
+        )
+add_dependencies(hb_move_group_capabilities ${catkin_EXPORTED_TARGETS})
+target_link_libraries(hb_move_group_capabilities ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 
 ## Rename C++ executable without prefix

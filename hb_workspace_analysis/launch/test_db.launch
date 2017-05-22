@@ -12,7 +12,7 @@
     
     <!-- Grasp generator node -->
     <node pkg="hb_workspace_analysis" type="capability_map_mongo" name="test_db" output="screen" >
-        <param name="resolution" value="0.1"/>
+        <param name="resolution" value="0.2"/>
         <param name="arm" value="l_arm"/>
         <param name="ee_name" value="l_gripper"/>
         <rosparam command="load" file="$(find hb_grasp_generator)/config/grasp_generator.yaml" />

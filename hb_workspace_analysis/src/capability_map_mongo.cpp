@@ -1,3 +1,9 @@
+/*
+* Save grasp positions on MongoDB
+*
+* Author: Rodrigo Munoz
+*/
+
 #include <mongo_ros/message_collection.h>
 #include <hb_workspace_analysis/GraspStorage.h>
 #include <hb_grasp_generator/grasp_filter.h>
@@ -106,17 +112,25 @@ int main (int argc, char** argv)
   ROS_INFO_STREAM("IK timeout: " << ik_timeout << " s");
   // Filter grasp option, must be true
   bool filter_pregrasps = true;
-  // TODO Make percentage indicator
+  // Percentage indicator
+  std::size_t const N = ((int)((final_pos[0]-init_pos[0])/resolution)+1) * // X
+      ((int)((final_pos[1]-init_pos[1])/resolution)+1) *  // Y
+      ((int)((final_pos[2]-init_pos[2])/resolution)+1);  // Z
+  std::size_t count = 0;
 
-  for(std::size_t i = 0; init_pos[0]+i*resolution < final_pos[0]; ++i)
+
+  for(std::size_t i = 0; init_pos[0]+i*resolution <= final_pos[0]; ++i)
   {
-    for(std::size_t j = 0; init_pos[1]+j*resolution < final_pos[1]; ++j)
+    for(std::size_t j = 0; init_pos[1]+j*resolution <= final_pos[1]; ++j)
     {
-      for(std::size_t k = 0; init_pos[2]+k*resolution < final_pos[2]; ++k)
+      for(std::size_t k = 0; init_pos[2]+k*resolution <= final_pos[2]; ++k)
       {
         // Check ROS state
         if (!ros::ok())
           break;
+        // Percentage
+        ROS_INFO_STREAM("Completed " << std::setprecision(2) << std::fixed << count*100.0/(N-1) << "%");
+        count++;
         // Update object position
         object_pose.position.x = init_pos[0]+i*resolution;
         object_pose.position.y = init_pos[1]+j*resolution;
