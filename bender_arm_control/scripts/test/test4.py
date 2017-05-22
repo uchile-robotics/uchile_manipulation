@@ -28,14 +28,16 @@ def main():
     l_arm_home =[0.0,0.0,0.0,0.0,0.0,0.0]
     l_arm_middle=[1.8, 0.0, -0.35, 0.1, 0.0, 0.4]
 
-    l_arm_premanip_1=[1.674, -0.041, -0.89, 0.129, -0.066, 1.053]
-    l_arm_premanip_2=[1.782, -0.031, -0.23, 0.129, -0.102, 0.997]
+    #l_arm_premanip_1=[1.674, -0.041, -0.89, 0.129, -0.066, 1.053]
+    #l_arm_premanip_2=[1.782, -0.031, -0.23, 0.129, -0.102, 0.997]
     
-    
+    #Prueba
+    l_arm_premanip_1=[-0.89, 0.129, -0.066, 1.674, -0.041, 1.053]
+    l_arm_premanip_2=[-0.23, 0.129, -0.102, 1.782, -0.031, 0.997]
     
 
     #INSERTAR NOMBRE DE POSICION
-    named_position="middle"
+    named_position=""
     #############################################################
     named_angles=[0.0,0.0,0.0,0.0,0.0,0.0]
     #solucion temporal, estoy buscando como lo implementa el movegroup de cpp para hacer lo mismo y sacarlo del SRDF
@@ -56,9 +58,9 @@ def main():
     
     #############################################################
 
-    g.moveToJointPosition(joint_names,l_arm_home)
-    rospy.sleep(2.0)
-    print "POSITION: HOME"
+    #g.moveToJointPosition(joint_names,l_arm_home)
+    #rospy.sleep(2.0)
+    #print "POSITION: HOME"
     rospy.sleep(1.0)
     g.moveToJointPosition(joint_names,named_angles)
     rospy.sleep(3.0)
