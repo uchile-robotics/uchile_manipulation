@@ -58,7 +58,7 @@ fi
 
 # Extract files
 echo "$installer Extracting Capability map files"
-unzip -q -o "$BACKUP_FILE" -d "$BENDER_WS"/soft_ws/src/bender_manipulation/
+unzip -q -o "$BACKUP_FILE" -d "$BENDER_WS"/soft_ws/src/uchile_manipulation/
 OUT=$?
 if [ $OUT -ne 0 ]; then
     echo "$installer ${red}Error extracting Capability map file.${reset}"
