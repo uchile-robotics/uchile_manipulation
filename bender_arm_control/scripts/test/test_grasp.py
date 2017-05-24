@@ -12,7 +12,7 @@ from bender_arm_planning.srv import ManageOctomap, ManageOctomapRequest
 from bender_arm_planning.msg import OctomapOptions
 
 from geometry_msgs.msg import Pose, PoseStamped, Point
-from bender_msgs.msg import CylindricalObject
+from uchile_msgs.msg import CylindricalObject
 from tf import transformations
 from moveit_msgs.msg import CollisionObject, MoveItErrorCodes
 from shape_msgs.msg import SolidPrimitive
