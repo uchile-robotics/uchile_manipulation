@@ -1,4 +1,4 @@
-bender_msgs/CylindricalObject target
+uchile_msgs/CylindricalObject target
 ---
 trajectory_msgs/JointTrajectoryPoint[] points
 float64[] costs
