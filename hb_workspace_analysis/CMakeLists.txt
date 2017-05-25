@@ -56,14 +56,14 @@ add_message_files(
   FILES
   GraspPoint.msg
   GraspStorage.msg
+  GraspObject.msg
 )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  GetCapabilityMap.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(

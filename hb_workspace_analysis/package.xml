@@ -59,9 +59,9 @@
   <run_depend>hb_grasp_generator</run_depend>
 
 
-  <!-- The export tag contains other, unspecified, tags -->
+  <!-- MoveIt! plugin -->
   <export>
-    <!-- Other tools can request additional information be placed here -->
-
+    <moveit_ros_move_group plugin="${prefix}/plugin_description.xml"/>
   </export>
+
 </package>

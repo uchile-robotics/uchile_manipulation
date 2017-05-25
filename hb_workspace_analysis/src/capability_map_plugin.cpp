@@ -4,10 +4,6 @@
 * Author: Rodrigo Munoz
 */
 #include <hb_workspace_analysis/capability_map_plugin.h>
-#include <moveit_msgs/CollisionObject.h>
-#include <shape_msgs/SolidPrimitive.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <trajectory_msgs/JointTrajectoryPoint.h>
 
 
 namespace move_group
@@ -29,14 +25,27 @@ namespace move_group
   void CapabilityMapPlugin::initialize()
   {
     // Grasp service
-    grasp_service_ = root_node_handle_.advertiseService(CAPABILITY_MAP_PLUGIN_NAME, &CapabilityMapPlugin::getGraspsCb, this);
-    // Make connection to DB
-    
+    grasp_service_ = root_node_handle_.advertiseService(CAPABILITY_MAP_PLUGIN_NAME,
+                                                        &CapabilityMapPlugin::getCapabilityMapCb, this);
+
+    try
+    {
+      // Make connection to DB
+      db_.reset(new GraspStorageDb("workspace_analysis", "capability_map", "localhost", 27017, 5.0));
+    }
+    catch (const mongo_ros::DbConnectException& exception)
+    {
+      // Connection timeout
+      ROS_ERROR("Connection timeout.");
+      db_.reset(); // Make null pointer
+    }
   }
 
-  bool CapabilityMapPlugin::getGraspsCb(bender_arm_planning::CapabilityMapGrasp::Request &req, bender_arm_planning::CapabilityMapGrasp::Response &res)
+  bool CapabilityMapPlugin::getCapabilityMapCb(hb_workspace_analysis::GetCapabilityMap::Request &req,
+                                               hb_workspace_analysis::GetCapabilityMap::Response &res)
   {
-     /* --------------------------------------------------------------------------------
+    ROS_INFO_STREAM("Number of elements: " << db_->count());
+    /* --------------------------------------------------------------------------------
     * Obtener grasps
     */
 
@@ -61,7 +70,7 @@ namespace move_group
     */
     //std::sort(res.grasps.begin(), res.grasps.end(), GraspPositionOrder());
     return true;
-  } // getGraspsCb
+  } // getCapabilityMapCb
 
 
 
