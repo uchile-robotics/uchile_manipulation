@@ -29,21 +29,31 @@ def main():
     pos1=[0.373582124710083, 0.4276796877384186, 0.5884131789207458, 1.1624618768692017, -0.5723373293876648, 0.25651833415031433]
     pos2=[0.373582124710083, 0.4276796877384186, 0.5884131789207458, 1.7700000000000017, -0.5723373293876648, 0.25651833415031433]
     
+    #----------------------------------------------------------------
+    #Datos sacados de Rviz
+    #----------------------------------------------------------------
+    #position= (-0.00138, 0.27986, 0.59583)
+    #orientatio= (-0.014841, -0.7338, -0.0404, 0.678)
+    #----------------------------------------------------------------
+    #position= (0.2898, 0.2145, 0.7127)
+    #orientatio= (-0.2006, -0.6747, -0.2445, 0.6667)
+    #----------------------------------------------------------------
+
     spos=PoseStamped()
     #Position 
     #Corresponde a la transformacion de pos1 (0.60, 0.25, 0,75) otro intento (0.57, 0.2, -0.55)
-    spos.pose.position.x=0.40
-    spos.pose.position.y=0.0
-    spos.pose.position.z=-0.40
+    spos.pose.position.x=0.2898
+    spos.pose.position.y=0.2145
+    spos.pose.position.z=0.7127
 
     #simple_orientation = Quaternion(0.0,-0.70710678,0.0,0.70710678)
     #Orientation
-    spos.pose.orientation.x=0.0
-    spos.pose.orientation.y=-0.70710678
-    spos.pose.orientation.z=0.0
-    spos.pose.orientation.w=0.70710678
+    spos.pose.orientation.x=-0.2006
+    spos.pose.orientation.y=-0.6747
+    spos.pose.orientation.z=-0.2445
+    spos.pose.orientation.w=0.6667
 
-    spos.header.frame_id="bender/l_shoulder_pitch_link"
+    spos.header.frame_id="bender/base_link"
     #/bender/base_link'
 
 
