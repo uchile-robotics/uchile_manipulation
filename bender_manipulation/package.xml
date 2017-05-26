@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>uchile_manipulation</name>
+  <name>bender_manipulation</name>
   <version>0.0.0</version>
-  <description>The uchile_manipulation package</description>  
+  <description>The bender_manipulation package</description>  
 
 
   <!-- team -->
@@ -18,9 +18,9 @@
   <!-- about bender and related repository -->
   <url type="website">bender.li2.uchile.cl</url>
   <url type="bugtracker">
-    https://bitbucket.org/uchile-robotics-die/uchile_manipulation/issues</url>
+    https://bitbucket.org/uchile-robotics-die/bender_manipulation/issues</url>
   <url type="repository">
-    https://bitbucket.org/uchile-robotics-die/uchile_manipulation</url>
+    https://bitbucket.org/uchile-robotics-die/bender_manipulation</url>
 
   <license>TODO</license>
 
