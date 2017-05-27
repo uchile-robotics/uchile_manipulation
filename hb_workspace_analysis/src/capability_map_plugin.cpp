@@ -39,20 +39,65 @@ namespace move_group
       ROS_ERROR("Connection timeout.");
       db_.reset(); // Make null pointer
     }
+    // TODO Add parameter
+    resolution_ = 0.01; // 1 cm
+    search_factor_ = 1.0; // 0.5 cm
   }
 
   bool CapabilityMapPlugin::getCapabilityMapCb(hb_workspace_analysis::GetCapabilityMap::Request &req,
                                                hb_workspace_analysis::GetCapabilityMap::Response &res)
   {
+    // Check db connection
+    if (!db_)
+      return false;
+
     ROS_INFO_STREAM("Number of elements: " << db_->count());
     /* --------------------------------------------------------------------------------
-    * Obtener grasps
+    * Get grasps from db
     */
+    // Create query using object pose
+    // X range (greater than or equal, less than or equal)
+    const double x_gte = req.object.primitive_poses[0].position.x - resolution_*search_factor_;
+    const double x_lte = req.object.primitive_poses[0].position.x + resolution_*search_factor_;
+    // Y range (greater than or equal, less than or equal)
+    const double y_gte = req.object.primitive_poses[0].position.y - resolution_*search_factor_;
+    const double y_lte = req.object.primitive_poses[0].position.y + resolution_*search_factor_;
+    // Z range (greater than or equal, less than or equal) using cylinder height
+    const double z_gte = req.object.primitive_poses[0].position.z - resolution_*search_factor_ - req.object.primitives[0].dimensions[0]/2;
+    const double z_lte = req.object.primitive_poses[0].position.z + resolution_*search_factor_ + req.object.primitives[0].dimensions[0]/2;
+    ROS_INFO_STREAM("Searching at: x[" << x_gte << ", " << x_lte << "] y[" << y_gte << ", " << y_lte << "] z[" << z_gte << ", " << z_lte << "] ");
+    mongo_ros::Query query = mongo_ros::Query()
+        .append("x", mongo_ros::GTE, x_gte).append("x", mongo_ros::LTE, x_lte)
+        .append("y", mongo_ros::GTE, y_gte).append("y", mongo_ros::LTE, y_lte)
+        .append("z", mongo_ros::GTE, z_gte).append("z", mongo_ros::LTE, z_lte);
+    // Send query with descending z
+    std::vector<GraspStorageWithMetadataPtr> result = db_->pullAllResults(query, false, "z", false);
+    if(result.empty())
+    {
+      ROS_WARN("Grasp not found.");
+      return true;
+    }
+
+    /* --------------------------------------------------------------------------------
+    * Save grasps in response
+    */
+    // Reserve space
+    ROS_INFO_STREAM("Grasp result size: " << result.size());
+    for(std::size_t i = 0; i < result.size(); ++i)
+    {
+      ROS_INFO_STREAM(i << " j:" << result[i]->grasp.size());
+      for(std::size_t j = 0; j < result[i]->grasp.size(); ++j)
+        res.grasp.grasp.push_back(result[i]->grasp[j]);
+    }
+
+    ROS_INFO_STREAM("Grasp found: " << res.grasp.grasp.size());
+
+    return true;
 
     /* --------------------------------------------------------------------------------
     * Filtro de colision para posiciones de pregrasp
     */
-/*    bool filter_pregrasp_collision = true;
+    /*    bool filter_pregrasp_collision = true;
     if (filter_pregrasp_collision)
     {
       for(std::size_t i = 0; i < res.grasps.size(); ++i)

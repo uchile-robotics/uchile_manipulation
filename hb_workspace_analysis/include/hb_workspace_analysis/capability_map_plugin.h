@@ -21,8 +21,11 @@ namespace move_group
 static const std::string CAPABILITY_MAP_PLUGIN_NAME = "capability_map";
 // Typedef for DB
 typedef mongo_ros::MessageCollection<hb_workspace_analysis::GraspStorage> GraspStorageDb;
+typedef mongo_ros::MessageWithMetadata<hb_workspace_analysis::GraspStorage> GraspStorageWithMetadata;
+typedef boost::shared_ptr<const GraspStorageWithMetadata> GraspStorageWithMetadataPtr;
 
-class CapabilityMapPlugin : public MoveGroupCapability
+
+  class CapabilityMapPlugin : public MoveGroupCapability
 {
 public:
 
@@ -41,6 +44,10 @@ private:
   std::string ref_frame_;
   // DB connection
   boost::shared_ptr<GraspStorageDb> db_;
+  // Capability map resolution
+  double resolution_;
+  // Search factor
+  double search_factor_;
 
 };
 

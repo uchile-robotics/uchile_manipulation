@@ -159,6 +159,7 @@ int main (int argc, char** argv)
         grasp_vector.grasp.reserve(possible_grasps.size());
         for(std::size_t n = 0; n < possible_grasps.size(); ++n)
         {
+          ROS_INFO("ASDASDASDA");
           hb_workspace_analysis::GraspPoint point;
           point.grasp = possible_grasps[n];
           point.pregrasp_position = ik_solutions[2*n];
