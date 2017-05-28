@@ -85,7 +85,6 @@ namespace move_group
     ROS_INFO_STREAM("Grasp result size: " << result.size());
     for(std::size_t i = 0; i < result.size(); ++i)
     {
-      ROS_INFO_STREAM(i << " j:" << result[i]->grasp.size());
       for(std::size_t j = 0; j < result[i]->grasp.size(); ++j)
         res.grasp.grasp.push_back(result[i]->grasp[j]);
     }
