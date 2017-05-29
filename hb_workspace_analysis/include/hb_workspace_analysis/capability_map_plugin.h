@@ -48,6 +48,8 @@ private:
   double resolution_;
   // Search factor
   double search_factor_;
+  // Group name
+  std::string group_name_;
 
 };
 
