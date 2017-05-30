@@ -15,12 +15,13 @@ from sensor_msgs.msg import JointState
 
 # Markers
 from visualization_msgs.msg import InteractiveMarkerControl, Marker
-from interactive_markers.interactive_marker_server import *
-from interactive_markers.menu_handler import *
+from interactive_markers.interactive_marker_server import InteractiveMarkerServer, InteractiveMarker, InteractiveMarkerFeedback
+from interactive_markers.menu_handler import MenuHandler
 from shape_msgs.msg import SolidPrimitive
 from hb_workspace_analysis.msg import GraspObject
 from hb_workspace_analysis.srv import GetCapabilityMap, GetCapabilityMapRequest
 
+from random import shuffle
 
 def get_pose(x=0, y=0, z=0, roll=0, pitch=0, yaw=0):
     p = Pose()
@@ -46,7 +47,7 @@ def get_cylinder(pose, frame_id='bender/base_link', dim = [0.22, 0.04]):
 
 class InteractiveGrasp(object):
 
-    def __init__(self, topic_name = "interactive_grasp", frame_id = "base_link", arm_name = 'l_arm ',radius = 0.04, height = 0.12, init_position = Point(0,0,0)):
+    def __init__(self, topic_name = "interactive_grasp", frame_id = "base_link", arm_name = 'l_arm ',radius = 0.04, height = 0.22, init_position = Point(0,0,0)):
         # Interactive Marker
         self.menu_handler = MenuHandler()
         self.server = InteractiveMarkerServer(topic_name)
@@ -91,21 +92,24 @@ class InteractiveGrasp(object):
                 # Get object pose
                 req = GetCapabilityMapRequest()
                 req.object = get_cylinder(self.current_pose)
-                rospy.loginfo("Grasp with Capability Map...")
                 try:
                     result = self.grasp_server(req)
                     if result.grasp.grasp:
-                        for point in result.grasp.grasp:
+                        # Show at least 10 random grasp position
+                        shuffle(result.grasp.grasp)
+                        i = 0
+                        for idx in xrange(min(10, len(result.grasp.grasp))):
                             self.joint_msg.header.stamp = rospy.Time.now()
-                            self.joint_msg.position = list(point.grasp_position.positions)
+                            self.joint_msg.position = list(result.grasp.grasp[idx].grasp_position.positions)
                             self.joint_msg.position.extend([0.0]*12)
                             self.pub.publish(self.joint_msg)
                             rospy.sleep(0.03)
                             self.joint_msg.header.stamp = rospy.Time.now()
-                            self.joint_msg.position = list(point.pregrasp_position.positions)
+                            self.joint_msg.position = list(result.grasp.grasp[idx].pregrasp_position.positions)
                             self.joint_msg.position.extend([0.0]*12)
                             self.pub.publish(self.joint_msg)
                             rospy.sleep(0.03)
+
 
                 except rospy.ServiceException, e:
                     print "Service call failed: %s"%e

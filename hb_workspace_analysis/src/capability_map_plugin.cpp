@@ -18,7 +18,6 @@ namespace move_group
     // Grasp service
     grasp_service_ = root_node_handle_.advertiseService(CAPABILITY_MAP_PLUGIN_NAME,
                                                         &CapabilityMapPlugin::getCapabilityMapCb, this);
-
     try
     {
       // Make connection to DB
@@ -47,6 +46,8 @@ namespace move_group
     /* --------------------------------------------------------------------------------
     * Get grasps from db
     */
+    // Time info
+    ros::Time t0 = ros::Time::now();
     // Create query using object pose
     // X range (greater than or equal, less than or equal)
     const double x_gte = req.object.primitive_poses[0].position.x - resolution_*search_factor_;
@@ -113,9 +114,10 @@ namespace move_group
         // Add grasp
         res.grasp.grasp.push_back(result[i]->grasp[j]);
       }
-
     }
+    ros::Duration dt = ros::Time::now() - t0;
     ROS_INFO_STREAM("Grasp without collision: " << res.grasp.grasp.size());
+    ROS_INFO_STREAM("Time:  " << dt.toSec());
     return true;
   } // getCapabilityMapCb
 
