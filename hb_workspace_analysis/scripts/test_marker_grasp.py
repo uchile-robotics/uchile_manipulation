@@ -19,7 +19,7 @@ from interactive_markers.interactive_marker_server import InteractiveMarkerServe
 from interactive_markers.menu_handler import MenuHandler
 from shape_msgs.msg import SolidPrimitive
 from hb_workspace_analysis.msg import GraspObject
-from hb_workspace_analysis.srv import GetCapabilityMap, GetCapabilityMapRequest
+from hb_workspace_analysis.interface import WorkspaceAnalysis
 
 from random import shuffle
 
@@ -61,26 +61,28 @@ class InteractiveGrasp(object):
         self.height = height
         self.frame_id = frame_id
 
-        self.grasp_server = rospy.ServiceProxy('/capability_map', GetCapabilityMap)
+        self.grasp_server = WorkspaceAnalysis()
+        self.grasp_server.setup()
+
         self.pub = rospy.Publisher('test/joint_states', JointState, queue_size=10)
         self.joint_msg = JointState()
         self.joint_msg.name = ['l_shoulder_pitch_joint', 'l_shoulder_roll_joint', 'l_shoulder_yaw_joint', 'l_elbow_pitch_joint', 'l_elbow_yaw_joint', 'l_wrist_pitch_joint',
-              'l_ext_finger_joint'
-              ,'l_int_finger_joint'
-              ,'head_yaw_joint'
-              ,'head_pitch_joint'
-              ,'r_shoulder_pitch_joint'
-              ,'r_shoulder_roll_joint'
-              ,'r_shoulder_yaw_joint'
-              ,'r_elbow_pitch_joint'
-              ,'r_elbow_yaw_joint'
-              ,'r_wrist_pitch_joint'
-              ,'r_ext_finger_joint'
-              ,'r_int_finger_joint']
+                               'l_ext_finger_joint'
+            ,'l_int_finger_joint'
+            ,'head_yaw_joint'
+            ,'head_pitch_joint'
+            ,'r_shoulder_pitch_joint'
+            ,'r_shoulder_roll_joint'
+            ,'r_shoulder_yaw_joint'
+            ,'r_elbow_pitch_joint'
+            ,'r_elbow_yaw_joint'
+            ,'r_wrist_pitch_joint'
+            ,'r_ext_finger_joint'
+            ,'r_int_finger_joint']
         self.joint_msg.velocity = [0.0]*len(self.joint_msg.name)
         self.joint_msg.effort = [0.0]*len(self.joint_msg.name)
 
-      
+
     def process_feedback(self, feedback):
         # Update pose
         if feedback.event_type == InteractiveMarkerFeedback.POSE_UPDATE:
@@ -90,22 +92,21 @@ class InteractiveGrasp(object):
             # Grasp
             if feedback.menu_entry_id == 1:
                 # Get object pose
-                req = GetCapabilityMapRequest()
-                req.object = get_cylinder(self.current_pose)
+                object = get_cylinder(self.current_pose)
                 try:
-                    result = self.grasp_server(req)
-                    if result.grasp.grasp:
+                    result = self.grasp_server.get_grasp(object)
+                    if result.grasp:
                         # Show at least 10 random grasp position
-                        shuffle(result.grasp.grasp)
+                        shuffle(result.grasp)
                         i = 0
-                        for idx in xrange(min(10, len(result.grasp.grasp))):
+                        for idx in xrange(min(10, len(result.grasp))):
                             self.joint_msg.header.stamp = rospy.Time.now()
-                            self.joint_msg.position = list(result.grasp.grasp[idx].grasp_position.positions)
+                            self.joint_msg.position = list(result.grasp[idx].grasp_position.positions)
                             self.joint_msg.position.extend([0.0]*12)
                             self.pub.publish(self.joint_msg)
                             rospy.sleep(0.03)
                             self.joint_msg.header.stamp = rospy.Time.now()
-                            self.joint_msg.position = list(result.grasp.grasp[idx].pregrasp_position.positions)
+                            self.joint_msg.position = list(result.grasp[idx].pregrasp_position.positions)
                             self.joint_msg.position.extend([0.0]*12)
                             self.pub.publish(self.joint_msg)
                             rospy.sleep(0.03)
