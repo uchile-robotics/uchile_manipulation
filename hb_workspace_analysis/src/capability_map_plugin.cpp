@@ -13,15 +13,37 @@ namespace move_group
   {
   }
 
+  bool CapabilityMapPlugin::loadOptions()
+  {
+    ros::NodeHandle nh_capmap(node_handle_, "capability_map");
+    nh_capmap.param<double>("resolution", resolution_, 0.01);
+    nh_capmap.param<double>("search_factor", search_factor_, 1.0);
+    nh_capmap.param<std::string>("group_name", group_name_, "arm");
+    ROS_INFO_STREAM("Capability map for \"" << group_name_ << "\" using resolution " << resolution_ << " and search factor " << search_factor_);
+    // Nodehandle for database parameters
+    ros::NodeHandle nh_database(nh_capmap, "database");
+    nh_database.param<std::string>("server", db_server_, "localhost");
+    // Get MongoDB port
+    nh_database.param<int>("port", db_port_, 27017);
+    ROS_INFO_STREAM("Using MongoDB server " << db_server_ << ":" << db_port_);
+    // Get database name
+    nh_database.param<std::string>("name", db_name_, "workspace_analysis");
+    // Get database name
+    nh_database.param<std::string>("collection", collection_name_, "capability_map");
+    ROS_INFO_STREAM("Collection \"" << collection_name_ << "\" in database \"" << db_name_ << "\"");
+    return true;
+  }
+
   void CapabilityMapPlugin::initialize()
   {
+    loadOptions();
     // Grasp service
     grasp_service_ = root_node_handle_.advertiseService(CAPABILITY_MAP_PLUGIN_NAME,
                                                         &CapabilityMapPlugin::getCapabilityMapCb, this);
     try
     {
       // Make connection to DB
-      db_.reset(new GraspStorageDb("workspace_analysis", "capability_map", "localhost", 27017, 5.0));
+      db_.reset(new GraspStorageDb(collection_name_, db_name_, db_server_, db_port_, 5.0));
     }
     catch (const mongo_ros::DbConnectException& exception)
     {
@@ -29,10 +51,6 @@ namespace move_group
       ROS_ERROR("Connection timeout.");
       db_.reset(); // Make null pointer
     }
-    // TODO Add parameter
-    resolution_ = 0.01; // 1 cm
-    search_factor_ = 1.0; // 0.5 cm
-    group_name_ = "l_arm";
   }
 
   bool CapabilityMapPlugin::getCapabilityMapCb(hb_workspace_analysis::GetCapabilityMap::Request &req,

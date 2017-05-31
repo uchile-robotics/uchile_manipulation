@@ -38,7 +38,19 @@ private:
   bool getCapabilityMapCb(hb_workspace_analysis::GetCapabilityMap::Request &req,
                           hb_workspace_analysis::GetCapabilityMap::Response &res);
   bool filterPregraspCollision(std::vector<trajectory_msgs::JointTrajectoryPoint>& pregrasps, const std::string& group_name);
-  // Servicio
+
+  bool loadOptions();
+
+  // MongoDB options
+  std::string db_server_;
+  std::string db_name_;
+    int db_port_;
+    std::string collection_name_;
+
+
+
+
+    // Service
   ros::ServiceServer grasp_service_;
   // Capability map reference frame
   std::string ref_frame_;
