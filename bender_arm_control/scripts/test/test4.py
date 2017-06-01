@@ -37,7 +37,7 @@ def main():
     
 
     #INSERTAR NOMBRE DE POSICION
-    named_position=""
+    named_position="premanip_1"
     #############################################################
     named_angles=[0.0,0.0,0.0,0.0,0.0,0.0]
     #solucion temporal, estoy buscando como lo implementa el movegroup de cpp para hacer lo mismo y sacarlo del SRDF

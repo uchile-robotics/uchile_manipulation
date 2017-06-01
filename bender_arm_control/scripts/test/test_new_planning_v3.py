@@ -42,16 +42,16 @@ def main():
     spos=PoseStamped()
     #Position 
     #Corresponde a la transformacion de pos1 (0.60, 0.25, 0,75) otro intento (0.57, 0.2, -0.55)
-    spos.pose.position.x=0.427
-    spos.pose.position.y=0.343
-    spos.pose.position.z=0.694
+    spos.pose.position.x=-0.00138
+    spos.pose.position.y=0.28
+    spos.pose.position.z=0.59
 
     #simple_orientation = Quaternion(0.0,-0.70710678,0.0,0.70710678)
     #Orientation
-    spos.pose.orientation.x=-0.110
-    spos.pose.orientation.y=-0.677
-    spos.pose.orientation.z=-0.109
-    spos.pose.orientation.w=0.718
+    spos.pose.orientation.x=-0.0148
+    spos.pose.orientation.y=-0.733
+    spos.pose.orientation.z=-0.0404
+    spos.pose.orientation.w=0.678
 
     spos.header.frame_id="bender/base_link"
     #/bender/base_link'

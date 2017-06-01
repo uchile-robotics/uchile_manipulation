@@ -36,7 +36,7 @@ def main():
     rospy.sleep(2.0)
     print "POSITION: HOME"
     rospy.sleep(1.0)
-    g.moveToJointPosition(joint_names,pos1)
+    #g.moveToJointPosition(joint_names,pos1)
     rospy.sleep(3.0)
     print "POSITION: pos1"
     #g.moveToJointPosition(joint_names,pos2)
