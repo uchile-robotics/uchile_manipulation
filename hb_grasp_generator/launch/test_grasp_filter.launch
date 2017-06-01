@@ -8,7 +8,7 @@
     <arg     if="$(arg verbose)" name="command_args" value="--verbose" />
 
     <!-- Cargar modelo con TF-->
-    <include file="$(find bender_tf)/launch/tf_model.launch">
+    <include file="$(find uchile_tf)/launch/tf_model.launch">
         <arg name="use_gui" value="true" />
         <arg name="model_type" value="standard" />
     </include>
