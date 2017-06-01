@@ -39,7 +39,7 @@ def main():
     g.moveToJointPosition(joint_names,pos1)
     rospy.sleep(3.0)
     print "POSITION: pos1"
-    g.moveToJointPosition(joint_names,pos2)
+    #g.moveToJointPosition(joint_names,pos2)
     rospy.sleep(3.0)
     print "POSITION: pos2"
     print "TERMINA TEST"

@@ -18,7 +18,7 @@ from geometry_msgs.msg import Pose, PoseStamped, Point
 def main():
     
     
-    g = MoveGroupInterface("l_arm", "bender/l_shoulder_pitch_link",None,False)
+    g = MoveGroupInterface("l_arm", "bender/base_link",None,False)  #"bender/l_shoulder_pitch_link"
 
     joint_names=['l_shoulder_pitch_joint', 'l_shoulder_roll_joint',
       'l_shoulder_yaw_joint', 'l_elbow_pitch_joint', 'l_elbow_yaw_joint',
@@ -42,16 +42,16 @@ def main():
     spos=PoseStamped()
     #Position 
     #Corresponde a la transformacion de pos1 (0.60, 0.25, 0,75) otro intento (0.57, 0.2, -0.55)
-    spos.pose.position.x=0.2898
-    spos.pose.position.y=0.2145
-    spos.pose.position.z=0.7127
+    spos.pose.position.x=0.427
+    spos.pose.position.y=0.343
+    spos.pose.position.z=0.694
 
     #simple_orientation = Quaternion(0.0,-0.70710678,0.0,0.70710678)
     #Orientation
-    spos.pose.orientation.x=-0.2006
-    spos.pose.orientation.y=-0.6747
-    spos.pose.orientation.z=-0.2445
-    spos.pose.orientation.w=0.6667
+    spos.pose.orientation.x=-0.110
+    spos.pose.orientation.y=-0.677
+    spos.pose.orientation.z=-0.109
+    spos.pose.orientation.w=0.718
 
     spos.header.frame_id="bender/base_link"
     #/bender/base_link'
