@@ -24,7 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   geometry_msgs
   visualization_msgs
-  bender_msgs
+  uchile_msgs
   bender_arm_planning
 )
 
@@ -94,7 +94,7 @@ add_action_files(
 generate_messages(
   DEPENDENCIES
   actionlib_msgs
-  bender_msgs
+  uchile_msgs
   geometry_msgs
   moveit_msgs
   std_msgs
