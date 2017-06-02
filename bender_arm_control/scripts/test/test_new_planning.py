@@ -12,6 +12,7 @@ from moveit_python import MoveGroupInterface
 from geometry_msgs.msg import Pose, PoseStamped, Point
 
 
+
 def main():
     
     
