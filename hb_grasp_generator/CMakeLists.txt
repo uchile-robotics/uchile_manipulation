@@ -51,13 +51,17 @@ include_directories(
 add_library(hb_grasp
     src/grasp_generator.cpp
     src/grasp_options.cpp
+    src/grasp_filter.cpp
 )
 target_link_libraries(hb_grasp
     ${catkin_LIBRARIES} ${Boost_LIBRARIES}
 )
 
 # Test grasp executable
-add_executable(grasp_test src/simple_grasps_test.cpp)
-target_link_libraries(grasp_test ${catkin_LIBRARIES} ${Boost_LIBRARIES} hb_grasp)
+add_executable(test_grasp_generator src/test_grasp_generator.cpp)
+target_link_libraries(test_grasp_generator ${catkin_LIBRARIES} ${Boost_LIBRARIES} hb_grasp)
+
+add_executable(test_grasp_filter src/test_grasp_filter.cpp)
+target_link_libraries(test_grasp_filter ${catkin_LIBRARIES} ${Boost_LIBRARIES} hb_grasp)
 
 

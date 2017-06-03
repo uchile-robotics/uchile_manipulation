@@ -58,7 +58,7 @@
     <!-- load these non-default MoveGroup capabilities -->    
     <param name="capabilities" value="
               move_group/ManageOctomapService
-              move_group/CapabilityMapService
+              move_group/CapabilityMapPlugin
               " />
     
 

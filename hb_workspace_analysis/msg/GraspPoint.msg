@@ -1,0 +1,3 @@
+moveit_msgs/Grasp grasp
+trajectory_msgs/JointTrajectoryPoint pregrasp_position
+trajectory_msgs/JointTrajectoryPoint grasp_position

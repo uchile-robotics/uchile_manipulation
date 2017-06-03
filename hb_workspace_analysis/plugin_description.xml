@@ -1,0 +1,9 @@
+<library path="libhb_move_group_capabilities">
+
+   <class name="move_group/CapabilityMapPlugin" type="move_group::CapabilityMapPlugin" base_class_type="move_group::MoveGroupCapability">
+    <description>
+      Allow get grasp positions stored in MongoDB.
+    </description>
+  </class>
+
+</library>
