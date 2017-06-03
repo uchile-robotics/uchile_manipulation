@@ -4,18 +4,30 @@
 __author__ = 'Rodrigo Munoz'
 __email__ = 'rorro.mr@gmail.com'
 
-
 import rospy
 from hb_workspace_analysis.msg import GraspStorage
-from hb_workspace_analysis.srv import GetCapabilityMap, GetCapabilityMapRequest, CapabilityMapResponse
+from hb_workspace_analysis.srv import GetCapabilityMap, GetCapabilityMapRequest
 
-class WorkspaceAnalysis(object):
+class CapabilityMap(object):
 
-    def __init__(self):
-        self.capability_map_topic = "/capability_map"
+    def __init__(self, capability_map_topic="/capability_map"):
+        self.capability_map_topic = capability_map_topic
+
+    def get_topic(self):
+        return  self.capability_map_topic
 
     def setup(self):
-        self.grasp_server = rospy.ServiceProxy('/capability_map', GetCapabilityMap)
+        self.grasp_server = rospy.ServiceProxy(self.capability_map_topic, GetCapabilityMap)
+        return True
+
+    def check(self, timeout=1.0):
+        # Try to get service connection
+        try:
+            rospy.wait_for_service(self.capability_map_topic, timeout=timeout)
+        except:
+            self.logerr("Servicie \"{0}\" not found.".format(self.self.capability_map_topic))
+            return False
+        return True
 
     def get_grasp(self, object):
         req = GetCapabilityMapRequest()

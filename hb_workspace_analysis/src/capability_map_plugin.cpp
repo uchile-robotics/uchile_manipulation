@@ -43,7 +43,7 @@ namespace move_group
     try
     {
       // Make connection to DB
-      db_.reset(new GraspStorageDb(collection_name_, db_name_, db_server_, db_port_, 5.0));
+      db_.reset(new GraspStorageDb(db_name_, collection_name_, db_server_, db_port_, 5.0));
     }
     catch (const mongo_ros::DbConnectException& exception)
     {

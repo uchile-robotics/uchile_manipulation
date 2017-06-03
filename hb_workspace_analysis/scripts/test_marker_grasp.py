@@ -19,7 +19,9 @@ from interactive_markers.interactive_marker_server import InteractiveMarkerServe
 from interactive_markers.menu_handler import MenuHandler
 from shape_msgs.msg import SolidPrimitive
 from hb_workspace_analysis.msg import GraspObject
-from hb_workspace_analysis.interface import WorkspaceAnalysis
+from hb_workspace_analysis.interface import CapabilityMap
+
+from bender_skills.capabilities.manipulation.capability_map import CapabilityMapSkill
 
 from random import shuffle
 
@@ -61,7 +63,10 @@ class InteractiveGrasp(object):
         self.height = height
         self.frame_id = frame_id
 
-        self.grasp_server = WorkspaceAnalysis()
+        self.grasp_server = CapabilityMapSkill()
+        if not self.grasp_server.check():
+            rospy.logerr(" Can't capability map server at \"{}\"".format(self.grasp_server.get_topic()))
+            sys.exit(-1)
         self.grasp_server.setup()
 
         self.pub = rospy.Publisher('test/joint_states', JointState, queue_size=10)
