@@ -60,7 +60,7 @@
               move_group/ManageOctomapService
               move_group/CapabilityMapPlugin
               " />
-    
+    <!-- previous cap_map move_group/CapabilityMapPlugin-->
 
     <!-- inhibit these default MoveGroup capabilities -->
     <!--
