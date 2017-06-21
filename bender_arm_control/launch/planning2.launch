@@ -17,13 +17,6 @@
 
 
 
-  <!-- Given the published joint states, publish tf for the robot links -->
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen" />
-
-
-
-
-
   <!-- MoveIt move_group --> 
   <include file="$(find bender_moveit_config)/launch/bender_moveit.launch">
     <arg name="use_gui" value="true"/>
