@@ -5,12 +5,14 @@
 #include <string>
 #include <vector>
 #include "gravitational_torque_estimation.h"
+# include "std_msgs/Float64MultiArray.h"
 
 
 std::vector<std::string> joint_names;
 std::vector<double> joint_pos;
 std::vector<double> joint_torque;
 trajectory_evaluation::GravitationalTorqueEstimationPtr torque_estimation;
+ros::Publisher torque_pub;
 
 void jointStatesCb(const sensor_msgs::JointState::ConstPtr& msg)
 {
@@ -30,10 +32,22 @@ void jointStatesCb(const sensor_msgs::JointState::ConstPtr& msg)
   }
   // Torque estimation
   torque_estimation->estimate(joint_pos, joint_torque);
+  
+  std_msgs::Float64MultiArray torques_array;
+  torques_array.layout.dim.push_back(std_msgs::MultiArrayDimension());
+  torques_array.layout.dim[0].size = joint_names.size();
+  torques_array.layout.dim[0].stride = 1;
+  torques_array.layout.dim[0].label = "torques"; // or whatever name you typically use to index vec1
+  torques_array.data.clear();
+
   for (std::size_t i = 0; i < joint_names.size(); ++i)
   {
     ROS_INFO_STREAM("\t" << joint_names[i] << "\t" << joint_torque[i]);
+    torques_array.data.push_back(joint_torque[i]);
   }
+
+  ROS_INFO_STREAM("THE NUMBER OF JOINTS TO BE PUBLISHED IS: " << joint_names.size() );
+  torque_pub.publish(torques_array);
 
 }
 
@@ -59,6 +73,7 @@ int main(int argc, char **argv)
   ROS_INFO_STREAM("Tip link: " << tip_link);  
   
   torque_estimation.reset(new trajectory_evaluation::GravitationalTorqueEstimation(model, root_link, tip_link));
+
   unsigned int dof = torque_estimation->getDOF();
   ROS_INFO_STREAM("DOF: " << dof);
   joint_pos.resize(dof, 0.0);
@@ -71,6 +86,8 @@ int main(int argc, char **argv)
     ROS_INFO_STREAM("\t" << *i);
   }
   ros::Subscriber sub = nh.subscribe("/bender/joint_states", 10, jointStatesCb);
+  torque_pub = nh.advertise<std_msgs::Float64MultiArray>("joint_torques", 100);
+
   ros::spin();
 
 
