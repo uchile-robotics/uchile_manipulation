@@ -1,0 +1,26 @@
+<launch>
+    <!-- RViz with shadow robot -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find hb_grasp_generator)/config/test.rviz" />
+
+    <!-- Verbose mode -->
+    <arg name="verbose" default="false" />
+    <arg unless="$(arg verbose)" name="command_args" value="" />
+    <arg     if="$(arg verbose)" name="command_args" value="--verbose" />
+
+    <!-- Cargar modelo con TF-->
+    <include file="$(find uchile_tf)/launch/tf_model.launch">
+        <arg name="use_gui" value="true" />
+        <arg name="model_type" value="standard" />
+    </include>
+
+    <!-- Load SRDF and other MoveIt configuration files on the param server -->
+    <include file="$(find bender_moveit_config)/launch/planning_context.launch">
+        <arg name="load_robot_description" value="false"/>
+    </include>
+
+    <!-- Grasp generator node -->
+    <node pkg="hb_grasp_generator" type="test_grasp_generator" name="test_grasp_generator" output="screen" >
+        <rosparam command="load" file="$(find hb_grasp_generator)/config/grasp_generator.yaml" />
+    </node>
+
+</launch>
