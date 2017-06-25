@@ -159,6 +159,51 @@ add_executable(torque_online
 )
 target_link_libraries(torque_online ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
+add_executable(torque_penalty_simple
+  src/trajectory_evaluation/gravitational_torque_estimation.cpp
+  src/trajectory_evaluation/torque_penalty.cpp
+)
+target_link_libraries(torque_penalty_simple ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(torque_penalty_simple2
+  src/trajectory_evaluation/gravitational_torque_estimation.cpp
+  src/trajectory_evaluation/torque_penalty2.cpp
+)
+target_link_libraries(torque_penalty_simple2 ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(trajectory_torque
+  src/trajectory_evaluation/gravitational_torque_estimation.cpp
+  src/trajectory_evaluation/trajectory_torque.cpp
+)
+target_link_libraries(trajectory_torque ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(position_penalty src/trajectory_evaluation/position_penalty.cpp)
+target_link_libraries(position_penalty ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(position_penalty2 src/trajectory_evaluation/position_penalty2.cpp)
+target_link_libraries(position_penalty2 ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(pos_penal_r src/trajectory_evaluation/pos_penal_r.cpp)
+target_link_libraries(pos_penal_r ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(data_extractor src/trajectory_evaluation/data_extractor.cpp)
+target_link_libraries(data_extractor ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(data_extractor2 src/trajectory_evaluation/data_extractor2.cpp)
+target_link_libraries(data_extractor2 ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(trajectory_position
+  src/trajectory_evaluation/gravitational_torque_estimation.cpp
+  src/trajectory_evaluation/trajectory_position_penalty.cpp
+)
+target_link_libraries(trajectory_position ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+
+
+
+add_executable(position_manipulability src/trajectory_evaluation/position_manipulability.cpp)
+target_link_libraries(position_manipulability ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
 ## Declare a cpp library
 # add_library(bender_arm_planning
 #   src/${PROJECT_NAME}/bender_arm_planning.cpp
