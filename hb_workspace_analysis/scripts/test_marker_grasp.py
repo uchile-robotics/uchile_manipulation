@@ -1,18 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-__author__ = 'Rodrigo Munoz'
-__email__ = 'rorro.mr@gmail.com'
-
-
 import rospy
 import sys
-from random import random
+from random import random, shuffle
 from tf import transformations
 # Msgs
 from geometry_msgs.msg import Point, Pose
 from sensor_msgs.msg import JointState
-
 # Markers
 from visualization_msgs.msg import InteractiveMarkerControl, Marker
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer, InteractiveMarker, InteractiveMarkerFeedback
@@ -21,9 +16,9 @@ from shape_msgs.msg import SolidPrimitive
 from hb_workspace_analysis.msg import GraspObject
 from hb_workspace_analysis.interface import CapabilityMap
 
-from bender_skills.capabilities.manipulation.capability_map import CapabilityMapSkill
+__author__ = 'Rodrigo Munoz'
+__email__ = 'rorro.mr@gmail.com'
 
-from random import shuffle
 
 def get_pose(x=0, y=0, z=0, roll=0, pitch=0, yaw=0):
     p = Pose()
@@ -34,6 +29,7 @@ def get_pose(x=0, y=0, z=0, roll=0, pitch=0, yaw=0):
     p.orientation.z = q[2]
     p.orientation.w = q[3]
     return p
+
 
 def get_cylinder(pose, frame_id='bender/base_link', dim = [0.22, 0.04]):
     obj = GraspObject()
@@ -47,9 +43,10 @@ def get_cylinder(pose, frame_id='bender/base_link', dim = [0.22, 0.04]):
     obj.primitive_poses.append(pose)
     return obj
 
+
 class InteractiveGrasp(object):
 
-    def __init__(self, topic_name = "interactive_grasp", frame_id = "base_link", arm_name = 'l_arm ',radius = 0.04, height = 0.22, init_position = Point(0,0,0)):
+    def __init__(self, topic_name="interactive_grasp", frame_id="base_link", arm_name='l_arm ',radius = 0.04, height=0.22, init_position=Point(0,0,0)):
         # Interactive Marker
         self.menu_handler = MenuHandler()
         self.server = InteractiveMarkerServer(topic_name)
@@ -63,30 +60,21 @@ class InteractiveGrasp(object):
         self.height = height
         self.frame_id = frame_id
 
-        self.grasp_server = CapabilityMapSkill()
+        self.grasp_server = CapabilityMap()
         if not self.grasp_server.check():
-            rospy.logerr(" Can't capability map server at \"{}\"".format(self.grasp_server.get_topic()))
+            rospy.logerr("Capability map server at \"{}\" not found.".format(self.grasp_server.get_topic()))
             sys.exit(-1)
         self.grasp_server.setup()
 
         self.pub = rospy.Publisher('test/joint_states', JointState, queue_size=10)
         self.joint_msg = JointState()
-        self.joint_msg.name = ['l_shoulder_pitch_joint', 'l_shoulder_roll_joint', 'l_shoulder_yaw_joint', 'l_elbow_pitch_joint', 'l_elbow_yaw_joint', 'l_wrist_pitch_joint',
-                               'l_ext_finger_joint'
-            ,'l_int_finger_joint'
-            ,'head_yaw_joint'
-            ,'head_pitch_joint'
-            ,'r_shoulder_pitch_joint'
-            ,'r_shoulder_roll_joint'
-            ,'r_shoulder_yaw_joint'
-            ,'r_elbow_pitch_joint'
-            ,'r_elbow_yaw_joint'
-            ,'r_wrist_pitch_joint'
-            ,'r_ext_finger_joint'
-            ,'r_int_finger_joint']
+        self.joint_msg.name = ['l_shoulder_pitch_joint','l_shoulder_roll_joint','l_shoulder_yaw_joint',
+                               'l_elbow_pitch_joint', 'l_elbow_yaw_joint', 'l_wrist_pitch_joint', 'l_ext_finger_joint',
+                               'l_int_finger_joint','head_yaw_joint','head_pitch_joint','r_shoulder_pitch_joint',
+                               'r_shoulder_roll_joint','r_shoulder_yaw_joint','r_elbow_pitch_joint','r_elbow_yaw_joint',
+                               'r_wrist_pitch_joint','r_ext_finger_joint','r_int_finger_joint']
         self.joint_msg.velocity = [0.0]*len(self.joint_msg.name)
         self.joint_msg.effort = [0.0]*len(self.joint_msg.name)
-
 
     def process_feedback(self, feedback):
         # Update pose
@@ -154,7 +142,7 @@ class InteractiveGrasp(object):
         control.name = "roll"
         control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
         int_marker.controls.append(control)
-        # Movimiento en X
+        # X movement
         control = InteractiveMarkerControl()
         control.orientation.w = 1
         control.orientation.x = 1
@@ -172,7 +160,7 @@ class InteractiveGrasp(object):
         control.name = "yaw"
         control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
         int_marker.controls.append(control)
-        # Movimiento en Z
+        # Z movement
         control = InteractiveMarkerControl()
         control.orientation.w = 1
         control.orientation.x = 0
@@ -190,7 +178,7 @@ class InteractiveGrasp(object):
         control.name = "pitch"
         control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
         int_marker.controls.append(control)
-        # Movimiento en y
+        # Y movement
         control = InteractiveMarkerControl()
         control.orientation.w = 1
         control.orientation.x = 0
@@ -201,6 +189,7 @@ class InteractiveGrasp(object):
         int_marker.controls.append(control)
         self.server.insert(int_marker, self.process_feedback)
         self.menu_handler.apply(self.server, int_marker.name)
+
 
 def main():
     rospy.init_node("interactive_grasp_node")
