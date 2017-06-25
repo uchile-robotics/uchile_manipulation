@@ -1,16 +1,20 @@
-#include "ros/ros.h"
-#include "std_msgs/String.h"
-#include "sensor_msgs/JointState.h"
-
 #include <string>
 #include <vector>
+#include <iostream>
+// ROS
+#include <ros/ros.h>
+#include <std_msgs/String.h>
+#include <sensor_msgs/JointState.h>
+#include <std_msgs/Float64MultiArray.h>
+
 #include "gravitational_torque_estimation.h"
-# include "std_msgs/Float64MultiArray.h"
+
 
 
 std::vector<std::string> joint_names;
 std::vector<double> joint_pos;
 std::vector<double> joint_torque;
+std::vector<double> current_torque;
 trajectory_evaluation::GravitationalTorqueEstimationPtr torque_estimation;
 ros::Publisher torque_pub;
 
@@ -28,7 +32,11 @@ void jointStatesCb(const sensor_msgs::JointState::ConstPtr& msg)
       ROS_WARN_STREAM("JointState message doesnt contain: " << *joint_name);
       return;
     }
-    joint_pos[joint_idx++] = msg->position[msg_idx];
+    // Update joint position
+    joint_pos[joint_idx] = msg->position[msg_idx];
+    // Update torque estimation
+    current_torque[joint_idx] = msg->effort[msg_idx];
+    joint_idx += 1;
   }
   // Torque estimation
   torque_estimation->estimate(joint_pos, joint_torque);
@@ -46,9 +54,8 @@ void jointStatesCb(const sensor_msgs::JointState::ConstPtr& msg)
     torques_array.data.push_back(joint_torque[i]);
   }
 
-  ROS_INFO_STREAM("THE NUMBER OF JOINTS TO BE PUBLISHED IS: " << joint_names.size() );
+  ROS_INFO_STREAM_THROTTLE(1.0, "Number of joints: " << joint_names.size() );
   torque_pub.publish(torques_array);
-
 }
 
 int main(int argc, char **argv)
@@ -70,20 +77,22 @@ int main(int argc, char **argv)
   nhpriv.param<std::string>("root_link", root_link, "base_link");
   nhpriv.param<std::string>("tip_link", tip_link, "tip_link");
   ROS_INFO_STREAM("Root link: " << root_link);
-  ROS_INFO_STREAM("Tip link: " << tip_link);  
-  
-  torque_estimation.reset(new trajectory_evaluation::GravitationalTorqueEstimation(model, root_link, tip_link));
+  ROS_INFO_STREAM("Tip link: " << tip_link);
 
+  torque_estimation.reset(new trajectory_evaluation::GravitationalTorqueEstimation(model, root_link, tip_link));
   unsigned int dof = torque_estimation->getDOF();
   ROS_INFO_STREAM("DOF: " << dof);
   joint_pos.resize(dof, 0.0);
   joint_torque.resize(dof, 0.0);
+  current_torque.resize(dof, 0.0);
+
   // Print chain names
   joint_names = torque_estimation->getJointNames();
   ROS_INFO("Joint names: ");
   for (std::vector<std::string>::iterator i = joint_names.begin(); i != joint_names.end(); ++i)
   {
-    ROS_INFO_STREAM("\t" << *i);
+    ROS_INFO_STREAM("\t" << *i << " max effort: " << model.getJoint(*i)->limits->effort);
+
   }
   ros::Subscriber sub = nh.subscribe("/bender/joint_states", 10, jointStatesCb);
   torque_pub = nh.advertise<std_msgs::Float64MultiArray>("joint_torques", 100);
