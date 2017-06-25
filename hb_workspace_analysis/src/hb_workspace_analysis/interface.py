@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-__author__ = 'Rodrigo Munoz'
-__email__ = 'rorro.mr@gmail.com'
-
 import rospy
 from hb_workspace_analysis.msg import GraspStorage
 from hb_workspace_analysis.srv import GetCapabilityMap, GetCapabilityMapRequest
 
-class CapabilityMap(object):
+__author__ = 'Rodrigo Munoz'
+__email__ = 'rorro.mr@gmail.com'
 
+
+class CapabilityMap(object):
     def __init__(self, capability_map_topic="/capability_map"):
         self.capability_map_topic = capability_map_topic
 
     def get_topic(self):
-        return  self.capability_map_topic
+        return self.capability_map_topic
 
     def setup(self):
         self.grasp_server = rospy.ServiceProxy(self.capability_map_topic, GetCapabilityMap)
