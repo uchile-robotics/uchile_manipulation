@@ -21,38 +21,46 @@ namespace move_group
 
   void CapabilityMapPlugin::initialize()
   {
-    XmlRpc::XmlRpcValue raw_parameters;
-    node_handle_.getParam("capability_map", raw_parameters);
-    ROS_ASSERT(raw_parameters.getType() == XmlRpc::XmlRpcValue::TypeStruct);
-
-    for(XmlRpc::XmlRpcValue::ValueStruct::iterator it = raw_parameters.begin(); it != raw_parameters.end(); ++it)
+    if (node_handle_.hasParam("capability_map"))
     {
-      std::string capmap_name(it->first);
-      ros::NodeHandle nh_capmap(node_handle_, "capability_map/" + capmap_name);
-      hb_workspace_analysis::CapabilityMapOptions opt;
-      opt.load(nh_capmap);
-      GraspStorageDbPtr db;
-      ROS_INFO_STREAM("Loading capability map: \n" << opt);
-      // Create database connection
-      try
+      XmlRpc::XmlRpcValue raw_parameters;
+      node_handle_.getParam("capability_map", raw_parameters);
+      ROS_ASSERT(raw_parameters.getType() == XmlRpc::XmlRpcValue::TypeStruct);
+      for(XmlRpc::XmlRpcValue::ValueStruct::iterator it = raw_parameters.begin(); it != raw_parameters.end(); ++it)
       {
-        // Make connection to DB
-        db.reset(new GraspStorageDb(opt.db_name, opt.db_collection, opt.db_server, opt.db_port, 5.0));
+        std::string capmap_name(it->first);
+        ros::NodeHandle nh_capmap(node_handle_, "capability_map/" + capmap_name);
+        hb_workspace_analysis::CapabilityMapOptions opt;
+        opt.load(nh_capmap);
+        GraspStorageDbPtr db;
+        ROS_INFO_STREAM("Loading capability map: \n" << opt);
+        // Create database connection
+        try
+        {
+          // Make connection to DB
+          db.reset(new GraspStorageDb(opt.db_name, opt.db_collection, opt.db_server, opt.db_port, 5.0));
+        }
+        catch (const mongo_ros::DbConnectException& exception)
+        {
+          // Connection timeout
+          ROS_ERROR_STREAM("Connection timeout for capability map: \n" << opt);
+          db.reset(); // Make null pointer
+        }
+        // Check for empty database
+        if (db->count() == 0)
+        {
+          ROS_WARN_STREAM("Capability map for \"" << opt.group_name << "\" is empty.");
+        }
+        capmap_opt_.insert(std::make_pair<std::string, hb_workspace_analysis::CapabilityMapOptions>(opt.group_name, opt));
+        db_.insert(std::make_pair<std::string, GraspStorageDbPtr>(opt.group_name, db));
       }
-      catch (const mongo_ros::DbConnectException& exception)
-      {
-        // Connection timeout
-        ROS_ERROR_STREAM("Connection timeout for capability map: \n" << opt);
-        db.reset(); // Make null pointer
-      }
-      // Check for empty database
-      if (db->count() == 0)
-      {
-        ROS_WARN_STREAM("Capability map for \"" << opt.group_name << "\" is empty.");
-      }
-      capmap_opt_.insert(std::make_pair<std::string, hb_workspace_analysis::CapabilityMapOptions>(opt.group_name, opt));
-      db_.insert(std::make_pair<std::string, GraspStorageDbPtr>(opt.group_name, db));
     }
+    else
+    {
+      ROS_ERROR_STREAM("Parameters for CapabilityMapPlugin missing from parameter server. Searching in namespace: "
+                           << node_handle_.getNamespace());
+    }
+
 
     // Grasp service
     grasp_service_ = root_node_handle_.advertiseService(CAPABILITY_MAP_PLUGIN_NAME,
