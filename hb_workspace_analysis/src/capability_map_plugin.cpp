@@ -1,4 +1,4 @@
-/* 
+/*
 * Get grasp positions from MongoDB
 *
 * Author: Rodrigo Munoz
@@ -15,52 +15,74 @@ namespace move_group
 
   bool CapabilityMapPlugin::loadOptions()
   {
-    ros::NodeHandle nh_capmap(node_handle_, "capability_map");
-    nh_capmap.param<double>("resolution", resolution_, 0.01);
-    nh_capmap.param<double>("search_factor", search_factor_, 1.0);
-    nh_capmap.param<std::string>("group_name", group_name_, "arm");
-    ROS_INFO_STREAM("Capability map for \"" << group_name_ << "\" using resolution " << resolution_ << " and search factor " << search_factor_);
-    // Nodehandle for database parameters
-    ros::NodeHandle nh_database(nh_capmap, "database");
-    nh_database.param<std::string>("server", db_server_, "localhost");
-    // Get MongoDB port
-    nh_database.param<int>("port", db_port_, 27017);
-    ROS_INFO_STREAM("Using MongoDB server " << db_server_ << ":" << db_port_);
-    // Get database name
-    nh_database.param<std::string>("name", db_name_, "workspace_analysis");
-    // Get database name
-    nh_database.param<std::string>("collection", collection_name_, "capability_map");
-    ROS_INFO_STREAM("Collection \"" << collection_name_ << "\" in database \"" << db_name_ << "\"");
-    return true;
+
+
   }
 
   void CapabilityMapPlugin::initialize()
   {
-    loadOptions();
+    XmlRpc::XmlRpcValue raw_parameters;
+    node_handle_.getParam("capability_map", raw_parameters);
+    ROS_ASSERT(raw_parameters.getType() == XmlRpc::XmlRpcValue::TypeStruct);
+
+    for(XmlRpc::XmlRpcValue::ValueStruct::iterator it = raw_parameters.begin(); it != raw_parameters.end(); ++it)
+    {
+      std::string capmap_name(it->first);
+      ros::NodeHandle nh_capmap(node_handle_, "capability_map/" + capmap_name);
+      hb_workspace_analysis::CapabilityMapOptions opt;
+      opt.load(nh_capmap);
+      GraspStorageDbPtr db;
+      ROS_INFO_STREAM("Loading capability map: \n" << opt);
+      // Create database connection
+      try
+      {
+        // Make connection to DB
+        db.reset(new GraspStorageDb(opt.db_name, opt.db_collection, opt.db_server, opt.db_port, 5.0));
+      }
+      catch (const mongo_ros::DbConnectException& exception)
+      {
+        // Connection timeout
+        ROS_ERROR_STREAM("Connection timeout for capability map: \n" << opt);
+        db.reset(); // Make null pointer
+      }
+      // Check for empty database
+      if (db->count() == 0)
+      {
+        ROS_WARN_STREAM("Capability map for \"" << opt.group_name << "\" is empty.");
+      }
+      capmap_opt_.insert(std::make_pair<std::string, hb_workspace_analysis::CapabilityMapOptions>(opt.group_name, opt));
+      db_.insert(std::make_pair<std::string, GraspStorageDbPtr>(opt.group_name, db));
+    }
+
     // Grasp service
     grasp_service_ = root_node_handle_.advertiseService(CAPABILITY_MAP_PLUGIN_NAME,
                                                         &CapabilityMapPlugin::getCapabilityMapCb, this);
-    try
-    {
-      // Make connection to DB
-      db_.reset(new GraspStorageDb(db_name_, collection_name_, db_server_, db_port_, 5.0));
-    }
-    catch (const mongo_ros::DbConnectException& exception)
-    {
-      // Connection timeout
-      ROS_ERROR("Connection timeout.");
-      db_.reset(); // Make null pointer
-    }
+
   }
 
   bool CapabilityMapPlugin::getCapabilityMapCb(hb_workspace_analysis::GetCapabilityMap::Request &req,
                                                hb_workspace_analysis::GetCapabilityMap::Response &res)
   {
     // Check db connection
-    if (!db_)
+    DatabaseTable::iterator db_it = db_.find(req.group_name);
+    CapabilityMapOptionsTable::iterator opt_it = capmap_opt_.find(req.group_name);
+    if (db_it == db_.end() || opt_it == capmap_opt_.end())
+    {
+      ROS_ERROR_STREAM("Capability map not availaible for \"" << req.group_name << "\".");
       return false;
+    }
 
-    ROS_INFO_STREAM("Number of elements: " << db_->count());
+    // Check for null pointer
+    hb_workspace_analysis::CapabilityMapOptions& opt = capmap_opt_[req.group_name];
+    GraspStorageDbPtr& db = db_[req.group_name];
+    if (!db)
+    {
+      ROS_ERROR_STREAM("Capability couldn't be loaded for \"" << opt.group_name << "\".");
+      return false;
+    }
+
+
+    ROS_INFO_STREAM("Number of elements: " << db->count());
     /* --------------------------------------------------------------------------------
     * Get grasps from db
     */
@@ -68,21 +90,21 @@ namespace move_group
     ros::Time t0 = ros::Time::now();
     // Create query using object pose
     // X range (greater than or equal, less than or equal)
-    const double x_gte = req.object.primitive_poses[0].position.x - resolution_*search_factor_;
-    const double x_lte = req.object.primitive_poses[0].position.x + resolution_*search_factor_;
+    const double x_gte = req.object.primitive_poses[0].position.x - opt.resolution*opt.search_factor;
+    const double x_lte = req.object.primitive_poses[0].position.x + opt.resolution*opt.search_factor;
     // Y range (greater than or equal, less than or equal)
-    const double y_gte = req.object.primitive_poses[0].position.y - resolution_*search_factor_;
-    const double y_lte = req.object.primitive_poses[0].position.y + resolution_*search_factor_;
+    const double y_gte = req.object.primitive_poses[0].position.y - opt.resolution*opt.search_factor;
+    const double y_lte = req.object.primitive_poses[0].position.y + opt.resolution*opt.search_factor;
     // Z range (greater than or equal, less than or equal) using cylinder height
-    const double z_gte = req.object.primitive_poses[0].position.z - resolution_*search_factor_ - req.object.primitives[0].dimensions[0]/2;
-    const double z_lte = req.object.primitive_poses[0].position.z + resolution_*search_factor_ + req.object.primitives[0].dimensions[0]/2;
+    const double z_gte = req.object.primitive_poses[0].position.z - opt.resolution*opt.search_factor - req.object.primitives[0].dimensions[0]/2;
+    const double z_lte = req.object.primitive_poses[0].position.z + opt.resolution*opt.search_factor + req.object.primitives[0].dimensions[0]/2;
     ROS_INFO_STREAM("Searching at: x[" << x_gte << ", " << x_lte << "] y[" << y_gte << ", " << y_lte << "] z[" << z_gte << ", " << z_lte << "] ");
     mongo_ros::Query query = mongo_ros::Query()
         .append("x", mongo_ros::GTE, x_gte).append("x", mongo_ros::LTE, x_lte)
         .append("y", mongo_ros::GTE, y_gte).append("y", mongo_ros::LTE, y_lte)
         .append("z", mongo_ros::GTE, z_gte).append("z", mongo_ros::LTE, z_lte);
     // Send query with descending z
-    std::vector<GraspStorageWithMetadataPtr> result = db_->pullAllResults(query, false, "z", false);
+    std::vector<GraspStorageWithMetadataPtr> result = db->pullAllResults(query, false, "z", false);
     if(result.empty())
     {
       ROS_WARN("Grasp not found.");
@@ -96,17 +118,17 @@ namespace move_group
     // Get Planning scene
     planning_scene_monitor::LockedPlanningSceneRO ls(context_->planning_scene_monitor_);
     robot_state::RobotState rs = ls->getCurrentState();
-    const robot_state::JointModelGroup* joint_model_group = rs.getJointModelGroup(group_name_);
+    const robot_state::JointModelGroup* joint_model_group = rs.getJointModelGroup(opt.group_name);
     if (!joint_model_group)
     {
-      ROS_ERROR_STREAM("Group '"<< group_name_ << "' not found in model.");
+      ROS_ERROR_STREAM("Group '"<< opt.group_name << "' not found in model.");
       return false;
     }
     // Get joint names
     const std::vector<std::string>& joint_names = joint_model_group->getActiveJointModelNames();
     // Configure collision request
     collision_detection::CollisionRequest creq;
-    creq.group_name = group_name_;
+    creq.group_name = opt.group_name;
     creq.cost = false;
     creq.contacts = false;
     creq.max_contacts = 1;

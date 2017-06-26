@@ -18,6 +18,24 @@ bool CapabilityMapOptions::load(const ros::NodeHandle &nh)
     return false;
   }
   nh.getParam("group_name", group_name);
+  // Resolution
+  if (!nh.hasParam("resolution"))
+  {
+    ROS_ERROR_STREAM_NAMED("capability_map_options_loader",
+                           "Capability map configuration parameter \"resolution\" missing from parameter server. Searching in namespace: "
+                               << nh.getNamespace());
+    return false;
+  }
+  nh.getParam("resolution", resolution);
+  // Search factor
+  if (!nh.hasParam("search_factor"))
+  {
+    ROS_ERROR_STREAM_NAMED("capability_map_options_loader",
+                           "Capability map configuration parameter \"search_factor\" missing from parameter server. Searching in namespace: "
+                               << nh.getNamespace());
+    return false;
+  }
+  nh.getParam("search_factor", search_factor);
   // Database parameters
   // Server
   if (!nh.hasParam("database/server"))
@@ -63,7 +81,7 @@ std::ostream &operator<<(std::ostream &os, const hb_workspace_analysis::Capabili
   os << "Group name: \"" << opt.group_name << "\"" << std::endl;
   os << "Database:" << std::endl;
   os << "\tServer: \"" << opt.db_server << "\"" << std::endl;
-  os << "\tPort: \"" << opt.db_port << "\"" << std::endl;
+  os << "\tPort: " << opt.db_port << std::endl;
   os << "\tDatabase name: \"" << opt.db_name << "\"" << std::endl;
   os << "\tCollection: \"" << opt.db_collection << "\"" << std::endl;
 

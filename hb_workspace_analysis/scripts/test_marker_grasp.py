@@ -87,7 +87,7 @@ class InteractiveGrasp(object):
                 # Get object pose
                 object = get_cylinder(self.current_pose)
                 try:
-                    result = self.grasp_server.get_grasp(object)
+                    result = self.grasp_server.get_grasp(object, "l_arm")
                     if result.grasp:
                         # Show at least 10 random grasp position
                         shuffle(result.grasp)
@@ -103,10 +103,20 @@ class InteractiveGrasp(object):
                             self.joint_msg.position.extend([0.0]*12)
                             self.pub.publish(self.joint_msg)
                             rospy.sleep(0.03)
-
-
+                    else:
+                        rospy.logwarn("Grasp not found for l_arm")
                 except rospy.ServiceException, e:
                     print "Service call failed: %s"%e
+
+                try:
+                    result = self.grasp_server.get_grasp(object, "r_arm")
+                    if result.grasp:
+                        rospy.loginfo("Found {} grasps".format(len(result.grasp)))
+                    else:
+                        rospy.logwarn("Grasp not found for r_arm")
+                except rospy.ServiceException, e:
+                    print "Service call failed: %s"%e
+
         self.server.applyChanges()
 
     def add_grasp_marker(self, frame_id, radius, height, init_position):

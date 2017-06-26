@@ -147,6 +147,7 @@ target_link_libraries(capability_map_mongo ${catkin_LIBRARIES})
 
 add_library(hb_move_group_capabilities
         src/capability_map_plugin.cpp
+        src/capability_map_options.cpp
         )
 add_dependencies(hb_move_group_capabilities ${catkin_EXPORTED_TARGETS})
 target_link_libraries(hb_move_group_capabilities ${catkin_LIBRARIES} ${Boost_LIBRARIES})

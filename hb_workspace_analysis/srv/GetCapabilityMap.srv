@@ -1,4 +1,5 @@
 # Object target
+string group_name
 hb_workspace_analysis/GraspObject object
 ---
 # Result

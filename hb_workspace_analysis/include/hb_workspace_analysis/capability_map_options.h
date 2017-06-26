@@ -8,8 +8,12 @@ namespace hb_workspace_analysis
   class CapabilityMapOptions
   {
   public:
-    // Group name
+    // Group name (MoveIt! joint group)
     std::string group_name;
+    // Resolution of capability map
+    double resolution;
+    // Search range factor
+    double search_factor;
     // Database
     std::string db_server;
     int db_port;

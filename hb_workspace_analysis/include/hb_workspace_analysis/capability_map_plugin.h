@@ -10,9 +10,11 @@
 
 // Interface with MoveGroup
 #include <moveit/move_group/move_group_capability.h>
-#include <hb_workspace_analysis/GraspStorage.h>
 #include <mongo_ros/message_collection.h>
+// Capability map
 #include <hb_workspace_analysis/GetCapabilityMap.h>
+#include <hb_workspace_analysis/GraspStorage.h>
+#include <hb_workspace_analysis/capability_map_options.h>
 
 namespace move_group
 {
@@ -21,11 +23,13 @@ namespace move_group
 static const std::string CAPABILITY_MAP_PLUGIN_NAME = "capability_map";
 // Typedef for DB
 typedef mongo_ros::MessageCollection<hb_workspace_analysis::GraspStorage> GraspStorageDb;
+typedef boost::shared_ptr<GraspStorageDb> GraspStorageDbPtr;
 typedef mongo_ros::MessageWithMetadata<hb_workspace_analysis::GraspStorage> GraspStorageWithMetadata;
 typedef boost::shared_ptr<const GraspStorageWithMetadata> GraspStorageWithMetadataPtr;
+typedef std::map<std::string, GraspStorageDbPtr> DatabaseTable;
+typedef std::map<std::string, hb_workspace_analysis::CapabilityMapOptions> CapabilityMapOptionsTable;
 
-
-  class CapabilityMapPlugin : public MoveGroupCapability
+class CapabilityMapPlugin : public MoveGroupCapability
 {
 public:
 
@@ -41,27 +45,14 @@ private:
 
   bool loadOptions();
 
-  // MongoDB options
-  std::string db_server_;
-  std::string db_name_;
-    int db_port_;
-    std::string collection_name_;
-
-
-
-
-    // Service
+  // Capability map options
+  CapabilityMapOptionsTable capmap_opt_;
+  // Service
   ros::ServiceServer grasp_service_;
   // Capability map reference frame
   std::string ref_frame_;
-  // DB connection
-  boost::shared_ptr<GraspStorageDb> db_;
-  // Capability map resolution
-  double resolution_;
-  // Search factor
-  double search_factor_;
-  // Group name
-  std::string group_name_;
+  // DB connections
+  DatabaseTable db_;
 
 };
 

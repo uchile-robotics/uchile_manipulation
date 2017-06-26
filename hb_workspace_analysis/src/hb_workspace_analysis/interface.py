@@ -29,9 +29,10 @@ class CapabilityMap(object):
             return False
         return True
 
-    def get_grasp(self, object):
+    def get_grasp(self, object, group_name):
         req = GetCapabilityMapRequest()
         req.object = object
+        req.group_name = group_name
         try:
             result = self.grasp_server(req)
             return result.grasp
