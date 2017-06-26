@@ -206,11 +206,11 @@ int main(int argc, char **argv)
 
   	double score = (penalty*100000)/24.41; //20.8 // con todos los joint en su centro...
   	//ROS_INFO_STREAM("score: " << score);
-    if(score!=score2)
-    {
-      std::cout << (score) << std::endl;
-      score2=score;
-    }
+    // if(score!=score2)
+    // {
+    //   std::cout << (score) << std::endl;
+    //   score2=score;
+    // }
     
   		
   	//ROS_INFO_STREAM("---------------------------"); 

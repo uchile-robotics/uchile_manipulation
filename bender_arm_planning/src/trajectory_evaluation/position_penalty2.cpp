@@ -118,22 +118,10 @@ double getJointLimitsPenalty(const robot_state::RobotState& state,
      }
 
     joint_limits_multiplier *= joint_multiplier;
-
-    //ROS_INFO_STREAM("joint multiplier: "<< joint_multiplier); 
-
-    // Extraccion de datos
-    //if (i==5)
-    //{ 
-    //  std::cout<< joint_state->position[5] <<", "<< joint_multiplier ;
-    //}
-    //if (i==5)
-    //{
-    //  std::cout<<", "<<(1.0 - exp(-penalty_multiplier_ * joint_limits_multiplier))<<std::endl;
-    //}
-    // termina extraccion de datos
-     
+ 
    }
-   return (1.0 - exp(-penalty_multiplier_ * joint_limits_multiplier));
+   double score = (1.0 - exp(-penalty_multiplier_ * joint_limits_multiplier));
+   return (score*100000)/24.41;;
  }
 
 int main(int argc, char **argv)
@@ -207,70 +195,18 @@ int main(int argc, char **argv)
   	kinematics_metrics::KinematicsMetricsPtr kin_metrics(
   			new kinematics_metrics::KinematicsMetrics(kinematic_model));  
 
- 		double penalty = getJointLimitsPenalty(*kinematic_state, joint_model_group);
-  	double penalty_norm= (penalty*100000);             // Esta normalizado para el kuka ... revisar limites de bender ...
-  	//ROS_INFO_STREAM("Penalty: " << penalty_norm); 
-
-  	double score = (penalty*100000)/24.41; //20.8 // con todos los joint en su centro...
-  	//ROS_INFO_STREAM("score: " << score);
-
-
-
-    // if(score!=score2)
-    // {
-    //   std::cout << (score) << std::endl;
-    //   score2=score;
-    // }
-    
-
-
-    // Extracción de datos
-
-
-  	std::ostringstream strs;
-    strs << score;
-    std::string str = strs.str();
-    datos= datos +"\n" + str;//
-
-    std::ofstream myfile;
-    myfile.open ("scores_buenos.txt");
-    myfile << datos;
-    myfile.close();
-    ROS_INFO_STREAM("file saved!");
-
-
-
-
-    // ROS_INFO_STREAM("Desea guardar?");
-    // std::string enter="";
-    // std::cin>>enter;
-
-    // if(enter=="y")
-    // {
-    //   std::ostringstream strs;
-    //   strs << score;
-    //   std::string str = strs.str();
-    //   datos= datos +"\n" + str;//
-
-    //   std::ofstream myfile;
-    //   myfile.open ("scores_buenos.txt");
-    // myfile << datos;
-    // myfile.close();
-    // ROS_INFO_STREAM("file saved!");
-    // // FIN EXTRACCION DE DATOS 
-    // //ROS_INFO_STREAM("---------------------------"); 
-    // }
-
+ 		double score = getJointLimitsPenalty(*kinematic_state, joint_model_group);
+  	
 
   
-    
-    double score_limit=20;
+    ROS_INFO_STREAM(score);
+    double score_limit=0.2;
     if (score>score_limit)
     {
-        ROS_DEBUG_STREAM("PASS");
+        ROS_INFO_STREAM("PASS");
     }
     else{
-        ROS_DEBUG_STREAM("FAIL");
+        ROS_INFO_STREAM("FAIL");
     }
     ROS_DEBUG_STREAM("---------------------------"); 
 
