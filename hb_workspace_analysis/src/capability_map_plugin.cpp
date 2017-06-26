@@ -3,7 +3,7 @@
 *
 * Author: Rodrigo Munoz
 */
-#include <hb_workspace_analysis/capability_map_plugin.h>
+#include "hb_workspace_analysis/capability_map_plugin.h"
 
 
 namespace move_group

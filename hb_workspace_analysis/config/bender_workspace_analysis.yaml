@@ -1,12 +1,23 @@
 capability_map:
-  resolution: 0.01
-  search_factor: 1.0
-  group_name: "l_arm"
-  # Database config
-  database:
-    server: "localhost"
-    port: 27017
-    name: "workspace_analysis"
-    collection: "capability_map"
+  cm_l_arm:
+    group_name: "l_arm"
+    resolution: 0.01
+    search_factor: 1.0
+    # Database config
+    database:
+      server: "localhost"
+      port: 27017
+      name: "workspace_analysis"
+      collection: "capability_map_l_arm"
 
+  cm_r_arm:
+    group_name: "r_arm"
+    resolution: 0.01
+    search_factor: 1.0
+    # Database config
+    database:
+      server: "localhost"
+      port: 27017
+      name: "workspace_analysis"
+      collection: "capability_map_r_arm"
 

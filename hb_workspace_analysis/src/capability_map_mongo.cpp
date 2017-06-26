@@ -10,6 +10,9 @@
 #include <hb_grasp_generator/grasp_options.h>
 #include <hb_grasp_generator/grasp_generator.h>
 
+#include "hb_workspace_analysis/capability_map_options.h"
+
+
 typedef mongo_ros::MessageWithMetadata<hb_workspace_analysis::GraspStorage> GraspStorageWithMetadata;
 
 int main (int argc, char** argv)
@@ -21,9 +24,23 @@ int main (int argc, char** argv)
   using mongo_ros::LT;
   using mongo_ros::GT;
 
-  // Clear existing data if any
-  mongo_ros::dropDatabase("workspace_analysis", "localhost", 27017, 5.0);
+  ros::NodeHandle nh_priv("~");
+  XmlRpc::XmlRpcValue raw_parameters;
+  nh_priv.getParam("capability_map", raw_parameters);
+  ROS_ASSERT(raw_parameters.getType() == XmlRpc::XmlRpcValue::TypeStruct);
 
+  for(XmlRpc::XmlRpcValue::ValueStruct::iterator it = raw_parameters.begin(); it != raw_parameters.end(); ++it)
+  {
+    std::string capmap_name(it->first);
+    ros::NodeHandle nh_capmap(nh_priv, "capability_map/" + capmap_name);
+    ROS_INFO_STREAM("Loading capability map \"" << capmap_name << "\".");
+    hb_workspace_analysis::CapabilityMapOptions opt;
+    opt.load(nh_capmap);
+    ROS_INFO_STREAM(opt);
+  }
+
+
+  /*
   // Set up db
   mongo_ros::MessageCollection<hb_workspace_analysis::GraspStorage> coll("workspace_analysis", "capability_map", "localhost", 27017, 5.0);
 
@@ -174,4 +191,5 @@ int main (int argc, char** argv)
       }
     }
   }
+  */
 }
