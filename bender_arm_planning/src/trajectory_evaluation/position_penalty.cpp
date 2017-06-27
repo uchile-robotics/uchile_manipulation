@@ -11,11 +11,18 @@
 #include <boost/math/constants/constants.hpp>
 #include <sensor_msgs/JointState.h>
 
+#include <string>
+#include <iostream>
+#include <fstream>
+#include "std_msgs/String.h"
+
 
 
 sensor_msgs::JointStatePtr joint_state;
 std::vector<std::string> joint_names;
 double score2=0;
+
+std::string datos = "";
 
 void joint_state_cb(const sensor_msgs::JointStatePtr &msg)
 {
@@ -111,22 +118,10 @@ double getJointLimitsPenalty(const robot_state::RobotState& state,
      }
 
     joint_limits_multiplier *= joint_multiplier;
-
-    //ROS_INFO_STREAM("joint multiplier: "<< joint_multiplier); 
-
-    // Extraccion de datos
-    //if (i==5)
-    //{ 
-    //  std::cout<< joint_state->position[5] <<", "<< joint_multiplier ;
-    //}
-    //if (i==5)
-    //{
-    //  std::cout<<", "<<(1.0 - exp(-penalty_multiplier_ * joint_limits_multiplier))<<std::endl;
-    //}
-    // termina extraccion de datos
-     
+ 
    }
-   return (1.0 - exp(-penalty_multiplier_ * joint_limits_multiplier));
+   double score = (1.0 - exp(-penalty_multiplier_ * joint_limits_multiplier));
+   return (score*100000)/24.41;;
  }
 
 int main(int argc, char **argv)
@@ -167,61 +162,51 @@ int main(int argc, char **argv)
   ros::Rate rate(30);
   while(ros::ok())
   {
-		joint_names =	joint_model_group->getJointModelNames();
+    joint_names = joint_model_group->getJointModelNames();
 
-		std::vector<double> joint_values;
-		kinematic_state->copyJointGroupPositions(joint_model_group,
-				joint_values);
-		for (std::size_t i = 0; i < joint_names.size(); ++i) {
-			ROS_DEBUG("%s: %f", joint_names[i].c_str(), joint_state->position[i]);
-		}
+    std::vector<double> joint_values;
+    kinematic_state->copyJointGroupPositions(joint_model_group,
+        joint_values);
+    for (std::size_t i = 0; i < joint_names.size(); ++i) {
+      ROS_DEBUG("%s: %f", joint_names[i].c_str(), joint_state->position[i]);
+    }
 
     ROS_DEBUG_STREAM("---------------------------");
 
-		// Joint Limits
-		// ^^^^^^^^^^^^
-		// setJointGroupPositions() does not enforce joint limits by itself, but a call to enforceBounds() will do it.
-		/* Set one joint in the right arm outside its joint limit */
+    // Joint Limits
+    // ^^^^^^^^^^^^
+    // setJointGroupPositions() does not enforce joint limits by itself, but a call to enforceBounds() will do it.
+    /* Set one joint in the right arm outside its joint limit */
 
     joint_values = joint_state->position; 
   
 
-  	kinematic_state->setJointGroupPositions(joint_model_group, joint_values);
+    kinematic_state->setJointGroupPositions(joint_model_group, joint_values);
   //
-  //		/* Check whether any joint is outside its joint limits */
-  //		ROS_DEBUG_STREAM(
-  //				"Current state is " << (kinematic_state->satisfiesBounds() ? "valid" : "not valid"));
+  //    /* Check whether any joint is outside its joint limits */
+  //    ROS_DEBUG_STREAM(
+  //        "Current state is " << (kinematic_state->satisfiesBounds() ? "valid" : "not valid"));
   //
-  //		/* Enforce the joint limits for this state and check again*/
-  //		kinematic_state->enforceBounds();
-  //		ROS_DEBUG_STREAM(
-  //				"Current state is " << (kinematic_state->satisfiesBounds() ? "valid" : "not valid")); 
+  //    /* Enforce the joint limits for this state and check again*/
+  //    kinematic_state->enforceBounds();
+  //    ROS_DEBUG_STREAM(
+  //        "Current state is " << (kinematic_state->satisfiesBounds() ? "valid" : "not valid")); 
 
-  	kinematics_metrics::KinematicsMetricsPtr kin_metrics(
-  			new kinematics_metrics::KinematicsMetrics(kinematic_model));  
+    kinematics_metrics::KinematicsMetricsPtr kin_metrics(
+        new kinematics_metrics::KinematicsMetrics(kinematic_model));  
 
- 		double penalty = getJointLimitsPenalty(*kinematic_state, joint_model_group);
-  	double penalty_norm= (penalty*100000);             // Esta normalizado para el kuka ... revisar limites de bender ...
-  	//ROS_INFO_STREAM("Penalty: " << penalty_norm); 
-
-  	double score = (penalty*100000)/24.41; //20.8 // con todos los joint en su centro...
-  	//ROS_INFO_STREAM("score: " << score);
-    // if(score!=score2)
-    // {
-    //   std::cout << (score) << std::endl;
-    //   score2=score;
-    // }
+    double score = getJointLimitsPenalty(*kinematic_state, joint_model_group);
     
-  		
-  	//ROS_INFO_STREAM("---------------------------"); 
-    
-    double score_limit=20;
+
+  
+    ROS_INFO_STREAM(score);
+    double score_limit=0.2;
     if (score>score_limit)
     {
-        ROS_DEBUG_STREAM("PASS");
+        ROS_INFO_STREAM("PASS");
     }
     else{
-        ROS_DEBUG_STREAM("FAIL");
+        ROS_INFO_STREAM("FAIL");
     }
     ROS_DEBUG_STREAM("---------------------------"); 
 
