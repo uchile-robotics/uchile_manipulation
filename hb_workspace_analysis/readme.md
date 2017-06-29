@@ -2,6 +2,21 @@
 
 We use MongoDB for database storage, this document it's about basic configuration and troubleshooting related with MongoDB.
 
+### Database export
+
+For export a MongoDB database (i.e. `workspace_analysis`) use:
+```bash
+mongodump -d workspace_analysis
+```
+This command create a `dump/workspace_analysis` folder structure with all database data.
+
+### Database import
+
+For import a MongoDB database (i.e. `workspace_analysis`) use:
+```bash
+mongorestore workspace_analysis
+```
+
 ## Basic configuration
 
 MongoDB configuration file (Ubuntu 14.04) `/etc/mongodb.conf`.
@@ -51,23 +66,6 @@ switched to db local
 > 
 ```
 To exit the shell, type `quit()` or use the <kbd>Ctrl</kbd>+<kbd>C</kbd> shortcut.
-
-### Database export
-
-For export a MongoDB database (i.e. `workspace_analysis`) use:
-```bash
-mongodump -b workspace_analysis
-```
-This command create a `dump/workspace_analysis` folder structure with all database data.
-
-### Database import
-
-For import a MongoDB database (i.e. `workspace_analysis`) use:
-```bash
-mongorestore workspace_analysis
-```
-
-
 
 ## Troubleshooting
 
