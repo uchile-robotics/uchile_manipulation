@@ -16,6 +16,12 @@ For import a MongoDB database (i.e. `workspace_analysis`) use:
 ```bash
 mongorestore workspace_analysis
 ```
+### MD5 checksum
+
+After import/export run MD5 checksum to verify files. We expect get the same checksum in both sides.
+```bash
+find workspace_analysis/ -type f -exec md5sum {} \; | sort -k 2 | md5sum
+```
 
 ## Basic configuration
 
