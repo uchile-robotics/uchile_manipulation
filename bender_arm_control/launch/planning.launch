@@ -12,6 +12,8 @@
     <arg name="model_type" value="$(arg model_type)" />
   </include>
 
+  <rosparam ns="move_group" command="load" file="$(find hb_workspace_analysis)/config/bender_workspace_analysis.yaml" />
+
   <!-- Capability Map file 
   <param name="capmap_file" type="string" value="$(find bender_arm_planning)/database/cap_map.dat" />
   -->
