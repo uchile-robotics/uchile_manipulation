@@ -572,4 +572,7 @@
     <disable_collisions link1="bender/sensors/laser_front_link" link2="bender/sensors/laser_rear_link" reason="Adjacent" />
     <disable_collisions link1="bender/sensors/laser_front_link" link2="bender/upper_torso_base" reason="Never" />
     <disable_collisions link1="bender/sensors/laser_rear_link" link2="bender/upper_torso_base" reason="Never" />
+    <!-- Power supply links -->
+    <disable_collisions link1="bender/psu_base" link2="bender/lower_torso_base" reason="Adjacent" />
+    <disable_collisions link1="bender/psu_base" link2="bender/upper_torso_base" reason="Adjacent" />
 </robot>

@@ -12,7 +12,7 @@ GravitationalTorqueEstimation::GravitationalTorqueEstimation(
   KDL::Tree kdl_tree;
   if (!kdl_parser::treeFromUrdfModel(robot_model, kdl_tree))
   {
-    ROS_ERROR("Could not construct KDL tree from URDF");
+    ROS_ERROR("Could not construct KDL tree from URDF ");
     throw std::runtime_error("Could not construct KDL tree from URDF");
   }
 
@@ -33,6 +33,7 @@ GravitationalTorqueEstimation::GravitationalTorqueEstimation(
   KDL::SetToZero(positions_.qdot);
   KDL::SetToZero(torques_);
 }
+
 
 
 bool GravitationalTorqueEstimation::estimate(const std::vector<double>& current_pos, std::vector<double>& torque_estimation)

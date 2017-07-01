@@ -12,12 +12,12 @@
     <arg name="model_type" value="$(arg model_type)" />
   </include>
 
-  <!-- Capability Map file -->
+  <!-- Capability Map file 
   <param name="capmap_file" type="string" value="$(find bender_arm_planning)/database/cap_map.dat" />
-  
-  <!-- Capa de servicios de planning, integra para ambos brazos -->
+  -->
+  <!-- Capa de servicios de planning, integra para ambos brazos
   <node name="arm_planning" pkg="bender_arm_control" type="bender_planning" output="screen">
     <rosparam command="load" file="$(find bender_arm_control)/config/grasp_data.yaml"/>
   </node>
-
+  -->
 </launch>
