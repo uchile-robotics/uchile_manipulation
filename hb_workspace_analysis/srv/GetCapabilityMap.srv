@@ -2,7 +2,6 @@
 string group_name
 hb_workspace_analysis/GraspObject object
 bool generate_online
-bool filter_pregrasp
 ---
 # Result
 GraspStorage grasp

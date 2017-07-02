@@ -87,7 +87,7 @@ class InteractiveGrasp(object):
                 # Get object pose
                 object = get_cylinder(self.current_pose)
                 try:
-                    result = self.grasp_server.get_grasp(object, "l_arm")
+                    result = self.grasp_server.get_grasp(object, "l_arm", True)
                     if result.grasp:
                         # Show at least 10 random grasp position
                         shuffle(result.grasp)
@@ -109,7 +109,7 @@ class InteractiveGrasp(object):
                     print "Service call failed: %s"%e
 
                 try:
-                    result = self.grasp_server.get_grasp(object, "r_arm")
+                    result = self.grasp_server.get_grasp(object, "r_arm", True)
                     if result.grasp:
                         rospy.loginfo("Found {} grasps".format(len(result.grasp)))
                     else:

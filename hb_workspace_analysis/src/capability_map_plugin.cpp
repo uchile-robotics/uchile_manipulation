@@ -84,6 +84,9 @@ namespace move_group
     */
     // Get robot state and construct grasp filter
     const robot_state::RobotState& robot_state = context_->planning_scene_monitor_->getPlanningScene()->getCurrentState();
+
+    ROS_INFO_STREAM(robot_state.getRobotModel()->getJointModelGroup("l_arm")->getSolverInstance()->getTipFrame());
+
     grasp_filter_.reset(new hb_grasp_generator::GraspFilter(robot_state));
 
   }
@@ -107,6 +110,60 @@ namespace move_group
     {
       ROS_ERROR_STREAM("Capability couldn't be loaded for \"" << opt.group_name << "\".");
       return false;
+    }
+
+    if (req.object.primitive_poses.empty())
+    {
+      ROS_ERROR_STREAM("Request have empty object.");
+      return false;
+    }
+    /* --------------------------------------------------------------------------------
+    * Online generation
+    */
+    if (req.generate_online)
+    {
+      // Grasp vector
+      std::vector<moveit_msgs::Grasp> possible_grasps;
+
+      // Generate set of grasps for one object
+      grasp_gen_[req.group_name]->generateGrasp(req.object.primitive_poses[0], possible_grasps);
+
+      std::vector<trajectory_msgs::JointTrajectoryPoint> ik_solutions;
+      std::string end_effector_parent_link = context_->planning_scene_monitor_->getPlanningScene()->getCurrentState().getRobotModel()->
+          getJointModelGroup(req.group_name)->getSolverInstance()->getTipFrame();
+
+      grasp_filter_->filterGrasps(possible_grasps,
+                                  ik_solutions,
+                                  true,
+                                  end_effector_parent_link,
+                                  req.group_name, 0.1);
+      if (!possible_grasps.empty())
+      {
+        geometry_msgs::Point& object_pose = req.object.primitive_poses[0].position;
+        ROS_INFO_STREAM("Saving grasp data on database " << object_pose.x << " y: " << object_pose.y <<
+                                                         " z: " << object_pose.z);
+
+        // Construct grasp storage
+        hb_workspace_analysis::GraspStorage grasp_vector;
+        grasp_vector.header.frame_id = context_->planning_scene_monitor_->getPlanningScene()->getCurrentState().getRobotModel()->
+            getJointModelGroup(req.group_name)->getSolverInstance()->getBaseFrame();
+        grasp_vector.pose = req.object.primitive_poses[0];
+        grasp_vector.grasp.reserve(possible_grasps.size());
+        for(std::size_t n = 0; n < possible_grasps.size(); ++n)
+        {
+          hb_workspace_analysis::GraspPoint point;
+          point.grasp = possible_grasps[n];
+          point.pregrasp_position = ik_solutions[2*n];
+          point.grasp_position = ik_solutions[2*n+1];
+          grasp_vector.grasp.push_back(point);
+        }
+        // Create metadata, this data is used for queries
+        mongo_ros::Metadata metadata("x", grasp_vector.pose.position.x, "y", grasp_vector.pose.position.y,
+                                     "z", grasp_vector.pose.position.z);
+        // Insert data in db
+        db->insert(grasp_vector, metadata);
+      }
+
     }
 
     ROS_INFO_STREAM("Number of elements: " << db->count());
