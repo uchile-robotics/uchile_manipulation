@@ -13,12 +13,6 @@ namespace move_group
   {
   }
 
-  bool CapabilityMapPlugin::loadOptions()
-  {
-
-
-  }
-
   void CapabilityMapPlugin::initialize()
   {
     if (node_handle_.hasParam("capability_map"))
@@ -51,20 +45,46 @@ namespace move_group
         {
           ROS_WARN_STREAM("Capability map for \"" << opt.group_name << "\" is empty.");
         }
+
+        /* --------------------------------------------------------------------------------
+        * Get grasps generator
+        */
+        if (node_handle_.hasParam("grasp_generator"))
+        {
+          ros::NodeHandle grasp_nh(node_handle_, "grasp_generator");
+          hb_grasp_generator::GraspOptions grasp_opt;
+          grasp_opt.load(grasp_nh, opt.group_name);
+          ros::NodeHandle grasp_gren_nh(grasp_nh, "cylindrical_grasp_generator");
+          hb_grasp_generator::CylindricalGraspGeneratorPtr grasp_gen(
+              new hb_grasp_generator::CylindricalGraspGenerator(grasp_gren_nh, grasp_opt));
+          grasp_gen_.insert(std::make_pair<std::string, hb_grasp_generator::CylindricalGraspGeneratorPtr>(opt.group_name, grasp_gen));
+        }
+        else
+        {
+          ROS_ERROR_STREAM("Parameters \"grap_generator\" for CapabilityMapPlugin missing from parameter server. Searching in namespace: "
+                               << node_handle_.getNamespace());
+        }
+
         capmap_opt_.insert(std::make_pair<std::string, hb_workspace_analysis::CapabilityMapOptions>(opt.group_name, opt));
         db_.insert(std::make_pair<std::string, GraspStorageDbPtr>(opt.group_name, db));
       }
     }
     else
     {
-      ROS_ERROR_STREAM("Parameters for CapabilityMapPlugin missing from parameter server. Searching in namespace: "
+      ROS_ERROR_STREAM("Parameters \"capability_map\" for CapabilityMapPlugin missing from parameter server. Searching in namespace: "
                            << node_handle_.getNamespace());
     }
-
 
     // Grasp service
     grasp_service_ = root_node_handle_.advertiseService(CAPABILITY_MAP_PLUGIN_NAME,
                                                         &CapabilityMapPlugin::getCapabilityMapCb, this);
+
+    /* --------------------------------------------------------------------------------
+    * Grasp filter
+    */
+    // Get robot state and construct grasp filter
+    const robot_state::RobotState& robot_state = context_->planning_scene_monitor_->getPlanningScene()->getCurrentState();
+    grasp_filter_.reset(new hb_grasp_generator::GraspFilter(robot_state));
 
   }
 
@@ -88,7 +108,6 @@ namespace move_group
       ROS_ERROR_STREAM("Capability couldn't be loaded for \"" << opt.group_name << "\".");
       return false;
     }
-
 
     ROS_INFO_STREAM("Number of elements: " << db->count());
     /* --------------------------------------------------------------------------------

@@ -1,8 +1,8 @@
-# Robot base link
-base_link: 'bender/base_link'
+# Left arm
+l_arm:
+  # Base frame for l_arm (usually from kinematic solver)
+  base_frame: 'bender/l_arm_base_link'
 
-# Left gripper
-l_gripper:
   # End effector group name
   end_effector_name: 'l_gripper'
 
@@ -36,8 +36,11 @@ l_gripper:
     pregrasp_min: 0.1
     pregrasp_max: 0.15
 
-# Right gripper
-r_gripper:
+# Right arm
+r_arm:
+  # Base frame for r_arm (usually from kinematic solver)
+  base_frame: 'bender/r_arm_base_link'
+
   # End effector group name
   end_effector_name: 'r_gripper'
 

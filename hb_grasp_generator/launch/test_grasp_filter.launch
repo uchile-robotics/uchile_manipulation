@@ -22,7 +22,7 @@
     <node pkg="hb_grasp_generator" type="test_grasp_filter" name="test_grasp_filter" output="screen" >
         <param name="arm" value="l_arm"/>
         <param name="ee_name" value="l_gripper"/>
-        <rosparam command="load" file="$(find hb_grasp_generator)/config/grasp_generator.yaml" />
+        <rosparam command="load" file="$(find hb_grasp_generator)/config/bender_grasp_generator.yaml" />
     </node>
 
 </launch>

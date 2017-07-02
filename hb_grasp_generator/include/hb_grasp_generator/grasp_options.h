@@ -18,7 +18,7 @@ class GraspOptions
   // Grasp point to end effector
   Eigen::Affine3d grasp_pose_to_eff;
   // Frames
-  std::string base_link;
+  std::string base_frame;
   std::string end_effector_name;
   std::string end_effector_parent_link;
   std::vector<std::string> joint_names;

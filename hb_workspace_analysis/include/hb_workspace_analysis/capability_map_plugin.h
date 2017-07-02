@@ -15,6 +15,8 @@
 #include <hb_workspace_analysis/GetCapabilityMap.h>
 #include <hb_workspace_analysis/GraspStorage.h>
 #include <hb_workspace_analysis/capability_map_options.h>
+#include <hb_grasp_generator/grasp_generator.h>
+#include <hb_grasp_generator/grasp_filter.h>
 
 namespace move_group
 {
@@ -28,6 +30,7 @@ typedef mongo_ros::MessageWithMetadata<hb_workspace_analysis::GraspStorage> Gras
 typedef boost::shared_ptr<const GraspStorageWithMetadata> GraspStorageWithMetadataPtr;
 typedef std::map<std::string, GraspStorageDbPtr> DatabaseTable;
 typedef std::map<std::string, hb_workspace_analysis::CapabilityMapOptions> CapabilityMapOptionsTable;
+typedef std::map<std::string, hb_grasp_generator::CylindricalGraspGeneratorPtr> GraspGeneratorTable;
 
 class CapabilityMapPlugin : public MoveGroupCapability
 {
@@ -41,9 +44,8 @@ private:
 
   bool getCapabilityMapCb(hb_workspace_analysis::GetCapabilityMap::Request &req,
                           hb_workspace_analysis::GetCapabilityMap::Response &res);
-  bool filterPregraspCollision(std::vector<trajectory_msgs::JointTrajectoryPoint>& pregrasps, const std::string& group_name);
 
-  bool loadOptions();
+  bool filterPregraspCollision(std::vector<trajectory_msgs::JointTrajectoryPoint>& pregrasps, const std::string& group_name);
 
   // Capability map options
   CapabilityMapOptionsTable capmap_opt_;
@@ -53,6 +55,10 @@ private:
   std::string ref_frame_;
   // DB connections
   DatabaseTable db_;
+  // Grasp generators
+  GraspGeneratorTable grasp_gen_;
+  // Grasp filter
+  hb_grasp_generator::GraspFilterPtr grasp_filter_;
 
 };
 

@@ -155,7 +155,7 @@ int main (int argc, char** argv)
           continue;
         // Construct grasp storage
         hb_workspace_analysis::GraspStorage grasp_vector;
-        grasp_vector.header.frame_id = opt.base_link;
+        grasp_vector.header.frame_id = opt.base_frame;
         grasp_vector.pose = object_pose;
         grasp_vector.grasp.reserve(possible_grasps.size());
         for(std::size_t n = 0; n < possible_grasps.size(); ++n)

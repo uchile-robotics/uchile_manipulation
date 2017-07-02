@@ -30,8 +30,8 @@ int main(int argc, char *argv[])
   // Load grasp generator
   ros::NodeHandle nh("~");
   hb_grasp_generator::GraspOptions opt;
-  opt.load(nh, "l_gripper");
-  ros::NodeHandle grasp_nh(nh, "l_gripper");
+  opt.load(nh, "l_arm");
+  ros::NodeHandle grasp_nh(nh, "l_arm");
   hb_grasp_generator::CylindricalGraspGeneratorPtr simple_grasps_(new hb_grasp_generator::CylindricalGraspGenerator(grasp_nh, opt));
   // Test object pose
   geometry_msgs::Pose object_pose;
