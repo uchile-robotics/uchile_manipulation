@@ -40,5 +40,5 @@
   <node name="arm_planning" pkg="bender_arm_control" type="bender_planning" output="screen">
     <rosparam command="load" file="$(find bender_arm_control)/config/grasp_data.yaml"/>
   </node>
-
+  -->
 </launch>
