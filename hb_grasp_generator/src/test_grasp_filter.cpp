@@ -84,8 +84,8 @@ public:
     // ---------------------------------------------------------------------------------------------
     // Load grasp options
     hb_grasp_generator::GraspOptions opt;
-    opt.load(nh_, ee_group_name_);
-    ros::NodeHandle grasp_nh(nh_, ee_group_name_);
+    opt.load(nh_, planning_group_name_);
+    ros::NodeHandle grasp_nh(nh_, planning_group_name_);
     simple_grasps_.reset(new hb_grasp_generator::CylindricalGraspGenerator(grasp_nh, opt));
 
 

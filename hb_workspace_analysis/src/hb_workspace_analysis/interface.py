@@ -29,9 +29,11 @@ class CapabilityMap(object):
             return False
         return True
 
-    def get_grasp(self, object):
+    def get_grasp(self, object, group_name, generate_online=False):
         req = GetCapabilityMapRequest()
         req.object = object
+        req.group_name = group_name
+        req.generate_online = generate_online
         try:
             result = self.grasp_server(req)
             return result.grasp

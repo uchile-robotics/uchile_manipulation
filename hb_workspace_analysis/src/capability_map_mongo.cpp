@@ -10,6 +10,9 @@
 #include <hb_grasp_generator/grasp_options.h>
 #include <hb_grasp_generator/grasp_generator.h>
 
+#include "hb_workspace_analysis/capability_map_options.h"
+
+
 typedef mongo_ros::MessageWithMetadata<hb_workspace_analysis::GraspStorage> GraspStorageWithMetadata;
 
 int main (int argc, char** argv)
@@ -21,11 +24,9 @@ int main (int argc, char** argv)
   using mongo_ros::LT;
   using mongo_ros::GT;
 
-  // Clear existing data if any
-  mongo_ros::dropDatabase("workspace_analysis", "localhost", 27017, 5.0);
 
   // Set up db
-  mongo_ros::MessageCollection<hb_workspace_analysis::GraspStorage> coll("workspace_analysis", "capability_map", "localhost", 27017, 5.0);
+  mongo_ros::MessageCollection<hb_workspace_analysis::GraspStorage> coll("workspace_analysis", "capability_map_r_arm", "localhost", 27017, 5.0);
 
   // Arrange to index on metadata field 'z'
   coll.ensureIndex("z");
@@ -154,7 +155,7 @@ int main (int argc, char** argv)
           continue;
         // Construct grasp storage
         hb_workspace_analysis::GraspStorage grasp_vector;
-        grasp_vector.header.frame_id = opt.base_link;
+        grasp_vector.header.frame_id = opt.base_frame;
         grasp_vector.pose = object_pose;
         grasp_vector.grasp.reserve(possible_grasps.size());
         for(std::size_t n = 0; n < possible_grasps.size(); ++n)

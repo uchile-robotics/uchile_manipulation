@@ -5,25 +5,26 @@ namespace hb_grasp_generator
 {
 
 GraspOptions::GraspOptions():
-    base_link("base_link"),
+    base_frame("base_link"),
     pregrasp_time_from_start(0.0),
     grasp_time_from_start(0.0)
 {}
 
 bool GraspOptions::load(const ros::NodeHandle &nh, const std::string &end_effector)
 {
-  // Load base_link a param
-  if (!nh.hasParam("base_link"))
-  {
-    ROS_ERROR_STREAM_NAMED("grasp_options_loader",
-                           "Grasp configuration parameter \"base_link\" missing from parameter server. Searching in namespace: "
-                               << nh.getNamespace());
-    return false;
-  }
-  nh.getParam("base_link", base_link);
-
   // End effector nodehandle
   ros::NodeHandle ee_nh(nh, end_effector);
+
+  // Load base_link a param
+  if (!ee_nh.hasParam("base_frame"))
+  {
+    ROS_ERROR_STREAM_NAMED("grasp_options_loader",
+                           "Grasp configuration parameter \"base_frame\" missing from parameter server. Searching in namespace: "
+                               << ee_nh.getNamespace());
+    return false;
+  }
+  ee_nh.getParam("base_frame", base_frame);
+
 
   // Load a param "pregrasp_time_from_start"
   if (!ee_nh.hasParam("pregrasp_time_from_start"))
@@ -137,7 +138,7 @@ bool GraspOptions::load(const ros::NodeHandle &nh, const std::string &end_effect
 
   // -------------------------------
   // Create pre grasp posture
-  pre_grasp_posture_msg.header.frame_id = base_link;
+  pre_grasp_posture_msg.header.frame_id = base_frame;
   pre_grasp_posture_msg.header.stamp = ros::Time::now();
   // Name of joints:
   pre_grasp_posture_msg.joint_names = joint_names;
@@ -147,7 +148,7 @@ bool GraspOptions::load(const ros::NodeHandle &nh, const std::string &end_effect
   pre_grasp_posture_msg.points[0].time_from_start = ros::Duration(pregrasp_time_from_start);
   // -------------------------------
   // Create grasp posture
-  grasp_posture_msg.header.frame_id = base_link;
+  grasp_posture_msg.header.frame_id = base_frame;
   grasp_posture_msg.header.stamp = ros::Time::now();
   // Name of joints:
   grasp_posture_msg.joint_names = joint_names;
@@ -160,7 +161,7 @@ bool GraspOptions::load(const ros::NodeHandle &nh, const std::string &end_effect
 std::ostream &operator<<(std::ostream &os, const hb_grasp_generator::GraspOptions &opt)
 {
   os << "Grasp generator options:" << std::endl;
-  os << "Base link: " << opt.base_link << std::endl;
+  os << "Base link: " << opt.base_frame << std::endl;
   os << "End effector: " << opt.end_effector_name << std::endl;
   os << "End effector parent: " << opt.end_effector_parent_link << std::endl;
 
