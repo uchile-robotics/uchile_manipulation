@@ -1,0 +1,5 @@
+# Object target
+hb_workspace_analysis/GraspObject object
+---
+std_msgs/Header header
+geometry_msgs/Pose[] pose

@@ -8,6 +8,8 @@ project(hb_workspace_analysis)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  pcl_conversions
+  pcl_ros
   hb_grasp_generator
   warehouse_ros
   moveit_msgs
@@ -63,6 +65,7 @@ add_message_files(
 add_service_files(
   FILES
   GetCapabilityMap.srv
+  GetBestBasePose.srv
 )
 
 ## Generate actions in the 'action' folder

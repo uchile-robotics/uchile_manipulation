@@ -4,6 +4,7 @@
 * Author: Rodrigo Munoz
 */
 #include "hb_workspace_analysis/capability_map_plugin.h"
+#include <pcl_conversions/pcl_conversions.h>
 
 
 namespace move_group
@@ -78,6 +79,9 @@ namespace move_group
     // Grasp service
     grasp_service_ = root_node_handle_.advertiseService(CAPABILITY_MAP_PLUGIN_NAME,
                                                         &CapabilityMapPlugin::getCapabilityMapCb, this);
+
+    pc_pub_ = root_node_handle_.advertise<sensor_msgs::PointCloud2>("best_base", 10);
+    ROS_INFO_STREAM("Publishing on" << pc_pub_.getTopic());
 
     /* --------------------------------------------------------------------------------
     * Grasp filter
@@ -244,6 +248,86 @@ namespace move_group
     ROS_INFO_STREAM("Time:  " << dt.toSec());
     return true;
   } // getCapabilityMapCb
+
+
+  bool CapabilityMapPlugin::getBestBasePoseCb(hb_workspace_analysis::GetBestBasePose::Request &req,
+                                              hb_workspace_analysis::GetBestBasePose::Response &res)
+  {
+    /* --------------------------------------------------------------------------------
+    * Check
+    */
+    // Check for empty request
+    if (req.object.primitive_poses.empty())
+    {
+      ROS_ERROR_STREAM("Request have empty object.");
+      return false;
+    }
+    /* --------------------------------------------------------------------------------
+    * Create query
+    */
+    double x_length = 1.0;
+    double y_length = 1.0;
+    double z_range = 0.05;
+    // Time info
+    ros::Time t0 = ros::Time::now();
+    // Create query using object pose
+    // X range (greater than or equal, less than or equal)
+    const double x_gte = req.object.primitive_poses[0].position.x - x_length/2;
+    const double x_lte = req.object.primitive_poses[0].position.x + x_length/2;
+    // Y range (greater than or equal, less than or equal)
+    const double y_gte = req.object.primitive_poses[0].position.y - y_length/2;
+    const double y_lte = req.object.primitive_poses[0].position.y + y_length/2;
+    // Z range (greater than or equal, less than or equal) using cylinder height
+    const double z_gte = req.object.primitive_poses[0].position.z - z_range/2;
+    const double z_lte = req.object.primitive_poses[0].position.z + z_range/2;
+    ROS_INFO_STREAM("Searching at: x[" << x_gte << ", " << x_lte << "] y[" << y_gte << ", " << y_lte << "] z[" << z_gte << ", " << z_lte << "] ");
+    mongo_ros::Query query = mongo_ros::Query()
+        .append("x", mongo_ros::GTE, x_gte).append("x", mongo_ros::LTE, x_lte)
+        .append("y", mongo_ros::GTE, y_gte).append("y", mongo_ros::LTE, y_lte)
+        .append("z", mongo_ros::GTE, z_gte).append("z", mongo_ros::LTE, z_lte);
+    /* --------------------------------------------------------------------------------
+    * Create grid
+    */
+    // Check db connection
+    pcl::PointCloud<pcl::PointXYZHSV>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZHSV>);
+    uint32_t max_grasp = 0UL;
+    DatabaseTable::iterator db_it;
+    for (db_it = db_.begin(); db_it !=db_.end(); db_it++)
+    {
+      if (!db_it->second)
+      {
+        ROS_WARN_STREAM("Capability couldn't be loaded for \"" << db_it->first << "\".");
+        continue;
+      }
+      // Send query with descending z
+      std::vector<GraspStorageWithMetadataPtr> result = db_it->second->pullAllResults(query, false, "z", false);
+      // Process data using PCL
+      union { float f; uint32_t i; } u;
+      for(std::size_t i = 0; i < result.size(); ++i)
+      {
+        u.i = result[i]->grasp.size();
+        max_grasp = std::max(max_grasp, u.i);
+        // Create a point (use hue for size)
+        pcl::PointXYZHSV point;
+        point.x = result[i]->pose.position.x;
+        point.y = result[i]->pose.position.y;
+        point.z = result[i]->pose.position.z;
+        point.h = u.f;
+        point.s = 1.0f;
+        point.v = 1.0f;
+        // Add to point cloud
+        cloud->points.push_back(point);
+      }
+    }
+    sensor_msgs::PointCloud2::Ptr output(new sensor_msgs::PointCloud2);
+    pcl::toROSMsg(*cloud, *output);
+
+    // Publish the data
+    output->header.stamp = ros::Time::now();
+    output->header.frame_id = "/bender/base_link";
+    pc_pub_.publish(output);
+
+  }
 
 }
 

@@ -54,6 +54,7 @@ class InteractiveGrasp(object):
         self.current_pose.position = init_position
 
         self.menu_handler.insert( "Grasp", callback=self.process_feedback)
+        self.menu_handler.insert( "Best base", callback=self.process_feedback)
         self.add_grasp_marker(frame_id, radius, height, init_position)
         self.server.applyChanges()
         self.radius = radius
@@ -116,6 +117,11 @@ class InteractiveGrasp(object):
                         rospy.logwarn("Grasp not found for r_arm")
                 except rospy.ServiceException, e:
                     print "Service call failed: %s"%e
+            # Best base
+            if feedback.menu_entry_id == 2:
+                # Get object pose
+                object = get_cylinder(self.current_pose)
+                
 
         self.server.applyChanges()
 

@@ -13,6 +13,7 @@
 #include <mongo_ros/message_collection.h>
 // Capability map
 #include <hb_workspace_analysis/GetCapabilityMap.h>
+#include <hb_workspace_analysis/GetBestBasePose.h>
 #include <hb_workspace_analysis/GraspStorage.h>
 #include <hb_workspace_analysis/capability_map_options.h>
 #include <hb_grasp_generator/grasp_generator.h>
@@ -45,6 +46,9 @@ private:
   bool getCapabilityMapCb(hb_workspace_analysis::GetCapabilityMap::Request &req,
                           hb_workspace_analysis::GetCapabilityMap::Response &res);
 
+  bool getBestBasePoseCb(hb_workspace_analysis::GetBestBasePose::Request &req,
+                          hb_workspace_analysis::GetBestBasePose::Response &res);
+
   bool filterPregraspCollision(std::vector<trajectory_msgs::JointTrajectoryPoint>& pregrasps, const std::string& group_name);
 
   // Capability map options
@@ -59,6 +63,8 @@ private:
   GraspGeneratorTable grasp_gen_;
   // Grasp filter
   hb_grasp_generator::GraspFilterPtr grasp_filter_;
+
+  ros::Publisher pc_pub_;
 
 };
 
