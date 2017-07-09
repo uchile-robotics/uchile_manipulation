@@ -137,7 +137,7 @@ bool CylindricalGraspGenerator::generateGrasp(const geometry_msgs::Pose &object_
         // Fill grasp message with grasp pose and header info
         tf::poseEigenToMsg(grasp_pose, new_grasp.grasp_pose.pose);
         new_grasp.grasp_pose.header.stamp = ros::Time::now();
-        new_grasp.grasp_pose.header.frame_id = global_opt_.base_frame;
+        new_grasp.grasp_pose.header.frame_id = global_opt_.end_effector_parent_link;
 
         // The maximum contact force to use while grasping (<=0 to disable)
         new_grasp.max_contact_force = 0;

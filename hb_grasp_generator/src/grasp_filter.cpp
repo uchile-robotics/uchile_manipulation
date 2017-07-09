@@ -87,8 +87,8 @@ bool GraspFilter::filterGrasps(std::vector<moveit_msgs::Grasp> &possible_grasps,
   // -----------------------------------------------------------------------------------------------
   // Bring the pose to the frame of the IK solver
   const std::string &ik_frame = kin_solvers_[planning_group][0]->getBaseFrame();
-  ROS_DEBUG_STREAM_NAMED(name_, "IK Frame: " << ik_frame);
-  ROS_DEBUG_STREAM_NAMED(name_, "Grasp frame: " << possible_grasps[0].grasp_pose.header.frame_id);
+  ROS_INFO_STREAM_NAMED(name_, "IK Frame: " << ik_frame);
+  ROS_INFO_STREAM_NAMED(name_, "Grasp frame: " << possible_grasps[0].grasp_pose.header.frame_id);
 
   Eigen::Affine3d link_transform;
   if (!moveit::core::Transforms::sameFrame(ik_frame, robot_state_.getRobotModel()->getModelFrame()))

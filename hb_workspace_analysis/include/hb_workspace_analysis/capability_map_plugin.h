@@ -23,7 +23,8 @@ namespace move_group
 {
 
 // Service name
-static const std::string CAPABILITY_MAP_PLUGIN_NAME = "capability_map";
+static const std::string CAPABILITY_MAP_SERVICE = "capability_map";
+static const std::string BEST_BASE_POSE_SERVICE = "best_base_pose";
 // Typedef for DB
 typedef mongo_ros::MessageCollection<hb_workspace_analysis::GraspStorage> GraspStorageDb;
 typedef boost::shared_ptr<GraspStorageDb> GraspStorageDbPtr;
@@ -53,8 +54,9 @@ private:
 
   // Capability map options
   CapabilityMapOptionsTable capmap_opt_;
-  // Service
+  // Services
   ros::ServiceServer grasp_service_;
+  ros::ServiceServer base_pose_service_;
   // Capability map reference frame
   std::string ref_frame_;
   // DB connections

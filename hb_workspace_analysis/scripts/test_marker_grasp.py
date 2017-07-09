@@ -14,7 +14,7 @@ from interactive_markers.interactive_marker_server import InteractiveMarkerServe
 from interactive_markers.menu_handler import MenuHandler
 from shape_msgs.msg import SolidPrimitive
 from hb_workspace_analysis.msg import GraspObject
-from hb_workspace_analysis.interface import CapabilityMap
+from hb_workspace_analysis.interface import CapabilityMap, BestBasePose
 
 __author__ = 'Rodrigo Munoz'
 __email__ = 'rorro.mr@gmail.com'
@@ -67,6 +67,12 @@ class InteractiveGrasp(object):
             sys.exit(-1)
         self.grasp_server.setup()
 
+        self.best_base_pose = BestBasePose()
+        if not self.best_base_pose.check():
+            rospy.logerr("Best base pose server at \"{}\" not found.".format(self.best_base_pose.get_topic()))
+            sys.exit(-1)
+        self.best_base_pose.setup()
+
         self.pub = rospy.Publisher('test/joint_states', JointState, queue_size=10)
         self.joint_msg = JointState()
         self.joint_msg.name = ['l_shoulder_pitch_joint','l_shoulder_roll_joint','l_shoulder_yaw_joint',
@@ -88,7 +94,7 @@ class InteractiveGrasp(object):
                 # Get object pose
                 object = get_cylinder(self.current_pose)
                 try:
-                    result = self.grasp_server.get_grasp(object, "l_arm", True)
+                    result = self.grasp_server.get_grasp(object, "l_arm", False)
                     if result.grasp:
                         # Show at least 10 random grasp position
                         shuffle(result.grasp)
@@ -110,7 +116,7 @@ class InteractiveGrasp(object):
                     print "Service call failed: %s"%e
 
                 try:
-                    result = self.grasp_server.get_grasp(object, "r_arm", True)
+                    result = self.grasp_server.get_grasp(object, "r_arm", False)
                     if result.grasp:
                         rospy.loginfo("Found {} grasps".format(len(result.grasp)))
                     else:
@@ -121,8 +127,7 @@ class InteractiveGrasp(object):
             if feedback.menu_entry_id == 2:
                 # Get object pose
                 object = get_cylinder(self.current_pose)
-                
-
+                self.best_base_pose.get_pose(object)
         self.server.applyChanges()
 
     def add_grasp_marker(self, frame_id, radius, height, init_position):

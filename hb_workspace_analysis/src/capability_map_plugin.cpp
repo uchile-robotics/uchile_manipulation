@@ -5,6 +5,7 @@
 */
 #include "hb_workspace_analysis/capability_map_plugin.h"
 #include <pcl_conversions/pcl_conversions.h>
+#include <pcl/point_types_conversion.h>
 
 
 namespace move_group
@@ -34,6 +35,11 @@ namespace move_group
         {
           // Make connection to DB
           db.reset(new GraspStorageDb(opt.db_name, opt.db_collection, opt.db_server, opt.db_port, 5.0));
+          // Check for empty database
+          if (db->count() == 0)
+          {
+            ROS_WARN_STREAM("Capability map for \"" << opt.group_name << "\" is empty.");
+          }
         }
         catch (const mongo_ros::DbConnectException& exception)
         {
@@ -41,12 +47,6 @@ namespace move_group
           ROS_ERROR_STREAM("Connection timeout for capability map: \n" << opt);
           db.reset(); // Make null pointer
         }
-        // Check for empty database
-        if (db->count() == 0)
-        {
-          ROS_WARN_STREAM("Capability map for \"" << opt.group_name << "\" is empty.");
-        }
-
         /* --------------------------------------------------------------------------------
         * Get grasps generator
         */
@@ -76,12 +76,23 @@ namespace move_group
                            << node_handle_.getNamespace());
     }
 
-    // Grasp service
-    grasp_service_ = root_node_handle_.advertiseService(CAPABILITY_MAP_PLUGIN_NAME,
+    /* --------------------------------------------------------------------------------
+    * Capability map service
+    */
+    grasp_service_ = root_node_handle_.advertiseService(CAPABILITY_MAP_SERVICE,
                                                         &CapabilityMapPlugin::getCapabilityMapCb, this);
+    ROS_INFO_STREAM("Capability map service: " << grasp_service_.getService());
 
-    pc_pub_ = root_node_handle_.advertise<sensor_msgs::PointCloud2>("best_base", 10);
-    ROS_INFO_STREAM("Publishing on" << pc_pub_.getTopic());
+    /* --------------------------------------------------------------------------------
+    * Best base position service
+    * Use point cloud for visualization
+    */
+    base_pose_service_ = root_node_handle_.advertiseService(BEST_BASE_POSE_SERVICE,
+                                                        &CapabilityMapPlugin::getBestBasePoseCb, this);
+    ROS_INFO_STREAM("Best base pose service: " << base_pose_service_.getService());
+
+    pc_pub_ = root_node_handle_.advertise<sensor_msgs::PointCloud2>(BEST_BASE_POSE_SERVICE + "/points", 1);
+    ROS_INFO_STREAM("Best base pose visualization: " << pc_pub_.getTopic());
 
     /* --------------------------------------------------------------------------------
     * Grasp filter
@@ -288,12 +299,12 @@ namespace move_group
     /* --------------------------------------------------------------------------------
     * Create grid
     */
-    // Check db connection
-    pcl::PointCloud<pcl::PointXYZHSV>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZHSV>);
-    uint32_t max_grasp = 0UL;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+
     DatabaseTable::iterator db_it;
     for (db_it = db_.begin(); db_it !=db_.end(); db_it++)
     {
+      // Check db connection
       if (!db_it->second)
       {
         ROS_WARN_STREAM("Capability couldn't be loaded for \"" << db_it->first << "\".");
@@ -302,31 +313,34 @@ namespace move_group
       // Send query with descending z
       std::vector<GraspStorageWithMetadataPtr> result = db_it->second->pullAllResults(query, false, "z", false);
       // Process data using PCL
-      union { float f; uint32_t i; } u;
       for(std::size_t i = 0; i < result.size(); ++i)
       {
-        u.i = result[i]->grasp.size();
-        max_grasp = std::max(max_grasp, u.i);
-        // Create a point (use hue for size)
-        pcl::PointXYZHSV point;
-        point.x = result[i]->pose.position.x;
-        point.y = result[i]->pose.position.y;
-        point.z = result[i]->pose.position.z;
-        point.h = u.f;
-        point.s = 1.0f;
-        point.v = 1.0f;
+        // Create a point (use hue visualize grasp size)
+        pcl::PointXYZHSV point_hsv;
+        point_hsv.x = (float)result[i]->pose.position.x;
+        point_hsv.y = (float)result[i]->pose.position.y;
+        point_hsv.z = (float)result[i]->pose.position.z;
+        point_hsv.h = std::min<float>(240.0, (float)result[i]->grasp.size());
+        point_hsv.s = 1.0f;
+        point_hsv.v = 1.0f;
         // Add to point cloud
+        pcl::PointXYZRGB point;
+        pcl::PointXYZHSVtoXYZRGB(point_hsv, point);
         cloud->points.push_back(point);
       }
     }
+    ros::Duration dt = ros::Time::now() - t0;
+    ROS_INFO_STREAM("Time:  " << dt.toSec());
+
+    /* --------------------------------------------------------------------------------
+    * Publish data using a point cloud
+    */
     sensor_msgs::PointCloud2::Ptr output(new sensor_msgs::PointCloud2);
     pcl::toROSMsg(*cloud, *output);
-
-    // Publish the data
     output->header.stamp = ros::Time::now();
     output->header.frame_id = "/bender/base_link";
     pc_pub_.publish(output);
-
+    return true;
   }
 
 }
