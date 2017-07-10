@@ -1,5 +1,6 @@
 // Conversions
 #include <eigen_conversions/eigen_msg.h>
+#include <boost/algorithm/string.hpp>
 // Grasp
 #include "hb_grasp_generator/grasp_filter.h"
 #include "hb_grasp_generator/grasp_generator.h"
@@ -13,6 +14,18 @@ GraspFilter::GraspFilter(const robot_state::RobotState& robot_state):
     name_("grasp_filter")
 {
   ROS_DEBUG_STREAM_NAMED(name_, "Loaded grasp filter.");
+  std::vector<std::string> joint_groups = robot_state.getRobotModel()->getJointModelGroupNames();
+  std::stringstream solver_info;
+  solver_info << "Kinematic solver available for:" << std::endl;
+  for (std::size_t i=0; i<joint_groups.size(); ++i)
+  {
+    const kinematics::KinematicsBaseConstPtr& solver = robot_state_.getRobotModel()->getJointModelGroup(joint_groups[i])->getSolverInstance();
+    if (solver)
+    {
+      solver_info << "\t" << joint_groups[i] << " (" << solver->getBaseFrame() << ")" << std::endl;
+    }
+  }
+  ROS_INFO_STREAM(boost::trim_right_copy(solver_info.str()));
 }
 
 GraspFilter::~GraspFilter()
@@ -87,7 +100,8 @@ bool GraspFilter::filterGrasps(std::vector<moveit_msgs::Grasp> &possible_grasps,
   // -----------------------------------------------------------------------------------------------
   // Bring the pose to the frame of the IK solver
   const std::string &ik_frame = kin_solvers_[planning_group][0]->getBaseFrame();
-  ROS_INFO_STREAM_NAMED(name_, "IK Frame: " << ik_frame);
+  ROS_INFO_STREAM_NAMED(name_, "IK frame: " << ik_frame);
+  ROS_INFO_STREAM_NAMED(name_, "Robot model grame: " << robot_state_.getRobotModel()->getModelFrame());
   ROS_INFO_STREAM_NAMED(name_, "Grasp frame: " << possible_grasps[0].grasp_pose.header.frame_id);
 
   Eigen::Affine3d link_transform;
@@ -99,6 +113,8 @@ bool GraspFilter::filterGrasps(std::vector<moveit_msgs::Grasp> &possible_grasps,
       return false;
     link_transform = robot_state_.getGlobalLinkTransform(lm).inverse();
   }
+  ROS_ERROR_STREAM("x: " << link_transform.translation().x() << " y: " << link_transform.translation().y() <<
+                         " z: " << link_transform.translation().z());
   // Benchmark time
   ros::Time start_time;
   start_time = ros::Time::now();
