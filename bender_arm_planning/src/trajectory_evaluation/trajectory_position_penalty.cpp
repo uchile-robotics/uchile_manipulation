@@ -149,7 +149,7 @@ void jointStatesCb(const control_msgs::FollowJointTrajectoryActionGoal::ConstPtr
 int main(int argc, char **argv)
 {
 
-  ros::init(argc, argv, "online_torque_estimation");
+  ros::init(argc, argv, "trajectory_position_penalty");
   ros::NodeHandle nh;
   ros::NodeHandle nhpriv("~");
 

@@ -36,6 +36,7 @@ setup_args = generate_distutils_setup(
     packages=['bender_arm_control'],
     scripts=[''],
     package_dir={'': 'src'}
+
 )
 
 setup(**setup_args)

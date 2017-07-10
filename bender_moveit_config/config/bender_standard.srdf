@@ -384,6 +384,7 @@
     <disable_collisions link1="bender/l_int_finger_link" link2="bender/rear_left_wheel" reason="Never" />
     <disable_collisions link1="bender/l_int_finger_link" link2="bender/rear_right_wheel" reason="Never" />
     <disable_collisions link1="bender/l_int_finger_link" link2="bender/sensors/laser_rear_link" reason="Never" />
+    <disable_collisions link1="bender/l_int_finger_link" link2="bender/l_ext_finger_link" reason="Adjacent" />
     <disable_collisions link1="bender/l_shoulder_pitch_link" link2="bender/l_shoulder_roll_link" reason="Adjacent" />
     <disable_collisions link1="bender/l_shoulder_pitch_link" link2="bender/l_shoulder_yaw_link" reason="Never" />
     <disable_collisions link1="bender/l_shoulder_pitch_link" link2="bender/l_wrist_pitch_link" reason="Never" />
@@ -536,6 +537,7 @@
     <disable_collisions link1="bender/r_int_finger_link" link2="bender/rear_left_wheel" reason="Never" />
     <disable_collisions link1="bender/r_int_finger_link" link2="bender/rear_right_wheel" reason="Never" />
     <disable_collisions link1="bender/r_int_finger_link" link2="bender/sensors/laser_rear_link" reason="Never" />
+    <disable_collisions link1="bender/r_int_finger_link" link2="bender/r_ext_finger_link" reason="Adjacent" />
     <disable_collisions link1="bender/r_shoulder_pitch_link" link2="bender/r_shoulder_roll_link" reason="Adjacent" />
     <disable_collisions link1="bender/r_shoulder_pitch_link" link2="bender/r_shoulder_yaw_link" reason="Never" />
     <disable_collisions link1="bender/r_shoulder_pitch_link" link2="bender/r_wrist_pitch_link" reason="Never" />
@@ -570,4 +572,7 @@
     <disable_collisions link1="bender/sensors/laser_front_link" link2="bender/sensors/laser_rear_link" reason="Adjacent" />
     <disable_collisions link1="bender/sensors/laser_front_link" link2="bender/upper_torso_base" reason="Never" />
     <disable_collisions link1="bender/sensors/laser_rear_link" link2="bender/upper_torso_base" reason="Never" />
+    <!-- Power supply links -->
+    <disable_collisions link1="bender/psu_base" link2="bender/lower_torso_base" reason="Adjacent" />
+    <disable_collisions link1="bender/psu_base" link2="bender/upper_torso_base" reason="Adjacent" />
 </robot>
