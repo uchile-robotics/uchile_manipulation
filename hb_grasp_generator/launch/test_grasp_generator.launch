@@ -20,7 +20,7 @@
 
     <!-- Grasp generator node -->
     <node pkg="hb_grasp_generator" type="test_grasp_generator" name="test_grasp_generator" output="screen" >
-        <rosparam command="load" file="$(find hb_grasp_generator)/config/grasp_generator.yaml" />
+        <rosparam command="load" file="$(find hb_grasp_generator)/config/bender_grasp_generator.yaml" />
     </node>
 
 </launch>

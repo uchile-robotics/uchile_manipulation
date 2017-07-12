@@ -44,6 +44,8 @@
     <arg name="moveit_warehouse_database_path" value="$(arg db_path)"/>
   </include>
 
+
   <rosparam ns="move_group" command="load" file="$(find hb_workspace_analysis)/config/bender_workspace_analysis.yaml" />
+  <rosparam ns="/move_group/grasp_generator" command="load" file="$(find hb_grasp_generator)/config/bender_grasp_generator.yaml" />
 
 </launch>

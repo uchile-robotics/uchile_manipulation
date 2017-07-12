@@ -112,11 +112,13 @@ void jointStatesCb(const sensor_msgs::JointState::ConstPtr& msg)
   }
     double torque_penalty_index = 1;
     torque_penalty_index =  (1.0 - exp(-penalty_multiplier_ * joint_limits_multiplier));
-    ROS_INFO_STREAM("---------------------------------------------------------------");
+    ROS_INFO_STREAM("------------------------------------------");
     ROS_INFO_STREAM("torque penalty index: " << torque_penalty_index);
     double score = ((torque_penalty_index*100000)/24.5);
     ROS_INFO_STREAM("torque score index: " << score);
-
+    ROS_INFO_STREAM("------------------------------------------");
+    ROS_INFO_STREAM("------------------------------------------");
+    
 
 
 }
