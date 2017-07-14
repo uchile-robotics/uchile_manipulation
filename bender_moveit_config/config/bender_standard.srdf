@@ -185,7 +185,7 @@
     <end_effector name="r_eef" parent_link="bender/r_wrist_pitch_link" group="r_gripper" parent_group="r_arm" />
     <end_effector name="l_eef" parent_link="bender/l_wrist_pitch_link" group="l_gripper" parent_group="l_arm" />
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot) -->
-    <virtual_joint name="virtual_joint" type="planar" parent_frame="map" child_link="bender/base_link" />
+    <virtual_joint name="virtual_joint" type="planar" parent_frame="bender/odom" child_link="bender/base_link" />
     <!--PASSIVE JOINT: Purpose: this element is used to mark joints that are not actuated-->
     <passive_joint name="front_left_wheel_joint" />
     <passive_joint name="front_right_wheel_joint" />
