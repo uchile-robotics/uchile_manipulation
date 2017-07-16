@@ -1,11 +1,4 @@
-
 <launch>
-  <!-- both, r_arm, l_arm-->
-  <arg name="use_arm" default="both" />
-  <!-- Model type -->
-  <arg name="model_type" default="standard" />
-
-
 
   <!-- By default, we do not start a database (it can be large) -->
   <arg name="db" default="false" />
@@ -16,13 +9,17 @@
   <arg name="debug" default="false" />
 
 
-  <!-- MoveIt move_group --> 
-  <include file="$(find bender_moveit_config)/launch/bender_moveit.launch">
-    <arg name="use_gui" value="true"/>
-    <arg name="use_arm" value="$(arg use_arm)" />
-    <arg name="model_type" value="$(arg model_type)" />
-  </include>
 
+  <!-- Given the published joint states, publish tf for the robot links -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen" />
+
+  <!-- Run the main MoveIt executable without trajectory execution (we do not have controllers configured by default) -->
+  <include file="$(find bender_moveit_config)/launch/move_group.launch">
+    <arg name="allow_trajectory_execution" value="true"/>
+    <arg name="fake_execution" value="true"/>
+    <arg name="info" value="true"/>
+    <arg name="debug" value="$(arg debug)"/>
+  </include>
 
   <!-- If database loading was enabled, start mongodb as well -->
   <include file="$(find bender_moveit_config)/launch/default_warehouse_db.launch" if="$(arg db)">
@@ -30,6 +27,5 @@
   </include>
 
   <rosparam ns="move_group" command="load" file="$(find hb_workspace_analysis)/config/bender_workspace_analysis.yaml" />
-  <rosparam ns="move_group/grasp_generator" command="load" file="$(find hb_grasp_generator)/config/bender_grasp_generator.yaml" />
 
 </launch>
