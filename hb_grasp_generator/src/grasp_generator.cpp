@@ -64,7 +64,8 @@ CylindricalGraspGenerator::CylindricalGraspGenerator(const ros::NodeHandle &nh, 
     global_opt_(opt)
 {
   opt_.load(nh_);
-  ROS_DEBUG_STREAM_NAMED(name_, opt_);
+  ROS_INFO_STREAM_NAMED(name_, global_opt_);
+  ROS_INFO_STREAM_NAMED(name_, opt_);
 }
 
 bool CylindricalGraspGenerator::generateGrasp(const geometry_msgs::Pose &object_pose,

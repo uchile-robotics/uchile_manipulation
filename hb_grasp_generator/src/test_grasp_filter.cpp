@@ -69,7 +69,7 @@ public:
 
     // ---------------------------------------------------------------------------------------------
     // Load the Robot Viz Tools for publishing to Rviz
-    visual_tools_.reset(new moveit_visual_tools::MoveItVisualTools("bender/base_link",
+    visual_tools_.reset(new moveit_visual_tools::MoveItVisualTools("bender/l_arm_base_link",
                                                                    "/grasp_test",
                                                                    planning_scene_monitor_));
 
@@ -99,7 +99,7 @@ public:
     geometry_msgs::Pose object_pose;
     object_pose.position.x = 0.50;
     object_pose.position.y = 0.29;
-    object_pose.position.z = 0.60;
+    object_pose.position.z = -0.30;
 
     object_pose.orientation.x = 0.0;
     object_pose.orientation.y = 0.0;
@@ -116,6 +116,7 @@ public:
 
     // Generate set of grasps for one object
     simple_grasps_->generateGrasp(object_pose, possible_grasps);
+    ROS_INFO_STREAM("Grasps on frame: " << possible_grasps[0].grasp_pose.header.frame_id);
 
     // Publish cylinder
     visual_tools_->setLifetime(120.0);

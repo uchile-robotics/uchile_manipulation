@@ -52,7 +52,7 @@ bool GraspFilter::filterGrasps(std::vector<moveit_msgs::Grasp> &possible_grasps,
   {
     num_threads = possible_grasps.size();
   }
-  ROS_INFO_STREAM_NAMED(name_, "Using " << num_threads << " threads.");
+  ROS_DEBUG_STREAM_NAMED(name_, "Using " << num_threads << " threads.");
 
   // -----------------------------------------------------------------------------------------------
   // Get the solver timeout from kinematics.yaml
@@ -85,20 +85,25 @@ bool GraspFilter::filterGrasps(std::vector<moveit_msgs::Grasp> &possible_grasps,
   }
 
   // -----------------------------------------------------------------------------------------------
-  // Bring the pose to the frame of the IK solver
+  // Check for IK solver frame
   const std::string &ik_frame = kin_solvers_[planning_group][0]->getBaseFrame();
-  ROS_DEBUG_STREAM_NAMED(name_, "IK Frame: " << ik_frame);
-  ROS_DEBUG_STREAM_NAMED(name_, "Grasp frame: " << possible_grasps[0].grasp_pose.header.frame_id);
+  const std::string &grasp_frame = possible_grasps[0].grasp_pose.header.frame_id;
+  ROS_INFO_STREAM_NAMED(name_, "IK frame: " << ik_frame);
+  ROS_INFO_STREAM_NAMED(name_, "Grasp frame: " << possible_grasps[0].grasp_pose.header.frame_id);
 
-  Eigen::Affine3d link_transform;
-  if (!moveit::core::Transforms::sameFrame(ik_frame, robot_state_.getRobotModel()->getModelFrame()))
+  Eigen::Affine3d link_transform = Eigen::Affine3d::Identity();
+  if (!moveit::core::Transforms::sameFrame(ik_frame, grasp_frame))
   {
-    const robot_model::LinkModel
-        *lm = robot_state_.getLinkModel((!ik_frame.empty() && ik_frame[0] == '/') ? ik_frame.substr(1) : ik_frame);
+    ROS_WARN_STREAM("IK frame must be the same than Grasp frame, using offline transform (URDF based).");
+    const robot_model::LinkModel *lm = robot_state_.getLinkModel((!ik_frame.empty() && ik_frame[0] == '/') ? ik_frame.substr(1) : ik_frame);
     if (!lm)
       return false;
     link_transform = robot_state_.getGlobalLinkTransform(lm).inverse();
   }
+  ROS_INFO_STREAM("IK frame to model frame transform [" << link_transform.translation().x()
+                                       << ", " << link_transform.translation().y()
+                                       << ", " << link_transform.translation().z()<< "]");
+
   // Benchmark time
   ros::Time start_time;
   start_time = ros::Time::now();
@@ -178,10 +183,14 @@ void GraspFilter::filterGraspThread(IkThreadStruct ik_thread_struct)
 
     // Transform current pose to frame of planning group
     ik_pose = ik_thread_struct.possible_grasps_[i].grasp_pose;
+    ROS_INFO_STREAM("Grasp: [" << ik_pose.pose.position.x << ", " << ik_pose.pose.position.y << ", " <<
+                               ik_pose.pose.position.z << "] frame \"" << ik_pose.header.frame_id << "\"");
     Eigen::Affine3d eigen_pose;
     tf::poseMsgToEigen(ik_pose.pose, eigen_pose);
     eigen_pose = ik_thread_struct.link_transform_ * eigen_pose;
     tf::poseEigenToMsg(eigen_pose, ik_pose.pose);
+    ROS_INFO_STREAM("Grasp (after): [" << ik_pose.pose.position.x << ", " << ik_pose.pose.position.y << ", " <<
+                               ik_pose.pose.position.z << "] frame \"" << ik_pose.header.frame_id << "\"");
 
     // IK
     ik_thread_struct.kin_solver_->
