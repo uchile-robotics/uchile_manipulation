@@ -31,6 +31,7 @@ typedef boost::shared_ptr<const GraspStorageWithMetadata> GraspStorageWithMetada
 typedef std::map<std::string, GraspStorageDbPtr> DatabaseTable;
 typedef std::map<std::string, hb_workspace_analysis::CapabilityMapOptions> CapabilityMapOptionsTable;
 typedef std::map<std::string, hb_grasp_generator::CylindricalGraspGeneratorPtr> GraspGeneratorTable;
+typedef std::map<std::string, hb_grasp_generator::GraspFilterPtr> GraspFilterTable;
 
 class CapabilityMapPlugin : public MoveGroupCapability
 {
@@ -45,7 +46,17 @@ private:
   bool getCapabilityMapCb(hb_workspace_analysis::GetCapabilityMap::Request &req,
                           hb_workspace_analysis::GetCapabilityMap::Response &res);
 
-  bool filterPregraspCollision(std::vector<trajectory_msgs::JointTrajectoryPoint>& pregrasps, const std::string& group_name);
+  bool filterPregraspCollision(const std::string& group_name,
+                               const std::vector<std::string>& name, const std::vector<double>& position,
+                               robot_state::RobotState& robot_state);
+
+  bool checkSelfCollision(planning_scene_monitor::LockedPlanningSceneRO& ls, const std::string& group_name,
+                          const std::vector<std::string>& name, const std::vector<double>& position,
+                          robot_state::RobotState& robot_state);
+
+  bool checkCollision(planning_scene_monitor::LockedPlanningSceneRO& ls, const std::string& group_name,
+                      const std::vector<std::string>& name, const std::vector<double>& position,
+                      robot_state::RobotState& robot_state);
 
   // Capability map options
   CapabilityMapOptionsTable capmap_opt_;
@@ -58,7 +69,11 @@ private:
   // Grasp generators
   GraspGeneratorTable grasp_gen_;
   // Grasp filter
-  hb_grasp_generator::GraspFilterPtr grasp_filter_;
+  GraspFilterTable grasp_filter_;
+  // TF transformer from context
+  boost::shared_ptr<tf::Transformer> tf_;
+  // Robot URDF
+  boost::shared_ptr<urdf::ModelInterface> urdf_;
 
 };
 

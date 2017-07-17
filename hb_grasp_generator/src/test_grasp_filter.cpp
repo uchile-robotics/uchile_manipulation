@@ -92,14 +92,14 @@ public:
     // ---------------------------------------------------------------------------------------------
     // Load Grasp filter
     const robot_state::RobotState& robot_state = planning_scene_monitor_->getPlanningScene()->getCurrentState();
-    grasp_filter_.reset(new hb_grasp_generator::GraspFilter(robot_state) );
+    grasp_filter_.reset(new hb_grasp_generator::GraspFilter(robot_state, planning_group_name_) );
 
     // ---------------------------------------------------------------------------------------------
     // Test grasp position
     geometry_msgs::Pose object_pose;
     object_pose.position.x = 0.50;
-    object_pose.position.y = 0.29;
-    object_pose.position.z = -0.30;
+    object_pose.position.y = 0.15;
+    object_pose.position.z = -0.45;
 
     object_pose.orientation.x = 0.0;
     object_pose.orientation.y = 0.0;
@@ -127,11 +127,7 @@ public:
     // Apply grasp filter
     bool filter_pregrasps = true;
     double ik_timeout = 0.1;
-    grasp_filter_->filterGrasps(possible_grasps,
-                                ik_solutions,
-                                filter_pregrasps,
-                                opt.end_effector_parent_link,
-                                planning_group_name_, ik_timeout);
+    grasp_filter_->filterGrasps(possible_grasps, ik_solutions, filter_pregrasps, ik_timeout);
 
     // Visualize IK solutions
     visual_tools_->publishIKSolutions(ik_solutions, arm_jmg, 0.25);

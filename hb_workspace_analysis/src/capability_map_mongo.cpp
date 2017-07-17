@@ -26,7 +26,7 @@ int main (int argc, char** argv)
 
 
   // Set up db
-  mongo_ros::MessageCollection<hb_workspace_analysis::GraspStorage> coll("workspace_analysis", "capability_map_r_arm", "localhost", 27017, 5.0);
+  mongo_ros::MessageCollection<hb_workspace_analysis::GraspStorage> coll("workspace_analysis", "capability_map_l_arm", "localhost", 27017, 5.0);
 
   // Arrange to index on metadata field 'z'
   coll.ensureIndex("z");
@@ -54,7 +54,7 @@ int main (int argc, char** argv)
   // ---------------------------------------------------------------------------------------------
   // Load Grasp filter
   const robot_state::RobotState& robot_state = planning_scene_monitor_->getPlanningScene()->getCurrentState();
-  hb_grasp_generator::GraspFilterPtr grasp_filter_(new hb_grasp_generator::GraspFilter(robot_state) );
+  hb_grasp_generator::GraspFilterPtr grasp_filter_(new hb_grasp_generator::GraspFilter(robot_state, planning_group_name_) );
 
   // ---------------------------------------------------------------------------------------------
   // Grasp position
@@ -144,11 +144,7 @@ int main (int argc, char** argv)
         // Generate set of grasps for one object
         simple_grasps_->generateGrasp(object_pose, possible_grasps);
         // Apply grasp filter
-        grasp_filter_->filterGrasps(possible_grasps,
-                                    ik_solutions,
-                                    filter_pregrasps,
-                                    opt.end_effector_parent_link,
-                                    planning_group_name_, ik_timeout);
+        grasp_filter_->filterGrasps(possible_grasps, ik_solutions, filter_pregrasps, ik_timeout);
 
         // Check for available grasp
         if (possible_grasps.empty())

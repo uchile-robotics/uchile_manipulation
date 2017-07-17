@@ -53,7 +53,14 @@ class InteractiveGrasp(object):
         self.current_pose = Pose()
         self.current_pose.position = init_position
 
-        self.menu_handler.insert( "Grasp", callback=self.process_feedback)
+        capmap_entry = self.menu_handler.insert("Grasp with capability map")
+        self.menu_handler.insert("Left arm", parent=capmap_entry, callback=self.process_feedback)
+        self.menu_handler.insert("Right arm", parent=capmap_entry, callback=self.process_feedback)
+
+        online_entry = self.menu_handler.insert("Grasp with online generator")
+        self.menu_handler.insert("Left arm", parent=online_entry, callback=self.process_feedback)
+        self.menu_handler.insert("Right arm", parent=online_entry, callback=self.process_feedback)
+
         self.add_grasp_marker(frame_id, radius, height, init_position)
         self.server.applyChanges()
         self.radius = radius
@@ -82,12 +89,11 @@ class InteractiveGrasp(object):
             self.current_pose = feedback.pose
 
         elif feedback.event_type == InteractiveMarkerFeedback.MENU_SELECT:
-            # Grasp
-            if feedback.menu_entry_id == 1:
-                # Get object pose
-                object = get_cylinder(self.current_pose)
+            # Get object pose
+            object = get_cylinder(self.current_pose)
+            if feedback.menu_entry_id == 2:
                 try:
-                    result = self.grasp_server.get_grasp(object, "l_arm", True)
+                    result = self.grasp_server.get_grasp(object, "l_arm")
                     if result.grasp:
                         # Show at least 10 random grasp position
                         shuffle(result.grasp)
@@ -106,12 +112,33 @@ class InteractiveGrasp(object):
                     else:
                         rospy.logwarn("Grasp not found for l_arm")
                 except rospy.ServiceException, e:
-                    print "Service call failed: %s"%e
+                    rospy.logerr("Service call failed: {}".format(str(e)))
 
+            if feedback.menu_entry_id == 3:
+                try:
+                    result = self.grasp_server.get_grasp(object, "r_arm")
+                    if result.grasp:
+                        rospy.loginfo("Found {} grasps".format(len(result.grasp)))
+                    else:
+                        rospy.logwarn("Grasp not found for r_arm")
+                except rospy.ServiceException, e:
+                    rospy.logerr("Service call failed: {}".format(str(e)))
+
+            if feedback.menu_entry_id == 5:
+                try:
+                    result = self.grasp_server.get_grasp(object, "l_arm", True)
+                    if result.grasp:
+                        rospy.loginfo("Online generation found {} grasps".format(len(result.grasp)))
+                    else:
+                        rospy.logwarn("Grasp not found for l_arm")
+                except rospy.ServiceException, e:
+                    rospy.logerr("Service call failed: {}".format(str(e)))
+
+            if feedback.menu_entry_id == 6:
                 try:
                     result = self.grasp_server.get_grasp(object, "r_arm", True)
                     if result.grasp:
-                        rospy.loginfo("Found {} grasps".format(len(result.grasp)))
+                        rospy.loginfo("Online generation found {} grasps".format(len(result.grasp)))
                     else:
                         rospy.logwarn("Grasp not found for r_arm")
                 except rospy.ServiceException, e:

@@ -7,14 +7,14 @@
 #include <geometry_msgs/PoseArray.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <moveit_msgs/Grasp.h>
-
 // MoveIt
 #include <moveit/robot_state/robot_state.h>
 #include <moveit/kinematics_plugin_loader/kinematics_plugin_loader.h>
-
 // C++
 #include <boost/thread.hpp>
 #include <math.h>
+
+#include "hb_grasp_generator/gravitational_torque_estimation.h"
 
 namespace hb_grasp_generator
 {
@@ -70,16 +70,23 @@ class GraspFilter
   // State of robot
   robot_state::RobotState robot_state_;
   // Kinematic solvers
-  std::map<std::string, std::vector<kinematics::KinematicsBaseConstPtr> > kin_solvers_;
+  std::vector<kinematics::KinematicsBaseConstPtr> kin_solvers_;
+  // Planning_group
+  std::string planning_group_;
+  // Joint model group
+  const robot_model::JointModelGroup* jmg_;
   // Verbose mode
   bool verbose_;
   // Log namespace
   const std::string name_;
+  std::size_t num_threads_;
+  // Torque estimator
+  GravitationalTorqueEstimationPtr score_func_;
 
  public:
 
   // Constructor
-  GraspFilter(const robot_state::RobotState& robot_state);
+  GraspFilter(const robot_state::RobotState& robot_state, const std::string& planning_group);
 
   // Destructor
   ~GraspFilter();
@@ -88,30 +95,18 @@ class GraspFilter
   bool chooseBestGrasp(const std::vector<moveit_msgs::Grasp> &possible_grasps,
                        moveit_msgs::Grasp &chosen);
 
-  // Take the nth grasp from the array
-  bool filterNthGrasp(std::vector<moveit_msgs::Grasp> &possible_grasps, int n);
-
-  /**
-   * \brief Choose the 1st grasp that is kinematically feasible
-   * \param
-   * \param
-   * \param whether to also check ik feasibility for the pregrasp position
-   * \return true on success
-   */
   /**
    * @brief Filter grasps kinematically .
    * @param possible_grasps Grasps from grasp generator function.
    * @param ik_solutions IK solutions found.
    * @param filter_pregrasp
-   * @param ee_parent_link
-   * @param planning_group
    * @return
    */
   bool filterGrasps(std::vector<moveit_msgs::Grasp> &possible_grasps,
-                    std::vector<trajectory_msgs::JointTrajectoryPoint> &ik_solutions,
-                    bool filter_pregrasp, const std::string &ee_parent_link,
-                    const std::string &planning_group,
-                    const double override_ik_timeout = 0.0);
+                    std::vector<trajectory_msgs::JointTrajectoryPoint> &ik_solutions, bool filter_pregrasp,
+                    const double override_ik_timeout=0.0);
+
+  const std::string& getBaseFrame() const;
 
  private:
 

@@ -7,16 +7,39 @@
 namespace hb_grasp_generator
 {
 // Constructor
-GraspFilter::GraspFilter(const robot_state::RobotState& robot_state):
+GraspFilter::GraspFilter(const robot_state::RobotState& robot_state, const std::string& planning_group):
     robot_state_(robot_state),
+    planning_group_(planning_group),
+    jmg_(robot_state_.getRobotModel()->getJointModelGroup(planning_group_)),
     verbose_(true),
     name_("grasp_filter")
 {
-  ROS_DEBUG_STREAM_NAMED(name_, "Loaded grasp filter.");
+  // Get the number of cores
+  num_threads_ = boost::thread::hardware_concurrency();
+  // Load kinematic solvers
+  for (int i = 0; i < num_threads_; ++i)
+  {
+    // Get kinematic solver
+    kin_solvers_.push_back(jmg_->getSolverInstance());
+
+    // Test to make sure we have a valid kinematics solver
+    if (!kin_solvers_[i])
+    {
+      ROS_ERROR_STREAM_NAMED(name_, "No kinematic solver found");
+      throw ros::Exception("No kinematic solver found");
+    }
+  }
+  score_func_.reset(new GravitationalTorqueEstimation(robot_state_.getRobotModel()->getURDF(),
+                                                     kin_solvers_[0]->getBaseFrame(),kin_solvers_[0]->getTipFrame()));
 }
 
 GraspFilter::~GraspFilter()
 {
+}
+
+const std::string& GraspFilter::getBaseFrame() const
+{
+  return kin_solvers_[0]->getBaseFrame();
 }
 
 bool GraspFilter::chooseBestGrasp(const std::vector<moveit_msgs::Grasp> &possible_grasps, moveit_msgs::Grasp &chosen)
@@ -31,10 +54,12 @@ bool GraspFilter::chooseBestGrasp(const std::vector<moveit_msgs::Grasp> &possibl
   return true;
 }
 
+
+
 // Return grasps that are kinematically feasible
 bool GraspFilter::filterGrasps(std::vector<moveit_msgs::Grasp> &possible_grasps,
                                std::vector<trajectory_msgs::JointTrajectoryPoint> &ik_solutions, bool filter_pregrasp,
-                               const std::string &ee_parent_link, const std::string &planning_group, const double override_ik_timeout)
+                               const double override_ik_timeout)
 {
   // -----------------------------------------------------------------------------------------------
   // Error check
@@ -45,9 +70,8 @@ bool GraspFilter::filterGrasps(std::vector<moveit_msgs::Grasp> &possible_grasps,
   }
 
   // -----------------------------------------------------------------------------------------------
-  // Get the number of cores
-  int num_threads = boost::thread::hardware_concurrency();
-  // Check  for little size
+  // Check the number of cores// Check  for little size
+  std::size_t num_threads = num_threads_;
   if (num_threads > possible_grasps.size())
   {
     num_threads = possible_grasps.size();
@@ -56,39 +80,18 @@ bool GraspFilter::filterGrasps(std::vector<moveit_msgs::Grasp> &possible_grasps,
 
   // -----------------------------------------------------------------------------------------------
   // Get the solver timeout from kinematics.yaml
-  double timeout = robot_state_.getRobotModel()->getJointModelGroup(planning_group)->getDefaultIKTimeout();
+  double timeout = jmg_->getDefaultIKTimeout();
   if (override_ik_timeout > 0.0)
     timeout = override_ik_timeout;
   ROS_DEBUG_STREAM_NAMED(name_, "Grasp filter IK timeout " << timeout);
 
   // -----------------------------------------------------------------------------------------------
-  // Load kinematic solvers if not already loaded
-  if (kin_solvers_[planning_group].size() != num_threads)
-  {
-    kin_solvers_[planning_group].clear();
-
-    const robot_model::JointModelGroup *jmg = robot_state_.getRobotModel()->getJointModelGroup(planning_group);
-
-    // Create an ik solver for every thread
-    for (int i = 0; i < num_threads; ++i)
-    {
-      // Get kinematic solver
-      kin_solvers_[planning_group].push_back(jmg->getSolverInstance());
-
-      // Test to make sure we have a valid kinematics solver
-      if (!kin_solvers_[planning_group][i])
-      {
-        ROS_ERROR_STREAM_NAMED(name_, "No kinematic solver found");
-        return false;
-      }
-    }
-  }
-
-  // -----------------------------------------------------------------------------------------------
   // Check for IK solver frame
-  const std::string &ik_frame = kin_solvers_[planning_group][0]->getBaseFrame();
-  const std::string &grasp_frame = possible_grasps[0].grasp_pose.header.frame_id;
-  ROS_INFO_STREAM_NAMED(name_, "IK frame: " << ik_frame);
+  const std::string& ee_parent_link = kin_solvers_[0]->getTipFrame();
+  const std::string& ik_frame = kin_solvers_[0]->getBaseFrame();
+  const std::string& grasp_frame = possible_grasps[0].grasp_pose.header.frame_id;
+  ROS_INFO_STREAM_NAMED(name_, "IK tip frame: " << ee_parent_link);
+  ROS_INFO_STREAM_NAMED(name_, "IK base frame: " << ik_frame);
   ROS_INFO_STREAM_NAMED(name_, "Grasp frame: " << possible_grasps[0].grasp_pose.header.frame_id);
 
   Eigen::Affine3d link_transform = Eigen::Affine3d::Identity();
@@ -99,10 +102,10 @@ bool GraspFilter::filterGrasps(std::vector<moveit_msgs::Grasp> &possible_grasps,
     if (!lm)
       return false;
     link_transform = robot_state_.getGlobalLinkTransform(lm).inverse();
+    ROS_INFO_STREAM("IK frame to grasp frame transform [" << link_transform.translation().x()
+                                                          << ", " << link_transform.translation().y()
+                                                          << ", " << link_transform.translation().z()<< "]");
   }
-  ROS_INFO_STREAM("IK frame to model frame transform [" << link_transform.translation().x()
-                                       << ", " << link_transform.translation().y()
-                                       << ", " << link_transform.translation().z()<< "]");
 
   // Benchmark time
   ros::Time start_time;
@@ -136,7 +139,7 @@ bool GraspFilter::filterGrasps(std::vector<moveit_msgs::Grasp> &possible_grasps,
                       link_transform,
                       grasps_id_start,
                       grasps_id_end,
-                      kin_solvers_[planning_group][i],
+                      kin_solvers_[i],
                       filter_pregrasp,
                       ee_parent_link,
                       timeout,
@@ -183,14 +186,12 @@ void GraspFilter::filterGraspThread(IkThreadStruct ik_thread_struct)
 
     // Transform current pose to frame of planning group
     ik_pose = ik_thread_struct.possible_grasps_[i].grasp_pose;
-    ROS_INFO_STREAM("Grasp: [" << ik_pose.pose.position.x << ", " << ik_pose.pose.position.y << ", " <<
+    ROS_DEBUG_STREAM("Grasp: [" << ik_pose.pose.position.x << ", " << ik_pose.pose.position.y << ", " <<
                                ik_pose.pose.position.z << "] frame \"" << ik_pose.header.frame_id << "\"");
     Eigen::Affine3d eigen_pose;
     tf::poseMsgToEigen(ik_pose.pose, eigen_pose);
     eigen_pose = ik_thread_struct.link_transform_ * eigen_pose;
     tf::poseEigenToMsg(eigen_pose, ik_pose.pose);
-    ROS_INFO_STREAM("Grasp (after): [" << ik_pose.pose.position.x << ", " << ik_pose.pose.position.y << ", " <<
-                               ik_pose.pose.position.z << "] frame \"" << ik_pose.header.frame_id << "\"");
 
     // IK
     ik_thread_struct.kin_solver_->
@@ -237,7 +238,9 @@ void GraspFilter::filterGraspThread(IkThreadStruct ik_thread_struct)
         {
 
           ROS_DEBUG_NAMED(name_, "IK solution found for pre-grasp");
-          ik_thread_struct.possible_grasps_[i].grasp_quality += ik_pose.pose.position.z;
+          ik_thread_struct.possible_grasps_[i].grasp_quality =
+              score_func_->score(pregrasp_solution) * score_func_->score(grasp_solution);
+
           // Both grasp and pre-grasp have passed
           // Lock the result vector so we can add to it for a second
           {

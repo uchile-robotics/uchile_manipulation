@@ -15,11 +15,21 @@ namespace move_group
 
   void CapabilityMapPlugin::initialize()
   {
+    // Get robot URDF from context
+    urdf_ = context_->planning_scene_monitor_->getRobotModelLoader()->getURDF();
+    // TF client from plugin context
+    tf_ = context_->planning_scene_monitor_->getTFClient();
+
+    /* --------------------------------------------------------------------------------
+    * Get parameters
+    */
     if (node_handle_.hasParam("capability_map"))
     {
       XmlRpc::XmlRpcValue raw_parameters;
       node_handle_.getParam("capability_map", raw_parameters);
       ROS_ASSERT(raw_parameters.getType() == XmlRpc::XmlRpcValue::TypeStruct);
+      // Get robot state for construct grasp filter
+      const robot_state::RobotState& robot_state = context_->planning_scene_monitor_->getPlanningScene()->getCurrentState();
       for(XmlRpc::XmlRpcValue::ValueStruct::iterator it = raw_parameters.begin(); it != raw_parameters.end(); ++it)
       {
         std::string capmap_name(it->first);
@@ -41,7 +51,7 @@ namespace move_group
           db.reset(); // Make null pointer
         }
         // Check for empty database
-        if (db->count() == 0)
+        if (db && db->count() == 0)
         {
           ROS_WARN_STREAM("Capability map for \"" << opt.group_name << "\" is empty.");
         }
@@ -65,8 +75,17 @@ namespace move_group
                                << node_handle_.getNamespace());
         }
 
+        /* --------------------------------------------------------------------------------
+        * Grasp filter
+        */
+        hb_grasp_generator::GraspFilterPtr filter(new hb_grasp_generator::GraspFilter(robot_state, opt.group_name));
+
+        /* --------------------------------------------------------------------------------
+        * Create tables
+        */
         capmap_opt_.insert(std::make_pair<std::string, hb_workspace_analysis::CapabilityMapOptions>(opt.group_name, opt));
         db_.insert(std::make_pair<std::string, GraspStorageDbPtr>(opt.group_name, db));
+        grasp_filter_.insert(std::make_pair<std::string, hb_grasp_generator::GraspFilterPtr>(opt.group_name, filter));
       }
     }
     else
@@ -79,16 +98,6 @@ namespace move_group
     grasp_service_ = root_node_handle_.advertiseService(CAPABILITY_MAP_PLUGIN_NAME,
                                                         &CapabilityMapPlugin::getCapabilityMapCb, this);
 
-    /* --------------------------------------------------------------------------------
-    * Grasp filter
-    */
-    // Get robot state and construct grasp filter
-    const robot_state::RobotState& robot_state = context_->planning_scene_monitor_->getPlanningScene()->getCurrentState();
-
-    ROS_INFO_STREAM(robot_state.getRobotModel()->getJointModelGroup("l_arm")->getSolverInstance()->getTipFrame());
-
-    grasp_filter_.reset(new hb_grasp_generator::GraspFilter(robot_state));
-
   }
 
   bool CapabilityMapPlugin::getCapabilityMapCb(hb_workspace_analysis::GetCapabilityMap::Request &req,
@@ -97,7 +106,8 @@ namespace move_group
     // Check db connection
     DatabaseTable::iterator db_it = db_.find(req.group_name);
     CapabilityMapOptionsTable::iterator opt_it = capmap_opt_.find(req.group_name);
-    if (db_it == db_.end() || opt_it == capmap_opt_.end())
+    GraspFilterTable::iterator gf_it = grasp_filter_.find(req.group_name);
+    if (db_it == db_.end() || opt_it == capmap_opt_.end() || gf_it == grasp_filter_.end())
     {
       ROS_ERROR_STREAM("Capability map not availaible for \"" << req.group_name << "\".");
       return false;
@@ -117,6 +127,21 @@ namespace move_group
       ROS_ERROR_STREAM("Request have empty object.");
       return false;
     }
+
+    // Main object target pose
+    geometry_msgs::Pose target_pose = req.object.primitive_poses[0];
+    // Get Planning scene
+    planning_scene_monitor::LockedPlanningSceneRO ls(context_->planning_scene_monitor_);
+    robot_state::RobotState rs = ls->getCurrentState();
+    const robot_state::JointModelGroup* joint_model_group = rs.getJointModelGroup(opt.group_name);
+    if (!joint_model_group)
+    {
+      ROS_ERROR_STREAM("Group '"<< opt.group_name << "' not found in model.");
+      return false;
+    }
+    const std::vector<std::string>& joint_names = joint_model_group->getActiveJointModelNames();
+    // Time info
+    ros::Time t0 = ros::Time::now();
     /* --------------------------------------------------------------------------------
     * Online generation
     */
@@ -125,24 +150,58 @@ namespace move_group
       // Grasp vector
       std::vector<moveit_msgs::Grasp> possible_grasps;
 
+      /* --------------------------------------------------------------------------------
+      * Transform to kinematic base frame
+      */
+      const std::string& ik_frame = grasp_filter_[req.group_name]->getBaseFrame();
+      const std::string& grasp_frame = req.object.header.frame_id;
+      if (!moveit::core::Transforms::sameFrame(ik_frame, grasp_frame))
+      {
+        ROS_INFO_STREAM("IK frame must be the same than Grasp frame, using TF for transform.");
+        // Object pose to TF stamped pose
+        tf::Stamped<tf::Pose> original_pose_tf, target_pose_tf;
+        tf::poseMsgToTF(req.object.primitive_poses[0], original_pose_tf);
+        original_pose_tf.stamp_ = req.object.header.stamp;
+        original_pose_tf.frame_id_ = grasp_frame;
+        // Transform pose
+        try
+        {
+          this->tf_->transformPose(ik_frame, original_pose_tf, target_pose_tf);
+        }
+        catch(tf::LookupException& ex)
+        {
+          ROS_ERROR_STREAM("LookupException in transform \""<< grasp_frame << "\" to \"" << ik_frame << "\"");
+          ROS_ERROR_STREAM(ex.what());
+          return false;
+        }
+        catch(tf::ExtrapolationException& ex)
+        {
+          ROS_ERROR_STREAM("ExtrapolationException in transform \""<< grasp_frame << "\" to \"" << ik_frame << "\"");
+          ROS_ERROR_STREAM(ex.what());
+          return false;
+        }
+        catch(tf::ConnectivityException& ex)
+        {
+          ROS_ERROR_STREAM("ConnectivityException in transform \""<< grasp_frame << "\" to \"" << ik_frame << "\"");
+          ROS_ERROR_STREAM(ex.what());
+          return false;
+        }
+        // Convert to geometry message
+        tf::poseTFToMsg(target_pose_tf, target_pose);
+        ROS_INFO_STREAM("Grasp positon [" << target_pose.position.x << ", " << target_pose.position.y << ", " <<
+                                          target_pose.position.z << "] with frame \"" << ik_frame << "\"");
+      }
       // Generate set of grasps for one object
-      grasp_gen_[req.group_name]->generateGrasp(req.object.primitive_poses[0], possible_grasps);
+      grasp_gen_[req.group_name]->generateGrasp(target_pose, possible_grasps);
 
       std::vector<trajectory_msgs::JointTrajectoryPoint> ik_solutions;
       std::string end_effector_parent_link = context_->planning_scene_monitor_->getPlanningScene()->getCurrentState().getRobotModel()->
           getJointModelGroup(req.group_name)->getSolverInstance()->getTipFrame();
 
-      grasp_filter_->filterGrasps(possible_grasps,
-                                  ik_solutions,
-                                  true,
-                                  end_effector_parent_link,
-                                  req.group_name, 0.1);
+      grasp_filter_[req.group_name]->filterGrasps(possible_grasps, ik_solutions, true, 0.1);
       if (!possible_grasps.empty())
       {
-        geometry_msgs::Point& object_pose = req.object.primitive_poses[0].position;
-        ROS_INFO_STREAM("Saving grasp data on database " << object_pose.x << " y: " << object_pose.y <<
-                                                         " z: " << object_pose.z);
-
+        ROS_INFO_STREAM("Performing self collision check");
         // Construct grasp storage
         hb_workspace_analysis::GraspStorage grasp_vector;
         grasp_vector.header.frame_id = context_->planning_scene_monitor_->getPlanningScene()->getCurrentState().getRobotModel()->
@@ -151,6 +210,14 @@ namespace move_group
         grasp_vector.grasp.reserve(possible_grasps.size());
         for(std::size_t n = 0; n < possible_grasps.size(); ++n)
         {
+          // Self collision check for grasp and pre grasp positions
+          bool collision = checkSelfCollision(ls, req.group_name, joint_names, ik_solutions[2*n].positions, rs) &&
+              checkSelfCollision(ls, req.group_name, joint_names, ik_solutions[2*n+1].positions, rs);
+          if (collision)
+          {
+            // Skip this grasp
+            continue;
+          }
           hb_workspace_analysis::GraspPoint point;
           point.grasp = possible_grasps[n];
           point.pregrasp_position = ik_solutions[2*n];
@@ -161,17 +228,16 @@ namespace move_group
         mongo_ros::Metadata metadata("x", grasp_vector.pose.position.x, "y", grasp_vector.pose.position.y,
                                      "z", grasp_vector.pose.position.z);
         // Insert data in db
+        ROS_INFO_STREAM("Saving grasp data on database [" << target_pose.position.x << ", " << target_pose.position.y <<
+                                                          ", " << target_pose.position.z << "]");
         db->insert(grasp_vector, metadata);
       }
-
     }
 
     ROS_INFO_STREAM("Number of elements: " << db->count());
     /* --------------------------------------------------------------------------------
     * Get grasps from db
     */
-    // Time info
-    ros::Time t0 = ros::Time::now();
     // Create query using object pose
     // X range (greater than or equal, less than or equal)
     const double x_gte = req.object.primitive_poses[0].position.x - opt.resolution*opt.search_factor;
@@ -199,27 +265,7 @@ namespace move_group
     * Filter and save grasps in response
     */
     bool filter_pregrasp = true;
-    // Get Planning scene
-    planning_scene_monitor::LockedPlanningSceneRO ls(context_->planning_scene_monitor_);
-    robot_state::RobotState rs = ls->getCurrentState();
-    const robot_state::JointModelGroup* joint_model_group = rs.getJointModelGroup(opt.group_name);
-    if (!joint_model_group)
-    {
-      ROS_ERROR_STREAM("Group '"<< opt.group_name << "' not found in model.");
-      return false;
-    }
-    // Get joint names
-    const std::vector<std::string>& joint_names = joint_model_group->getActiveJointModelNames();
     // Configure collision request
-    collision_detection::CollisionRequest creq;
-    creq.group_name = opt.group_name;
-    creq.cost = false;
-    creq.contacts = false;
-    creq.max_contacts = 1;
-    creq.max_cost_sources = 1;
-    collision_detection::CollisionResult cres;
-    // Index of pregrasp positions on collision
-    std::vector<std::size_t> collision_pos;
     for(std::size_t i = 0; i < result.size(); ++i)
     {
       for(std::size_t j = 0; j < result[i]->grasp.size(); ++j)
@@ -227,9 +273,8 @@ namespace move_group
         // Collision filter for pregrasp position
         if(filter_pregrasp)
         {
-          rs.setVariablePositions(joint_names, result[i]->grasp[j].pregrasp_position.positions);
-          ls->checkCollision(creq, cres, rs);
-          if (cres.collision)
+          bool collision = checkCollision(ls, req.group_name, joint_names, result[i]->grasp[j].pregrasp_position.positions, rs);
+          if (collision)
           {
             // If we found a collision we skip the grasp
             continue;
@@ -245,6 +290,43 @@ namespace move_group
     return true;
   } // getCapabilityMapCb
 
+  bool CapabilityMapPlugin::checkSelfCollision(planning_scene_monitor::LockedPlanningSceneRO& ls,
+                                               const std::string& group_name, const std::vector<std::string>& name,
+                                               const std::vector<double>& position, robot_state::RobotState& robot_state)
+  {
+    // Configure collision request
+    collision_detection::CollisionRequest creq;
+    creq.group_name = group_name;
+    creq.cost = false;
+    creq.contacts = false;
+    creq.max_contacts = 1;
+    creq.max_cost_sources = 1;
+    collision_detection::CollisionResult cres;
+    // Index of pregrasp positions on collision
+    std::vector<std::size_t> collision_pos;
+    robot_state.setVariablePositions(name, position);
+    ls->checkSelfCollision(creq, cres, robot_state);
+    return cres.collision;
+  }
+
+  bool CapabilityMapPlugin::checkCollision(planning_scene_monitor::LockedPlanningSceneRO& ls,
+                                           const std::string& group_name, const std::vector<std::string>& name,
+                                           const std::vector<double>& position, robot_state::RobotState& robot_state)
+  {
+    // Configure collision request
+    collision_detection::CollisionRequest creq;
+    creq.group_name = group_name;
+    creq.cost = false;
+    creq.contacts = false;
+    creq.max_contacts = 1;
+    creq.max_cost_sources = 1;
+    collision_detection::CollisionResult cres;
+    // Index of pregrasp positions on collision
+    std::vector<std::size_t> collision_pos;
+    robot_state.setVariablePositions(name, position);
+    ls->checkCollision(creq, cres, robot_state);
+    return cres.collision;
+  }
 }
 
 

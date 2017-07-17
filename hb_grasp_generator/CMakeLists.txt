@@ -52,6 +52,7 @@ add_library(hb_grasp
     src/grasp_generator.cpp
     src/grasp_options.cpp
     src/grasp_filter.cpp
+    src/gravitational_torque_estimation.cpp
 )
 target_link_libraries(hb_grasp
     ${catkin_LIBRARIES} ${Boost_LIBRARIES}
