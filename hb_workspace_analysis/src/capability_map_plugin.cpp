@@ -143,6 +143,47 @@ namespace move_group
     // Time info
     ros::Time t0 = ros::Time::now();
     /* --------------------------------------------------------------------------------
+    * Transform to kinematic base frame
+    */
+    const std::string& ik_frame = grasp_filter_[req.group_name]->getBaseFrame();
+    const std::string& grasp_frame = req.object.header.frame_id;
+    if (!moveit::core::Transforms::sameFrame(ik_frame, grasp_frame))
+    {
+      ROS_INFO_STREAM("IK frame must be the same than Grasp frame, using TF for transform.");
+      // Object pose to TF stamped pose
+      tf::Stamped<tf::Pose> original_pose_tf, target_pose_tf;
+      tf::poseMsgToTF(req.object.primitive_poses[0], original_pose_tf);
+      original_pose_tf.stamp_ = req.object.header.stamp;
+      original_pose_tf.frame_id_ = grasp_frame;
+      // Transform pose
+      try
+      {
+        this->tf_->transformPose(ik_frame, original_pose_tf, target_pose_tf);
+      }
+      catch(tf::LookupException& ex)
+      {
+        ROS_ERROR_STREAM("LookupException in transform \""<< grasp_frame << "\" to \"" << ik_frame << "\"");
+        ROS_ERROR_STREAM(ex.what());
+        return false;
+      }
+      catch(tf::ExtrapolationException& ex)
+      {
+        ROS_ERROR_STREAM("ExtrapolationException in transform \""<< grasp_frame << "\" to \"" << ik_frame << "\"");
+        ROS_ERROR_STREAM(ex.what());
+        return false;
+      }
+      catch(tf::ConnectivityException& ex)
+      {
+        ROS_ERROR_STREAM("ConnectivityException in transform \""<< grasp_frame << "\" to \"" << ik_frame << "\"");
+        ROS_ERROR_STREAM(ex.what());
+        return false;
+      }
+      // Convert to geometry message
+      tf::poseTFToMsg(target_pose_tf, target_pose);
+      ROS_INFO_STREAM("Grasp positon [" << target_pose.position.x << ", " << target_pose.position.y << ", " <<
+                                        target_pose.position.z << "] with frame \"" << ik_frame << "\"");
+    }
+    /* --------------------------------------------------------------------------------
     * Online generation
     */
     if (req.generate_online)
@@ -150,47 +191,6 @@ namespace move_group
       // Grasp vector
       std::vector<moveit_msgs::Grasp> possible_grasps;
 
-      /* --------------------------------------------------------------------------------
-      * Transform to kinematic base frame
-      */
-      const std::string& ik_frame = grasp_filter_[req.group_name]->getBaseFrame();
-      const std::string& grasp_frame = req.object.header.frame_id;
-      if (!moveit::core::Transforms::sameFrame(ik_frame, grasp_frame))
-      {
-        ROS_INFO_STREAM("IK frame must be the same than Grasp frame, using TF for transform.");
-        // Object pose to TF stamped pose
-        tf::Stamped<tf::Pose> original_pose_tf, target_pose_tf;
-        tf::poseMsgToTF(req.object.primitive_poses[0], original_pose_tf);
-        original_pose_tf.stamp_ = req.object.header.stamp;
-        original_pose_tf.frame_id_ = grasp_frame;
-        // Transform pose
-        try
-        {
-          this->tf_->transformPose(ik_frame, original_pose_tf, target_pose_tf);
-        }
-        catch(tf::LookupException& ex)
-        {
-          ROS_ERROR_STREAM("LookupException in transform \""<< grasp_frame << "\" to \"" << ik_frame << "\"");
-          ROS_ERROR_STREAM(ex.what());
-          return false;
-        }
-        catch(tf::ExtrapolationException& ex)
-        {
-          ROS_ERROR_STREAM("ExtrapolationException in transform \""<< grasp_frame << "\" to \"" << ik_frame << "\"");
-          ROS_ERROR_STREAM(ex.what());
-          return false;
-        }
-        catch(tf::ConnectivityException& ex)
-        {
-          ROS_ERROR_STREAM("ConnectivityException in transform \""<< grasp_frame << "\" to \"" << ik_frame << "\"");
-          ROS_ERROR_STREAM(ex.what());
-          return false;
-        }
-        // Convert to geometry message
-        tf::poseTFToMsg(target_pose_tf, target_pose);
-        ROS_INFO_STREAM("Grasp positon [" << target_pose.position.x << ", " << target_pose.position.y << ", " <<
-                                          target_pose.position.z << "] with frame \"" << ik_frame << "\"");
-      }
       // Generate set of grasps for one object
       grasp_gen_[req.group_name]->generateGrasp(target_pose, possible_grasps);
 
@@ -206,7 +206,7 @@ namespace move_group
         hb_workspace_analysis::GraspStorage grasp_vector;
         grasp_vector.header.frame_id = context_->planning_scene_monitor_->getPlanningScene()->getCurrentState().getRobotModel()->
             getJointModelGroup(req.group_name)->getSolverInstance()->getBaseFrame();
-        grasp_vector.pose = req.object.primitive_poses[0];
+        grasp_vector.pose = target_pose;
         grasp_vector.grasp.reserve(possible_grasps.size());
         for(std::size_t n = 0; n < possible_grasps.size(); ++n)
         {
@@ -240,14 +240,14 @@ namespace move_group
     */
     // Create query using object pose
     // X range (greater than or equal, less than or equal)
-    const double x_gte = req.object.primitive_poses[0].position.x - opt.resolution*opt.search_factor;
-    const double x_lte = req.object.primitive_poses[0].position.x + opt.resolution*opt.search_factor;
+    const double x_gte = target_pose.position.x - opt.resolution*opt.search_factor;
+    const double x_lte = target_pose.position.x + opt.resolution*opt.search_factor;
     // Y range (greater than or equal, less than or equal)
-    const double y_gte = req.object.primitive_poses[0].position.y - opt.resolution*opt.search_factor;
-    const double y_lte = req.object.primitive_poses[0].position.y + opt.resolution*opt.search_factor;
+    const double y_gte = target_pose.position.y - opt.resolution*opt.search_factor;
+    const double y_lte = target_pose.position.y + opt.resolution*opt.search_factor;
     // Z range (greater than or equal, less than or equal) using cylinder height
-    const double z_gte = req.object.primitive_poses[0].position.z - opt.resolution*opt.search_factor - req.object.primitives[0].dimensions[0]/2;
-    const double z_lte = req.object.primitive_poses[0].position.z + opt.resolution*opt.search_factor + req.object.primitives[0].dimensions[0]/2;
+    const double z_gte = target_pose.position.z - opt.resolution*opt.search_factor - req.object.primitives[0].dimensions[0]/2;
+    const double z_lte = target_pose.position.z + opt.resolution*opt.search_factor + req.object.primitives[0].dimensions[0]/2;
     ROS_INFO_STREAM("Searching at: x[" << x_gte << ", " << x_lte << "] y[" << y_gte << ", " << y_lte << "] z[" << z_gte << ", " << z_lte << "] ");
     mongo_ros::Query query = mongo_ros::Query()
         .append("x", mongo_ros::GTE, x_gte).append("x", mongo_ros::LTE, x_lte)

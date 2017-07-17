@@ -26,7 +26,7 @@ int main (int argc, char** argv)
 
 
   // Set up db
-  mongo_ros::MessageCollection<hb_workspace_analysis::GraspStorage> coll("workspace_analysis", "capability_map_l_arm", "localhost", 27017, 5.0);
+  mongo_ros::MessageCollection<hb_workspace_analysis::GraspStorage> coll("workspace_analysis", "capability_map_r_arm", "localhost", 27017, 5.0);
 
   // Arrange to index on metadata field 'z'
   coll.ensureIndex("z");
@@ -47,8 +47,8 @@ int main (int argc, char** argv)
   // ---------------------------------------------------------------------------------------------
   // Load grasp options
   hb_grasp_generator::GraspOptions opt;
-  opt.load(nh_, ee_group_name_);
-  ros::NodeHandle grasp_nh(nh_, ee_group_name_);
+  opt.load(nh_, planning_group_name_);
+  ros::NodeHandle grasp_nh(nh_, planning_group_name_);
   hb_grasp_generator::CylindricalGraspGeneratorPtr simple_grasps_(new hb_grasp_generator::CylindricalGraspGenerator(grasp_nh, opt));
 
   // ---------------------------------------------------------------------------------------------
