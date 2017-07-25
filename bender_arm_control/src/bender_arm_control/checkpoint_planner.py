@@ -43,6 +43,15 @@ class CheckpointPlanner(object):
 
         #print self.checkpoints['pre_1'].reach.keys()
 
+    def __str__(self):
+        str_format = ""
+        for node_name in self.checkpoints.keys():
+            node = self.checkpoints[node_name]
+            str_format +=  node_name + "->"
+            for reach_name in  node.reach.keys():
+                str_format += "\t" + reach_name + "\n"
+        return str_format
+
     def go(self, init, goal):
         # Obtener checkpoint mas cercano @TODO
         #current = self.get_current_state()
