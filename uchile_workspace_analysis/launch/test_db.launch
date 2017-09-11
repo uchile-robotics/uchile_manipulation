@@ -1,0 +1,35 @@
+<launch>
+    <!-- Cargar modelo con TF -->
+    <include file="$(find uchile_tf)/launch/tf_model.launch">
+        <arg name="use_gui" value="false" />
+        <arg name="model_type" value="standard" />
+    </include>
+
+    <!-- Load SRDF and other MoveIt configuration files on the param server -->
+    <include file="$(find bender_moveit_config)/launch/planning_context.launch">
+        <arg name="load_robot_description" value="false"/>
+    </include>
+
+    <!-- Capability map generator for r_arm -->
+    <!-- Use bender_l_arm_kinematics/RightArmIKFastKinematicsPlugin in uchile_manipulation/bender_moveit_config/config/kinematics.yaml
+    <node pkg="uchile_workspace_analysis" type="capability_map_mongo" name="capmap_r_arm" output="screen" >
+        <param name="resolution" value="0.01"/>
+        <param name="arm" value="r_arm"/>
+        <param name="ee_name" value="r_gripper"/>
+        <rosparam param="init_pos">[0.0, -0.4, -0.8]</rosparam>
+        <rosparam param="final_pos">[0.8, 0.4, 0.4]</rosparam>
+        <rosparam command="load" file="$(find uchile_grasp_generator)/config/bender_grasp_generator.yaml" />
+    </node>
+    -->
+    <!-- Capability map generator for l_arm -->
+    <!-- Use bender_l_arm_kinematics/LeftArmIKFastKinematicsPlugin in uchile_manipulation/bender_moveit_config/config/kinematics.yaml     -->
+    <node pkg="uchile_workspace_analysis" type="capability_map_mongo" name="capmap_l_arm" output="screen" >
+        <param name="resolution" value="0.01"/>
+        <param name="arm" value="l_arm"/>
+        <param name="ee_name" value="l_gripper"/>
+        <rosparam param="init_pos">[0.0, -0.4, -0.8]</rosparam>
+        <rosparam param="final_pos">[0.8, 0.4, 0.4]</rosparam>
+        <rosparam command="load" file="$(find uchile_grasp_generator)/config/grasp_generator.yaml" />
+    </node>
+
+</launch>
