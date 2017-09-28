@@ -22,6 +22,7 @@ catkin_package(
 include_directories(include)
 
 set(IKFAST_LIBRARY_NAME bender_r_arm_moveit_ikfast_plugin)
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 
 find_package(LAPACK REQUIRED)
 

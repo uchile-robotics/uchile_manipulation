@@ -23,9 +23,11 @@ find_package(catkin REQUIRED COMPONENTS
   urdf
 )
 
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED serialization system filesystem signals thread)
-find_package(Eigen REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
