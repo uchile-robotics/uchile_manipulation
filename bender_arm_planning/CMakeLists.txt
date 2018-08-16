@@ -136,14 +136,14 @@ add_library(capability_map
   src/capability_map.cpp
   src/grasp_point.cpp
 )
-add_dependencies(capability_map ${catkin_EXPORTED_TARGETS})
+add_dependencies(capability_map ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(capability_map ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 add_library(bender_move_group_capabilities 
   src/manage_octomap_service_capability.cpp
   src/capability_map_service.cpp
 )
-add_dependencies(bender_move_group_capabilities ${catkin_EXPORTED_TARGETS})
+add_dependencies(bender_move_group_capabilities ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(bender_move_group_capabilities capability_map ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 add_executable(capmap_service src/capmap_service.cpp)
