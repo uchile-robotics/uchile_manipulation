@@ -6,7 +6,6 @@ __author__ = 'Giovanni Pais'
 __email__ = 'giom.pais@gmail.com'
 
 import rospy
-from bender_arm_control.arm_commander import Limb
 from moveit_python import MoveGroupInterface
 
 from geometry_msgs.msg import Pose, PoseStamped, Point

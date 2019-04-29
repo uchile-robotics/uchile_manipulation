@@ -1,0 +1,15 @@
+l_arm:
+  kinematics_solver: bender_l_arm_kinematics/LeftArmIKFastKinematicsPlugin
+  kinematics_solver_attempts: 3
+  kinematics_solver_search_resolution: 0.005
+  kinematics_solver_timeout: 0.005
+  solve_type: Speed # Manipulation1,Manipulation2,Distance or Speed
+r_arm:
+  kinematics_solver: kdl_kinematics_plugin/KDLKinematicsPlugin
+  #trac_ik_kinematics_plugin/TRAC_IKKinematicsPlugin
+  #kdl_kinematics_plugin/KDLKinematicsPlugin
+  #bender_r_arm_kinematics/RightArmIKFastKinematicsPlugin
+  kinematics_solver_attempts: 3
+  kinematics_solver_search_resolution: 0.005
+  kinematics_solver_timeout: 0.005
+  solve_type: Speed # Manipulation1,Manipulation2,Distance or Speed
