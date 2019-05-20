@@ -42,6 +42,9 @@
         <joint name="r_shoulder_yaw_joint" value="0" />
         <joint name="r_wrist_pitch_joint" value="0" />
     </group_state>
+    <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
+    <end_effector name="l_gripper" parent_link="bender/l_wrist_pitch_link" group="l_arm" parent_group="l_arm" />
+    <end_effector name="r_gripper" parent_link="bender/r_wrist_pitch_link" group="r_arm" parent_group="r_arm" />
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
     <disable_collisions link1="bender/PC_Base" link2="bender/face_link" reason="Never" />
     <disable_collisions link1="bender/PC_Base" link2="bender/front_left_wheel" reason="Never" />
