@@ -7,3 +7,11 @@ controller_list:
       - l_elbow_pitch_joint
       - l_elbow_yaw_joint
       - l_wrist_pitch_joint
+  - name: fake_r_arm_controller
+    joints:
+      - r_shoulder_pitch_joint
+      - r_shoulder_roll_joint
+      - r_shoulder_yaw_joint
+      - r_elbow_pitch_joint
+      - r_elbow_yaw_joint
+      - r_wrist_pitch_joint
