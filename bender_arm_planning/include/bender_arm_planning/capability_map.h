@@ -106,7 +106,7 @@ namespace capability_map{
       double getResolution(char axis = 'z') const;
   };
 
-  typedef boost::shared_ptr<CapabilityMap> CapabilityMapPtr;
+  typedef std::shared_ptr<CapabilityMap> CapabilityMapPtr;
 
   std::ostream & operator<<(std::ostream &os, const CapabilityMap &cm);
 

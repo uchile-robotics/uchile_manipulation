@@ -23,7 +23,7 @@ class GravitationalTorqueEstimation
 {
 public:
   
-  GravitationalTorqueEstimation(const boost::shared_ptr<const urdf::ModelInterface>& robot_model, const std::string& root, const std::string& tip);
+  GravitationalTorqueEstimation(const std::shared_ptr<const urdf::ModelInterface>& robot_model, const std::string& root, const std::string& tip);
   bool estimate(const std::vector<double>& current_pos, std::vector<double>& torque_estimation);
   unsigned int getDOF();
   std::vector<std::string> getJointNames();

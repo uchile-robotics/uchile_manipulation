@@ -4,7 +4,7 @@ namespace uchile_grasp_generator
 {
 
 GravitationalTorqueEstimation::GravitationalTorqueEstimation(
-  const boost::shared_ptr<const urdf::ModelInterface>& robot_model,
+  const std::shared_ptr<const urdf::ModelInterface>& robot_model,
   const std::string& root,
   const std::string& tip)
 {

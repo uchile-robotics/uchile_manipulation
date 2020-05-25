@@ -300,7 +300,7 @@ class CapabilityMapGenerator {
 
 
 
-  typedef boost::shared_ptr<CapabilityMapGenerator> CapabilityMapGeneratorPtr;
+  typedef std::shared_ptr<CapabilityMapGenerator> CapabilityMapGeneratorPtr;
 
 } // bender_arm_planning namespace
 
