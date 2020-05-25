@@ -36,7 +36,7 @@ class CapabilityMapGenerator {
     ros::NodeHandle nh_;
 
     // TF Listener
-    boost::shared_ptr<tf::Transformer> tf_;
+    std::shared_ptr<tf2_ros::Buffer> tf_;
 
     // Planning scene
     planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
