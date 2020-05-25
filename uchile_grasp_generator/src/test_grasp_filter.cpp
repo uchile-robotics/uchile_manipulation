@@ -122,7 +122,7 @@ public:
     visual_tools_->setLifetime(120.0);
     visual_tools_->enableBatchPublishing(true);
     visual_tools_->publishCylinder(object_pose, rviz_visual_tools::BLUE, 0.05, 0.05);
-    visual_tools_->triggerBatchPublish();
+    visual_tools_->trigger();
 
     // Apply grasp filter
     bool filter_pregrasps = true;

@@ -55,9 +55,9 @@ int main(int argc, char *argv[])
   ros::Duration(2.0).sleep(); // Wait for RViz
   visual_tools_->enableBatchPublishing(true);
   visual_tools_->publishCylinder(object_pose, rviz_visual_tools::BLUE, 0.05, 0.05);
-  visual_tools_->triggerBatchPublish();
+  visual_tools_->trigger();
   const robot_model::JointModelGroup *ee_jmg = visual_tools_->getRobotModel()->getJointModelGroup("l_gripper");
-  Eigen::Affine3d grasp_pose, pregrasp_pose, arrow_pose;
+  Eigen::Isometry3d grasp_pose, pregrasp_pose, arrow_pose;
   Eigen::Vector3d approach;
   Eigen::Quaterniond quat;
   // Hardcoded way, publishAnimatedGrasps didn't work
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
     geometry_msgs::PoseStamped
         pregrasp = uchile_grasp_generator::getPreGraspPose(possible_grasps[i], "bender/l_wrist_pitch_link");
     visual_tools_->publishEEMarkers(pregrasp.pose, ee_jmg, rviz_visual_tools::DARK_GREY);
-    visual_tools_->triggerBatchPublish();
+    visual_tools_->trigger();
     ros::Duration(0.01).sleep();
 
     // Convert to Eigen
@@ -85,14 +85,14 @@ int main(int argc, char *argv[])
     arrow_pose.translation() = pregrasp_pose.translation(); // Copy translation of pregrasp pose
     visual_tools_->publishXArrow(arrow_pose,
                                 rviz_visual_tools::RED,
-                                rviz_visual_tools::REGULAR,
+                                rviz_visual_tools::MEDIUM,
                                 possible_grasps[i].pre_grasp_approach.desired_distance);
-    visual_tools_->triggerBatchPublish();
+    visual_tools_->trigger();
     ros::Duration(0.01).sleep();
 
     // View grasp pose
     visual_tools_->publishEEMarkers(possible_grasps[i].grasp_pose.pose, ee_jmg, rviz_visual_tools::DARK_GREY);
-    visual_tools_->triggerBatchPublish();
+    visual_tools_->trigger();
     ros::Duration(0.01).sleep();
 
     if (!ros::ok())
