@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_msgs
   moveit_ros_planning
   moveit_ros_planning_interface
+  moveit_ros_move_group
   moveit_visual_tools
   moveit_simple_grasps
   octomap_msgs
@@ -137,7 +138,7 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
+include_directories(include)
 include_directories(SYSTEM ${Boost_INCLUDE_DIR} ${EIGEN_INCLUDE_DIRS})
 include_directories(
   ${catkin_INCLUDE_DIRS}
@@ -174,7 +175,7 @@ target_link_libraries(arm_teleop ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 ## Specify libraries to link a library or executable target against
 # target_link_libraries(bender_arm_control_node
-#   ${catkin_LIBRARIES}
+#  ${catkin_LIBRARIES}
 # )
 
 #############

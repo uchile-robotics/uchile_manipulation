@@ -1,6 +1,6 @@
 
 #include <moveit/kinematic_constraints/utils.h>
-#include <moveit/move_group_interface/move_group.h>
+#include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/plan_execution/plan_execution.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/common_planning_interface_objects/common_objects.h>
@@ -28,6 +28,8 @@
 #include <trajectory_msgs/JointTrajectoryPoint.h>
 
 #include <ros/ros.h>
+
+#include <tf/tf.h>
 
 #include <eigen_conversions/eigen_msg.h>
 
